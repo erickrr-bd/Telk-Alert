@@ -7,8 +7,10 @@ sys.path.append('./modules')
 from UtilsClass import Utils
 from CreateConfClass import Configuration 
 from LoggerClass import Logger
+from RulesClass import Rules
 
 class FormDialogs:
+
 	d = Dialog(dialog = "dialog")
 	d.set_background_title("TELK-ALERT CONFIG TOOL")
 
@@ -20,6 +22,7 @@ class FormDialogs:
 	utils = Utils()
 	create_conf = Configuration()
 	logger = Logger()
+	rules = Rules()
 
 	def getMenu(self, options, title):
 		code_mm, tag_mm = self.d.menu("Choose an option", choices=options,title=title)
@@ -210,6 +213,7 @@ class FormDialogs:
 		bandera_folder_name = 0
 		bandera_use_ssl = 0
 		bandera_http_auth = 0
+		bandera_index_name = 0
 		bandera_max_hits = 0
 		with open(self.utils.getPathTalert('conf') + '/es_conf.yaml', "rU") as f:
 			data_conf = yaml.safe_load(f)
@@ -228,6 +232,8 @@ class FormDialogs:
 				bandera_use_ssl = 1
 			if opt_prop == "Use HTTP auth":
 				bandera_http_auth = 1
+			if opt_prop == "Index name":
+				bandera_index_name = 1
 			if opt_prop == "Hits":
 				bandera_max_hits = 1
 		if bandera_version == 1:
@@ -283,6 +289,12 @@ class FormDialogs:
 					http_auth_data = {'http_auth_user': user_http_auth.decode('utf-8'), 'http_auth_pass': pass_http_auth.decode('utf-8')}
 					data_conf.update(http_auth_data)
 					data_conf['use_http_auth'] = True
+		if bandera_index_name == 1:
+			write_index = self.getDataInputText("Enter the name of the index that will be created in ElasticSearch:", str(data_conf['writeback_index']))
+			data_conf['writeback_index'] = str(write_index)
+		if bandera_max_hits == 1:
+			max_hits = self.getDataNumber("Enter the maximum number of hits for the search (maximum 10000):", str(data_conf['max_hits']))
+			data_conf['max_hits'] = int(max_hits)
 		with open(self.utils.getPathTalert('conf') + '/es_conf.yaml', "w") as file_update:
 			yaml.safe_dump(data_conf, file_update, default_flow_style = False)
 		hash_modify = self.utils.getSha256File(self.utils.getPathTalert('conf') + '/es_conf.yaml')
@@ -307,13 +319,27 @@ class FormDialogs:
 			if opt_conf_true == "Modify configuration":
 				self.modifyConfiguration()
 
-	def switchMmenu(self, option):
-		switcher = {
-			1: self.getDataConf()
-		}
+	def getMenuRules(self):
+		options_mr = [("1", "Create new alert rule"),
+					 ("2", "Update alert rule"),
+					 ("3", "Delete alert rule(s)"),
+					 ("4", "Show all alert rules")]
 
-		func = switcher.get(option, lambda: "Invalid option")
-		return func()
+		if not os.path.exists(self.utils.getPathTalert('conf') + '/es_conf.yaml'):
+			self.d.msgbox("\nConfiguration file not found", 5, 50, title = "Error message")
+		else:
+			option_mr = self.getMenu(options_mr, "Rules Menu")
+			self.switchMrules(int(option_mr))
+
+	def switchMmenu(self, option):
+		if option == 1:
+			self.getDataConf()
+		if option == 2:
+			self.getMenuRules()
+
+	def switchMrules(self, option):
+		if option == 1:
+			self.rules.createNewRule(FormDialogs())
 
 	def mainMenu(self):
 		options_mm = [("1", "Telk-Alert Configuration"),

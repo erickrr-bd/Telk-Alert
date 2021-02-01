@@ -1,6 +1,7 @@
 import os
 import pwd
 import sys
+import yaml
 from hashlib import sha256
 from base64 import b64encode, b64decode
 from Crypto import Random
@@ -12,9 +13,29 @@ from LoggerClass import Logger
 class Utils:
 
 	passphrase = ""
+	logger = Logger()
 
 	def __init__(self):
-		self.passphrase = self.getPassphrase()	
+		self.passphrase = self.getPassphrase()
+
+	"""
+	Method that allows obtaining the content of a file with extension .yaml
+
+	Parameters:
+	self -- Class instantiated object
+	file_yaml -- Yaml file path
+
+	Exceptions:
+	IOError -- It is an error raised when an input/output operation fails.
+	"""
+	def readFileYaml(self, file_yaml):
+		try:
+			with open(file_yaml, 'r') as file:
+				data_yaml = yaml.safe_load(file)
+			return data_yaml
+		except IOError as exception:
+			self.logger.createLogTool("Error" + str(exception), 4)
+
 	
 	def getPathTalert(self, path_dir):
 		path_origen = "/etc/Telk-Alert-Suite/Telk-Alert"
@@ -45,7 +66,7 @@ class Utils:
 					hashsha.update(block)
 			return hashsha.hexdigest()
 		except Exception as exception:
-			Logger.createLogTool("Error" + str(exception), 4)
+			self.logger.createLogTool("Error" + str(exception), 4)
 
 	def encryptAES(self, text):
 		text_bytes = bytes(text, 'utf-8')
