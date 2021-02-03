@@ -112,6 +112,29 @@ class FormDialogs:
 			if code_fname == self.d.CANCEL:
 				self.mainMenu()
 
+	"""
+	Method that allows the user to enter an email and validate it.
+
+	Parameters:
+	self -- Instance object.
+	text -- Text that will be shown to the user.
+	initial_value -- Default value that will be shown to the user in the interface.
+
+	Return:
+	The email address entered.
+	"""
+	def getDataEmail(self, text, initial_value):
+		email_reg_exp = re.compile(r"^[a-z0-9!#$%&'+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'+/=?^_`{|}~-]+)@(?:[a-z0-9](?:[a-z0-9-][a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$")
+		while True:
+			code_email, tag_email = self.d.inputbox(text, 10, 50, initial_value)
+			if code_email == self.d.OK:
+				if(not self.utils.validateRegularExpression(email_reg_exp, tag_email)):
+					self.d.msgbox("Invalid email address", 5, 50, title = "Error message")
+				else:
+					return tag_email
+			if code_email == self.d.CANCEL:
+				self.mainMenu()
+
 	def getDataYesOrNo(self, text, title):
 		tag_yesorno = self.d.yesno(text, 10, 50, title = title)
 		return tag_yesorno
@@ -149,6 +172,113 @@ class FormDialogs:
 					return tag_num
 			if code_num == self.d.CANCEL:
 				self.mainMenu()
+
+	"""
+	Method that allows creating the form where more than one value will be entered at the same time.
+
+	Parameters:
+	self -- Instance object.
+	list_fields -- List of all the fields that will be entered through the form.
+	title -- Title that will be given to the interface and that will be shown to the user.
+	text -- Text that will be shown to the user.
+
+	Return:
+	List with the names of the fields with which the search will be restricted.
+	"""
+	def getFields(self, list_fields, title, text):
+		list_new_fields = []
+		i = 0
+		for field in list_fields:
+			list_new_fields.append(("Field " + str(i + 1) + ":", (i + 1), 5, field, (i + 1), 20, 30, 100))
+			i += 1
+		while True:
+			code_nf, tag_nf = self.d.form(text,
+										elements = list_new_fields,
+										width = 50,
+										height = 15,
+										form_height = len(list_fields),
+										title = title)
+			if code_nf == self.d.OK:
+				cont = 0
+				for tag in tag_nf:
+					if tag == "":
+						cont += 1
+				if cont > 0:
+					self.d.msgbox("There cannot be a null or empty field", 5, 50, title = "Error message")
+				else:
+					return tag_nf
+			if code_nf == self.d.CANCEL:
+				self.mainMenu()
+
+	"""
+	Method that allows generating the form where the emails to which the alert will be sent will be entered.
+
+	Parameters:
+	self -- Instance object.
+	list_emails -- List of total emails that will be entered.
+	title -- Title that will be given to the interface and that will be shown to the user.
+	text -- Text that will be shown to the user.
+
+	Return:
+	List of emails entered by the user.
+	"""
+	def getEmailsTo(self, list_emails, title, text):
+		email_reg_exp = re.compile(r"^[a-z0-9!#$%&'+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'+/=?^_`{|}~-]+)@(?:[a-z0-9](?:[a-z0-9-][a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$")
+		list_new_emails = []
+		i = 0
+		for email in list_emails:
+			list_new_emails.append(("Email " + str(i + 1) + ":", (i + 1), 5, email, (i + 1), 20, 30, 100))
+			i += 1
+		while True:
+			code_et , tag_et = self.d.form(text,
+										elements = list_new_emails,
+										width = 50,
+										height = 15,
+										form_height = len(list_emails),
+										title = title)
+			if code_et == self.d.OK:
+				cont = 0
+				for tag in tag_et:
+					if(not self.utils.validateRegularExpression(email_reg_exp, tag)):
+						cont += 1
+				if cont > 0:
+					self.d.msgbox("The data entered must correspond to an email", 5, 50, title = "Error message")
+				else:
+					return tag_et
+			if code_et == self.d.CANCEL:
+				self.mainMenu()
+
+	"""
+	Method that allows generating a list with the total number of fields entered by the user.
+
+	Parameters:
+	self -- Instance object.
+	total_fields -- Total of fields entered by the user.
+	
+	Return:
+	The list with the total of fields that will be entered.
+	"""
+	def getFieldsAdd(self, total_fields):
+		list_new_fields = []
+		for i in range(int(total_fields)):
+			list_new_fields.append("Field " + str(i + 1))
+		return list_new_fields
+
+	"""
+	Method that allows generating a list with the total number of emails entered by the user.
+
+	Parameters:
+	self -- Instance object.
+	total_emails -- Total number of emails entered by the user.
+
+	Return:
+	List with the total of emails that will be entered.
+	"""
+	def getEmailAdd(self, total_emails):
+		list_new_emails = []
+		for i in range(int(total_emails)):
+			list_new_emails.append("Email " + str(i + 1))
+		return list_new_emails
 
 	def createConfiguration(self):
 		data_conf = []
