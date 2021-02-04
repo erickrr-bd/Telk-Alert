@@ -1,7 +1,6 @@
 import sys
 import os
 import re
-import yaml
 from dialog import Dialog
 sys.path.append('./modules')
 from UtilsClass import Utils
@@ -24,6 +23,17 @@ class FormDialogs:
 	logger = Logger()
 	rules = Rules()
 
+	"""
+	Method that allows generating the menu interface.
+
+	Parameters:
+	self -- Instance object.
+	options -- List of options that make up the menu.
+	title -- Title that will be given to the interface and that will be shown to the user.
+
+	Return:
+	The option chosen by the user.
+	"""
 	def getMenu(self, options, title):
 		code_mm, tag_mm = self.d.menu("Choose an option", choices=options,title=title)
 		if code_mm == self.d.OK:
@@ -31,6 +41,18 @@ class FormDialogs:
 		if code_mm == self.d.CANCEL:
 			sys.exit(0)
 
+	"""
+	Method that allows to generate an interface where you can only choose one option from among several.
+
+	Parameters:
+	self -- Instance object.
+	text -- Text that will be shown to the user.
+	options -- List of options that make up the interface.
+	title -- Title that will be given to the interface and that will be shown to the user.
+
+	Return:
+	The option chosen by the user.
+	"""
 	def getDataRadioList(self, text, options, title):
 		while True:
 			code_rl, tag_rl = self.d.radiolist(
@@ -46,6 +68,18 @@ class FormDialogs:
 			if code_rl == self.d.CANCEL:
 				self.mainMenu()
 
+	"""
+	Method that allows generating an interface where you can only choose several options at the same time.
+
+	Parameters:
+	self -- Instance object.
+	text -- Text that will be shown to the user.
+	options -- List of options that make up the interface.
+	title -- Title that will be given to the interface and that will be shown to the user.
+
+	Return:
+	List with the chosen options.
+	"""
 	def getDataCheckList(self, text, options, title):
 		while True:
 			code_cl, tag_cl = self.d.checklist(
@@ -61,6 +95,17 @@ class FormDialogs:
 			if code_cl == self.d.CANCEL:
 				self.mainMenu()
 
+	"""
+	Method that allows validating that an entered value corresponds to a decimal value.
+
+	Parameters:
+	self -- Instance object.
+	text -- Text that will be shown to the user.
+	initial_value -- Default value that will be shown to the user in the interface.
+
+	Return:
+	Decimal value entered.
+	"""
 	def getDataNumberDecimal(self, text, initial_value):
 		decimal_reg_exp = re.compile(r'^[1-9](\.[0-9]+)?$')
 		while True:
@@ -76,6 +121,17 @@ class FormDialogs:
 			if code_nd == self.d.CANCEL:
 				self.mainMenu()
 
+	"""
+	Method that allows validating that an entered value corresponds to an IP address.
+
+	Parameters:
+	self -- Instance object.
+	text -- Text that will be shown to the user.
+	initial_value -- Default value that will be shown to the user in the interface.
+
+	Return:
+	IP address entered.
+	"""
 	def getDataIP(self, text, initial_value):
 		ip_reg_exp = re.compile(r'^(?:(?:[1-9]?[0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}(?:[1-9]?[0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$|^localhost$')
 		while True:
@@ -88,6 +144,17 @@ class FormDialogs:
 			if code_ip == self.d.CANCEL:
 				self.mainMenu()
 
+	"""
+	Method that allows to validate an entered value that corresponds to a port.
+
+	Parameters:
+	self -- Instance object.
+	text -- Text that will be shown to the user.
+	initial_value -- Default value that will be shown to the user in the interface.
+
+	Return:
+	Port entered.
+	"""
 	def getDataPort(self, text, initial_value):
 		port_reg_exp = re.compile(r'^([0-9]{1,4}|[1-5][0-9]{4}|6[0-4][0-9]{3}|65[0-4][0-9]{2}|655[0-2][0-9]|6553[0-5])$')
 		while True:
@@ -100,6 +167,17 @@ class FormDialogs:
 		if code_port == self.d.CANCEL:
 			self.mainMenu()
 	
+	"""
+	Method that allows to validate an entered value that corresponds to a name of a file or directory.
+
+	Parameters:
+	self -- Instance object.
+	text -- Text that will be shown to the user.
+	initial_value -- Default value that will be shown to the user in the interface.
+
+	Return:
+	File or directory name entered.
+	"""
 	def getDataNameFolderOrFile(self, text, initial_value):
 		name_file_reg_exp = re.compile(r'^[^\\/?%*:|"<>]+$')
 		while True:
@@ -135,10 +213,32 @@ class FormDialogs:
 			if code_email == self.d.CANCEL:
 				self.mainMenu()
 
+	"""
+	Method that allows creating an interface where the only options available are yes or no.
+
+	Parameters:
+	self -- Instance object.
+	text -- Text that will be shown to the user.
+	title -- Title that will be given to the interface and that will be shown to the user.
+
+	Return:
+	Chosen option (yes or no).
+	"""
 	def getDataYesOrNo(self, text, title):
 		tag_yesorno = self.d.yesno(text, 10, 50, title = title)
 		return tag_yesorno
 
+	"""
+	Method that allows creating an interface to enter a text string without restrictions.
+
+	Parameters:
+	self -- Instance object.
+	text -- Text that will be shown to the user.
+	initial_value -- Default value that will be shown to the user in the interface.
+
+	Return:
+	Text entered.
+	"""
 	def getDataInputText(self, text, initial_value):
 		while True:
 			code_input, tag_input = self.d.inputbox(text, 10, 50, initial_value)
@@ -150,6 +250,17 @@ class FormDialogs:
 			if code_input == self.d.CANCEL:
 				self.mainMenu()
 
+	"""
+	Method that allows creating an interface to enter a password.
+
+	Parameters:
+	self -- Instance object.
+	text -- Text that will be shown to the user.
+	initial_value -- Default value that will be shown to the user in the interface.
+
+	Return:
+	Password entered.
+	"""
 	def getDataPassword(self, text, initial_value):
 		while True:
 			code_pass, tag_pass = self.d.passwordbox(text, 10, 50, initial_value, insecure = True)
@@ -161,6 +272,17 @@ class FormDialogs:
 			if code_pass == self.d.CANCEL:
 				self.mainMenu()
 
+	"""
+	Method that allows creating an interface to enter an integer type number.
+
+	Parameters:
+	self -- Instance object.
+	text -- Text that will be shown to the user.
+	initial_value -- Default value that will be shown to the user in the interface.
+
+	Return:
+	Number entered.
+	"""
 	def getDataNumber(self, text, initial_value):
 		number_reg_exp = re.compile(r'^([0-9]{1,4}|[1-5][0-9]{4}|6[0-4][0-9]{3}|65[0-4][0-9]{2}|655[0-2][0-9]|6553[0-5])$')
 		while True:
@@ -280,161 +402,12 @@ class FormDialogs:
 			list_new_emails.append("Email " + str(i + 1))
 		return list_new_emails
 
-	def createConfiguration(self):
-		data_conf = []
-		version_es = self.getDataNumberDecimal("Enter the ElasticSearch version:", "7.10")
-		host_es = self.getDataIP("Enter the ElasticSearch IP address:", "localhost")
-		port_es = self.getDataPort("Enter the ElasticSearch listening port:", "9200")
-		folder_rules = self.getDataNameFolderOrFile("Enter the name of the folder where the alert rules will be hosted:", "alert_rules")
-		use_ssl = self.getDataYesOrNo("Do you want Telk-Alert to connect to ElasticSearch using the SSL/TLS protocol?", "Connection via SSL/TLS")
-		http_auth = self.getDataYesOrNo("Is the use of HTTP authentication required to connect to ElasticSearch?", "HTTP authentication")
-		data_conf.append(version_es)
-		data_conf.append(host_es)
-		data_conf.append(port_es)
-		data_conf.append(folder_rules)
-		if use_ssl == "ok":
-			data_conf.append(True)
-		else:
-			data_conf.append(False)
-		if http_auth == "ok":
-			data_conf.append(True)
-			user_http_auth = self.utils.encryptAES(self.getDataInputText("Enter the username for HTTP authentication:", "user_http"))
-			pass_http_auth = self.utils.encryptAES(self.getDataPassword("Enter the user's password for HTTP authentication:", "password"))
-			data_conf.append(user_http_auth)
-			data_conf.append(pass_http_auth)
-		else:
-			data_conf.append(False)
-		write_index = self.getDataInputText("Enter the name of the index that will be created in ElasticSearch:", "telkalert")
-		max_hits = self.getDataNumber("Enter the maximum number of hits for the search (maximum 10000):", "10000")
-		data_conf.append(write_index)
-		data_conf.append(max_hits)
-		self.create_conf.createFileConfiguration(data_conf)
-		if os.path.exists(self.utils.getPathTalert("conf") + "/es_conf.yaml"):
-			self.d.msgbox("\nConfiguration file created", 7, 50, title = "Notification message")
-		else:
-			self.d.msgbox("\nError creating configuration file", 7, 50, title = "Error message")
-		self.mainMenu()
+	"""
+	Method that allows defining if the configuration file should be created or modified.
 
-	def modifyConfiguration(self):
-		options_conf_prop = [("Version", "ElasticSearch Version", 0),
-							("Host", "ElasticSearch Host", 0),
-							("Port", "ElasticSearch Port", 0),
-							("Folder name", "Rules Folder", 0),
-							("Use SSL/TLS", "Enable or disable SSL/TLS connection", 0),
-							("Use HTTP auth", "Enable or disable Http authentication", 0),
-							("Index name", "Index name for logs", 0),
-							("Hits", "Maximum hits in a search", 0)]
-
-		options_ssl_true = [("To disable", "Disable SSL/TLS communication", 0)]
-
-		options_ssl_false = [("Enable", "Enable SSL/TLS communication", 0)]
-
-		options_http_auth_true = [("To disable", "Disable HTTP Authentication", 0),
-								 ("Modify data", "Modify HTTP Authentication data", 0)]
-
-		options_http_auth_false = [("Enable", "Enable HTTP Authentication", 0)]
-
-		options_http_auth_data = [("Username", "Username for HTTP Authentication", 0),
-								 ("Password", "User password", 0)]
-
-		bandera_version = 0
-		bandera_host = 0
-		bandera_port = 0
-		bandera_folder_name = 0
-		bandera_use_ssl = 0
-		bandera_http_auth = 0
-		bandera_index_name = 0
-		bandera_max_hits = 0
-		with open(self.utils.getPathTalert('conf') + '/es_conf.yaml', "rU") as f:
-			data_conf = yaml.safe_load(f)
-		hash_origen = self.utils.getSha256File(self.utils.getPathTalert('conf') + '/es_conf.yaml')
-		opt_conf_prop = self.getDataCheckList("Select one or more options", options_conf_prop, "Update configuration file")
-		for opt_prop in opt_conf_prop:
-			if opt_prop == "Version":
-				bandera_version = 1
-			if opt_prop == "Host":
-				bandera_host = 1
-			if opt_prop == "Port":
-				bandera_port = 1
-			if opt_prop == "Folder name":
-				bandera_folder_name = 1
-			if opt_prop == "Use SSL/TLS":
-				bandera_use_ssl = 1
-			if opt_prop == "Use HTTP auth":
-				bandera_http_auth = 1
-			if opt_prop == "Index name":
-				bandera_index_name = 1
-			if opt_prop == "Hits":
-				bandera_max_hits = 1
-		if bandera_version == 1:
-			version_es = self.getDataNumberDecimal("Enter the ElasticSearch version:", str(data_conf['es_version']))
-			data_conf['es_version'] = str(version_es)
-		if bandera_host == 1:
-			host_es = self.getDataIP("Enter the ElasticSearch IP address:", str(data_conf['es_host']))
-			data_conf['es_host'] = str(host_es)
-		if bandera_port == 1:
-			port_es = self.getDataPort("Enter the ElasticSearch listening port:", str(data_conf['es_port']))
-			data_conf['es_port'] = int(port_es)
-		if bandera_folder_name == 1:
-			folder_rules = self.getDataNameFolderOrFile("Enter the name of the folder where the alert rules will be hosted:", data_conf['rules_folder'])
-			data_conf['rules_folder'] = str(folder_rules)
-			if(not os.path.isdir(self.utils.getPathTalert(str(folder_rules)))):
-				os.mkdir(self.utils.getPathTalert(str(folder_rules)))
-		if bandera_use_ssl == 1:
-			if data_conf['use_ssl'] == True:
-				opt_ssl_true = self.getDataRadioList("Select a option:", options_ssl_true, "Connection via SSL/TLS")
-				if opt_ssl_true == "To disable":
-					data_conf['use_ssl'] = False
-			else:
-				opt_ssl_false = self.getDataRadioList("Select a option:", options_ssl_false, "Connection via SSL/TLS")
-				if opt_ssl_false == "Enable":
-					data_conf['use_ssl'] = True
-		if bandera_http_auth == 1:
-			if data_conf['use_http_auth'] == True:
-				opt_http_auth_true = self.getDataRadioList("Select a option:", options_http_auth_true, "HTTP Authentication")
-				if opt_http_auth_true == "To disable":
-					del(data_conf['http_auth_user'])
-					del(data_conf['http_auth_pass'])
-					data_conf['use_http_auth'] = False
-				if opt_http_auth_true == "Modify data":
-					bandera_http_auth_user = 0
-					bandera_http_auth_pass = 0
-					opt_mod_http_auth = self.getDataCheckList("Select one or more options:", options_http_auth_data, "HTTP Authentication")
-					for opt_mod in opt_mod_http_auth:
-						if opt_mod == "Username":
-							bandera_http_auth_user = 1
-						if opt_mod == "Password":
-							bandera_http_auth_pass = 1
-					if bandera_http_auth_user == 1:
-						user_http_auth_mod = self.utils.encryptAES(self.getDataInputText("Enter the username for HTTP authentication:", self.utils.decryptAES(data_conf['http_auth_user']).decode('utf-8')))
-						data_conf['http_auth_user'] = user_http_auth_mod.decode('utf-8')
-					if bandera_http_auth_pass == 1:
-						pass_http_auth_mod = self.utils.encryptAES(self.getDataPassword("Enter the user's password for HTTP authentication:", "password"))
-						data_conf['http_auth_pass'] = pass_http_auth_mod.decode('utf-8')
-			else:
-				opt_http_auth_false = self.getDataRadioList("Select a option:", options_http_auth_false, "HTTP Authentication")
-				if opt_http_auth_false == "Enable":
-					user_http_auth = self.utils.encryptAES(self.getDataInputText("Enter the username for HTTP authentication:", "user_http"))
-					pass_http_auth = self.utils.encryptAES(self.getDataPassword("Enter the user's password for HTTP authentication:", "password"))
-					http_auth_data = {'http_auth_user': user_http_auth.decode('utf-8'), 'http_auth_pass': pass_http_auth.decode('utf-8')}
-					data_conf.update(http_auth_data)
-					data_conf['use_http_auth'] = True
-		if bandera_index_name == 1:
-			write_index = self.getDataInputText("Enter the name of the index that will be created in ElasticSearch:", str(data_conf['writeback_index']))
-			data_conf['writeback_index'] = str(write_index)
-		if bandera_max_hits == 1:
-			max_hits = self.getDataNumber("Enter the maximum number of hits for the search (maximum 10000):", str(data_conf['max_hits']))
-			data_conf['max_hits'] = int(max_hits)
-		with open(self.utils.getPathTalert('conf') + '/es_conf.yaml', "w") as file_update:
-			yaml.safe_dump(data_conf, file_update, default_flow_style = False)
-		hash_modify = self.utils.getSha256File(self.utils.getPathTalert('conf') + '/es_conf.yaml')
-		if hash_origen == hash_modify:
-			self.d.msgbox("\nConfiguration file not modified", 7, 50, title = "Notification message")
-		else:
-			self.d.msgbox("\nModified configuration file", 7, 50, title = "Notification message")
-			self.logger.createLogTool("Modified configuration file", 3)
-		self.mainMenu()
-
+	Parameters:
+	self -- Instance object.
+	"""
 	def getDataConf(self):
 		options_conf_false = [("Create configuration", "Create the configuration file", 0)]
 
@@ -443,12 +416,18 @@ class FormDialogs:
 		if not os.path.exists(self.utils.getPathTalert("conf") + "/es_conf.yaml"):
 			opt_conf_false = self.getDataRadioList("Select a option", options_conf_false, "Configuration options")
 			if opt_conf_false == "Create configuration":
-				self.createConfiguration()
+				self.create_conf.createConfiguration(FormDialogs())
 		else:
 			opt_conf_true = self.getDataRadioList("Select a option", options_conf_true, "Configuration options")
 			if opt_conf_true == "Modify configuration":
-				self.modifyConfiguration()
+				self.create_conf.modifyConfiguration(FormDialogs())
 
+	"""
+	Method that allows creating the menu interface for the operations that can be performed with the alert rules.
+
+	Parameters:
+	self -- Instance object.
+	"""
 	def getMenuRules(self):
 		options_mr = [("1", "Create new alert rule"),
 					 ("2", "Update alert rule"),
@@ -461,16 +440,34 @@ class FormDialogs:
 			option_mr = self.getMenu(options_mr, "Rules Menu")
 			self.switchMrules(int(option_mr))
 
+	"""
+	Method that allows interacting with the main menu options.
+
+	Parameters:
+	self -- Instance object.
+	"""
 	def switchMmenu(self, option):
 		if option == 1:
 			self.getDataConf()
 		if option == 2:
 			self.getMenuRules()
 
+	"""
+	Method that allows interacting with the options of the alert rules menu.
+
+	Parameters:
+	self -- Instance object.
+	"""
 	def switchMrules(self, option):
 		if option == 1:
 			self.rules.createNewRule(FormDialogs())
 
+	"""
+	Method that allows creating the interface with the main menu options.
+
+	Parameters:
+	self -- Instance object.
+	"""
 	def mainMenu(self):
 		options_mm = [("1", "Telk-Alert Configuration"),
 					  ("2", "Alert Rules"),
