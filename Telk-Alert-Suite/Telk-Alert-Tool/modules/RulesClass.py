@@ -1,5 +1,7 @@
 import yaml
 import sys
+import glob
+import os
 sys.path.append('./modules')
 from UtilsClass import Utils
 from LoggerClass import Logger
@@ -20,12 +22,24 @@ class Rules:
 	options_send_alert = [("telegram", "The alert will be sent via Telegram", 0),
 						 ("email", "The alert will be sent via email", 0)]
 
+
+	folder_rules = ""
+
+	def __init__(self):
+		self.folder_rules = self.utils.readFileYaml(self.utils.getPathTalert('conf') + '/es_conf.yaml')['rules_folder']
+
+	"""
+	Method that allows the user to request the data to create a new alert rule.
+
+	Parameters:
+	self -- Instance object.
+	form_dialog -- A FormClass class object.
+	"""
 	def createNewRule(self, form_dialog):
 		options_type_alert = [("Frequency", "Make the searches in the index periodically", 1)]
 
 		options_filter_alert = [("query string", "Perform the search using the Query String of ElasticSearch", 1)]
 
-		folder_rules = self.utils.readFileYaml(self.utils.getPathTalert('conf') + '/es_conf.yaml')['rules_folder']
 		data_rule = []
 		name_rule = form_dialog.getDataNameFolderOrFile("Enter the name of the alert rule:", "rule1")
 		data_rule.append(name_rule)
@@ -89,14 +103,31 @@ class Rules:
 			data_rule.append(email_from)
 			data_rule.append(email_from_password)
 			data_rule.append(list_email_to)
-		self.createRuleYaml(data_rule, bandera_telegram, bandera_email, folder_rules)
-		if(not os.path.exists(self.utils.getPathTalert(folder_rules) + '/' + name_rule + '.yaml')):
+		self.createRuleYaml(data_rule, bandera_telegram, bandera_email)
+		if(not os.path.exists(self.utils.getPathTalert(self.folder_rules) + '/' + name_rule + '.yaml')):
 			form_dialog.d.msgbox("\nError creating alert rule", 7, 50, title = "Error message")
 		else:
 			form_dialog.d.msgbox("\nAlert rule created", 7, 50, title = "Notification message")
 		form_dialog.mainMenu()
 
-	def createRuleYaml(self, data_rule, bandera_telegram, bandera_email, folder_rules):
+	def modifyAlertRule(self, form_dialog, name_alert_rule):
+		print("Hola")
+
+
+	"""
+	Method that allows creating the alert rule file with extension .yaml based on what was entered.
+
+	Parameters:
+	self -- Instance object.
+	data_rule -- List with all the data entered for the alert rule.
+	bandera_telegram -- Flag that lets you know if the alert will be sent by telegram or not.
+	bandera_email -- Flag that lets you know if the alert will be sent by email or not.
+
+	Exceptions:
+	OSError -- This exception is raised when a system function returns a system-related error, including I/O failures such as “file not found” 
+	or “disk full” (not for illegal argument types or other incidental errors).
+	"""
+	def createRuleYaml(self, data_rule, bandera_telegram, bandera_email):
 		
 		d_rule = {'name_rule' : str(data_rule[0]),
 		'alert_level' : str(data_rule[1]),
@@ -146,10 +177,39 @@ class Rules:
 			d_rule.update(email_json)
 			d_rule.update(alert_json)
 		try:
-			with open(self.utils.getPathTalert(folder_rules) + '/' + str(data_rule[0]) + '.yaml', 'w') as rule_file:
+			with open(self.utils.getPathTalert(self.folder_rules) + '/' + str(data_rule[0]) + '.yaml', 'w') as rule_file:
 				yaml.dump(d_rule, rule_file, default_flow_style = False)
 		except OSError as exception:
 			logger.createLogTool('Error: ' + str(exception), 4)
+
+	"""
+	Method that allows to create an interface with the list of alert rules and thus be able to choose the one to be modified.
+
+	Parameters:
+	self -- Instance object.
+	form_dialog -- A FormClass class object.
+	"""
+	def getUpdateAlertRules(self, form_dialog):
+		list_alert_rules = self.getAllAlertRules(self.utils.getPathTalert(self.folder_rules))
+		if len(list_alert_rules) == 0:
+			form_dialog.d.msgbox("There are no alert rules in the directory", 5, 50, title = "Error message")
+		else:
+			options_alert_rules = []
+			for alert_rule in list_alert_rules:
+				options_alert_rules.append((alert_rule, "", False))
+			rule_to_modify = form_dialog.getDataRadioList("Select a option:", options_alert_rules, "Alert Rules List")
+			self.modifyAlertRule(form_dialog, rule_to_modify)
+
+	"""
+	Method that allows to obtain all the alert rules saved in a directory.
+
+	Parameters:
+	self -- Instance object.
+	path_folder_rules -- Directory where all alert rules are stored.
+	"""
+	def getAllAlertRules(self, path_folder_rules):
+		list_alert_rules = [os.path.basename(x) for x in glob.glob(path_folder_rules + '/*.yaml')]
+		return list_alert_rules
 
 
 

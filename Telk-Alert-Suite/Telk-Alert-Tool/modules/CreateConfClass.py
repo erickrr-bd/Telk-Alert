@@ -203,11 +203,11 @@ class Configuration:
 		form_dialog.mainMenu()	
 
 	"""
-	List containing all the data entered for the configuration file.
+	Method that allows creating the configuration file with extension .yaml based on what was entered.
 
 	Parameters:
 	self -- Instance object.
-	data_conf -- A FormClass class object.
+	data_conf -- List containing all the data entered for the configuration file.
 	"""
 	def createFileConfiguration(self, data_conf):
 		d = {'es_version': str(data_conf[0]),

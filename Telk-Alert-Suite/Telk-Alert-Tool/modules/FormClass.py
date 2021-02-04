@@ -5,7 +5,6 @@ from dialog import Dialog
 sys.path.append('./modules')
 from UtilsClass import Utils
 from CreateConfClass import Configuration 
-from LoggerClass import Logger
 from RulesClass import Rules
 
 class FormDialogs:
@@ -20,7 +19,6 @@ class FormDialogs:
 
 	utils = Utils()
 	create_conf = Configuration()
-	logger = Logger()
 	rules = Rules()
 
 	"""
@@ -461,6 +459,8 @@ class FormDialogs:
 	def switchMrules(self, option):
 		if option == 1:
 			self.rules.createNewRule(FormDialogs())
+		if option == 2:
+			self.rules.getUpdateAlertRules(FormDialogs())
 
 	"""
 	Method that allows creating the interface with the main menu options.
