@@ -42,10 +42,17 @@ class Utils:
 		path_final = os.path.join(path_origen, path_dir)
 		return path_final
 
+	"""
+	Method that allows creating the path for a Telk-Alert-Agent directory.
+
+	Parameters:
+	self -- Instance object.
+	path_dir -- Folder or directory that will be added to the source path of Telk-Alert-Agent.
+	"""
 	def getPathTagent(self, path_dir):
 		path_origen = "/etc/Telk-Alert-Suite/Telk-Alert-Agent"
 		path_agent = os.path.join(path_origen, path_dir)
-		return path_final
+		return path_agent
 
 	def getPassphrase(self):
 		file_key = open(self.getPathTalert('conf') + '/key','r')

@@ -325,8 +325,6 @@ class Rules:
 						flag_telegram_two = 1
 					if opt_send == "email":
 						flag_email_two = 1
-				print(flag_email)
-				print(flag_email_two)
 				if flag_telegram_two == 1:
 					if flag_telegram == 1:
 						opt_telegram_true = form_dialog.getDataRadioList("Select a option:", options_telegram_true, "Sending By Telegram")

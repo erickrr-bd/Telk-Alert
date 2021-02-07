@@ -457,15 +457,21 @@ class FormDialogs:
 			if opt_conf_true == "Modify configuration":
 				self.create_conf.modifyConfiguration(FormDialogs())
 
+	"""
+	Method that allows managing whether the Telk-Alert-Agent configuration is created or modified.
+
+	Parameters:
+	self -- Instance object.
+	"""
 	def getAgentConfiguration(self):
 		if not os.path.exists(self.utils.getPathTagent('conf') + '/agent_conf.yaml'):
 			opt_conf_agent_false = self.getDataRadioList("Select a option:", self.options_conf_false, "Configuration options")
 			if opt_conf_agent_false == "Create configuration":
-				print("Hola")
+				self.agent.createAgentConfiguration(FormDialogs())
 		else:
 			opt_conf_agent_true = self.getDataRadioList("Select a option", self.options_conf_true, "Configuration options")
 			if opt_conf_agent_true == "Modify configuration":
-				print("Hola 2")
+				self.agent.modifyAgentConfiguration(FormDialogs())
 
 	"""
 	Method that allows creating the menu interface for the operations that can be performed with the alert rules.
@@ -486,6 +492,10 @@ class FormDialogs:
 			self.switchMrules(int(option_mr))
 
 	"""
+	Method that allows creating the interface for the Telk-Alert-Agent options menu.
+
+	Parameters:
+	self -- Instance object.
 	"""
 	def getMenuAgent(self):
 		options_ma = [("1", "Configuration"),
@@ -506,6 +516,8 @@ class FormDialogs:
 			self.getDataConf()
 		if option == 2:
 			self.getMenuRules()
+		if option == 4:
+			self.getMenuAgent()
 		if option == 5:
 			sys.exit(0)
 
