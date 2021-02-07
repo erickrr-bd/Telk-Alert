@@ -6,6 +6,7 @@ sys.path.append('./modules')
 from UtilsClass import Utils
 from CreateConfClass import Configuration 
 from RulesClass import Rules
+from AgentClass import Agent
 
 class FormDialogs:
 
@@ -20,6 +21,11 @@ class FormDialogs:
 	utils = Utils()
 	create_conf = Configuration()
 	rules = Rules()
+	agent = Agent()
+
+	options_conf_false = [("Create configuration", "Create the configuration file", 0)]
+
+	options_conf_true = [("Modify configuration", "Modify the configuration file", 0)]
 
 	"""
 	Method that allows generating the menu interface.
@@ -38,6 +44,19 @@ class FormDialogs:
 			return tag_mm
 		if code_mm == self.d.CANCEL:
 			sys.exit(0)
+
+	"""
+	Method that allows displaying a message to the user in a scroll box.
+
+	Parameters:
+	self -- Instance object.
+	text -- Text that will be shown to the user.
+	title -- Title that will be given to the interface and that will be shown to the user.
+	"""
+	def getScrollBox(self, text, title):
+		code_sb = self.d.scrollbox(text, 15, 50, title = title)
+		if code_sb == self.d.OK:
+			self.mainMenu()
 
 	"""
 	Method that allows to generate an interface where you can only choose one option from among several.
@@ -109,7 +128,7 @@ class FormDialogs:
 		while True:
 			code_nd, tag_nd = self.d.inputbox(text, 10, 50, initial_value)
 			if code_nd == self.d.OK:
-				if(not Utils.validateRegularExpression(decimal_reg_exp, tag_nd)):
+				if(not self.utils.validateRegularExpression(decimal_reg_exp, tag_nd)):
 					self.d.msgbox("Invalid value", 5, 50, title = "Error message")
 				else:
 					if(float(tag_nd) <= 7.0):
@@ -135,7 +154,7 @@ class FormDialogs:
 		while True:
 			code_ip, tag_ip = self.d.inputbox(text, 10, 50, initial_value)
 			if code_ip == self.d.OK:
-				if(not Utils.validateRegularExpression(ip_reg_exp, tag_ip)):
+				if(not self.utils.validateRegularExpression(ip_reg_exp, tag_ip)):
 					self.d.msgbox("Invalid IP address", 5, 50, title = "Error message")
 				else:
 					return tag_ip
@@ -158,7 +177,7 @@ class FormDialogs:
 		while True:
 			code_port, tag_port = self.d.inputbox(text, 10, 50, initial_value)
 			if code_port == self.d.OK:
-				if(not Utils.validateRegularExpression(port_reg_exp, tag_port)):
+				if(not self.utils.validateRegularExpression(port_reg_exp, tag_port)):
 					self.d.msgbox("Invalid port", 5 , 50, title = "Error message")
 				else:
 					return tag_port
@@ -181,7 +200,7 @@ class FormDialogs:
 		while True:
 			code_fname, tag_fname = self.d.inputbox(text, 10, 50, initial_value)
 			if code_fname == self.d.OK:
-				if(not Utils.validateRegularExpression(name_file_reg_exp, tag_fname)):
+				if(not self.utils.validateRegularExpression(name_file_reg_exp, tag_fname)):
 					self.d.msgbox("Invalid name", 5, 50, title = "Error message")
 				else:
 					return tag_fname
@@ -200,7 +219,7 @@ class FormDialogs:
 	The email address entered.
 	"""
 	def getDataEmail(self, text, initial_value):
-		email_reg_exp = re.compile(r"^[a-z0-9!#$%&'+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'+/=?^_`{|}~-]+)@(?:[a-z0-9](?:[a-z0-9-][a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$")
+		email_reg_exp = re.compile(r'^[a-z0-9]+[\._]?[a-z0-9]+[@]\w+[.]\w{2,3}$')
 		while True:
 			code_email, tag_email = self.d.inputbox(text, 10, 50, initial_value)
 			if code_email == self.d.OK:
@@ -286,12 +305,34 @@ class FormDialogs:
 		while True:
 			code_num, tag_num = self.d.inputbox(text, 10, 50, initial_value)
 			if code_num == self.d.OK:
-				if(not Utils.validateRegularExpression(number_reg_exp, tag_num)):
+				if(not self.utils.validateRegularExpression(number_reg_exp, tag_num)):
 					self.d.msgbox("Invalid number", 5, 50, title = "Error message")
 				else:
 					return tag_num
 			if code_num == self.d.CANCEL:
 				self.mainMenu()
+
+	"""
+	Method that allows to obtain an hour with minutes.
+
+	Parameters:
+	self -- Instance object.
+	text -- Text that will be shown to the user.
+	hour -- Hour entered.
+	minutes -- Minutes entered.
+
+	Return:
+	Time entered.
+	"""
+	def getDataTime(self, text, hour, minutes):
+		code_time, tag_time = self.d.timebox(text,
+											hour = hour,
+											minute = minutes,
+											second = 00)
+		if code_time == self.d.OK:
+			return tag_time
+		if code_time == self.d.CANCEL:
+			self.mainMenu()
 
 	"""
 	Method that allows creating the form where more than one value will be entered at the same time.
@@ -343,7 +384,7 @@ class FormDialogs:
 	List of emails entered by the user.
 	"""
 	def getEmailsTo(self, list_emails, title, text):
-		email_reg_exp = re.compile(r"^[a-z0-9!#$%&'+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'+/=?^_`{|}~-]+)@(?:[a-z0-9](?:[a-z0-9-][a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$")
+		email_reg_exp = re.compile(r'^[a-z0-9]+[\._]?[a-z0-9]+[@]\w+[.]\w{2,3}$')
 		list_new_emails = []
 		i = 0
 		for email in list_emails:
@@ -407,18 +448,24 @@ class FormDialogs:
 	self -- Instance object.
 	"""
 	def getDataConf(self):
-		options_conf_false = [("Create configuration", "Create the configuration file", 0)]
-
-		options_conf_true = [("Modify configuration", "Modify the configuration file", 0)]
-
 		if not os.path.exists(self.utils.getPathTalert("conf") + "/es_conf.yaml"):
-			opt_conf_false = self.getDataRadioList("Select a option", options_conf_false, "Configuration options")
+			opt_conf_false = self.getDataRadioList("Select a option", self.options_conf_false, "Configuration options")
 			if opt_conf_false == "Create configuration":
 				self.create_conf.createConfiguration(FormDialogs())
 		else:
-			opt_conf_true = self.getDataRadioList("Select a option", options_conf_true, "Configuration options")
+			opt_conf_true = self.getDataRadioList("Select a option", self.options_conf_true, "Configuration options")
 			if opt_conf_true == "Modify configuration":
 				self.create_conf.modifyConfiguration(FormDialogs())
+
+	def getAgentConfiguration(self):
+		if not os.path.exists(self.utils.getPathTagent('conf') + '/agent_conf.yaml'):
+			opt_conf_agent_false = self.getDataRadioList("Select a option:", self.options_conf_false, "Configuration options")
+			if opt_conf_agent_false == "Create configuration":
+				print("Hola")
+		else:
+			opt_conf_agent_true = self.getDataRadioList("Select a option", self.options_conf_true, "Configuration options")
+			if opt_conf_agent_true == "Modify configuration":
+				print("Hola 2")
 
 	"""
 	Method that allows creating the menu interface for the operations that can be performed with the alert rules.
@@ -439,28 +486,51 @@ class FormDialogs:
 			self.switchMrules(int(option_mr))
 
 	"""
+	"""
+	def getMenuAgent(self):
+		options_ma = [("1", "Configuration"),
+					 ("2", "Telk-Alert Agent Service")]
+
+		option_mr = self.getMenu(options_ma, "Agent Menu")
+		self.switchMagent(int(option_mr))
+
+	"""
 	Method that allows interacting with the main menu options.
 
 	Parameters:
 	self -- Instance object.
+	option -- Chosen option.
 	"""
 	def switchMmenu(self, option):
 		if option == 1:
 			self.getDataConf()
 		if option == 2:
 			self.getMenuRules()
+		if option == 5:
+			sys.exit(0)
 
 	"""
 	Method that allows interacting with the options of the alert rules menu.
 
 	Parameters:
 	self -- Instance object.
+	option -- Chosen option.
 	"""
 	def switchMrules(self, option):
 		if option == 1:
 			self.rules.createNewRule(FormDialogs())
 		if option == 2:
 			self.rules.getUpdateAlertRules(FormDialogs())
+		if option == 3:
+			self.rules.getDeleteRules(FormDialogs())
+		if option == 4:
+			self.rules.showAllAlertRules(FormDialogs())
+
+	"""
+	"""
+	def switchMagent(self, option):
+		if option == 1:
+			self.getAgentConfiguration()
 
 	"""
 	Method that allows creating the interface with the main menu options.

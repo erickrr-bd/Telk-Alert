@@ -42,13 +42,18 @@ class Utils:
 		path_final = os.path.join(path_origen, path_dir)
 		return path_final
 
+	def getPathTagent(self, path_dir):
+		path_origen = "/etc/Telk-Alert-Suite/Telk-Alert-Agent"
+		path_agent = os.path.join(path_origen, path_dir)
+		return path_final
+
 	def getPassphrase(self):
 		file_key = open(self.getPathTalert('conf') + '/key','r')
 		pass_key = file_key.read()
 		file_key.close()
 		return pass_key
 
-	def validateRegularExpression(regular_expression, data):
+	def validateRegularExpression(self, regular_expression, data):
 		if(not regular_expression.match(data)):
 			return False
 		return True

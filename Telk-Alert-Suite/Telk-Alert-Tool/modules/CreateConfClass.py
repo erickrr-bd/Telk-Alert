@@ -5,9 +5,19 @@ sys.path.append('./modules')
 from UtilsClass import Utils
 from LoggerClass import Logger
 
+"""
+Class that allows managing everything related to the Telk-Alert configuration.
+"""
 class Configuration:
 
+	"""
+	Utils type object
+	"""
 	utils = Utils()
+
+	"""
+	Logger type object
+	"""
 	logger = Logger()
 
 	"""
@@ -124,83 +134,88 @@ class Configuration:
 				bandera_index_name = 1
 			if opt_prop == "Hits":
 				bandera_max_hits = 1
-		if bandera_version == 1:
-			version_es = form_dialog.getDataNumberDecimal("Enter the ElasticSearch version:", str(data_conf['es_version']))
-			data_conf['es_version'] = str(version_es)
-		if bandera_host == 1:
-			host_es = form_dialog.getDataIP("Enter the ElasticSearch IP address:", str(data_conf['es_host']))
-			data_conf['es_host'] = str(host_es)
-		if bandera_port == 1:
-			port_es = form_dialog.getDataPort("Enter the ElasticSearch listening port:", str(data_conf['es_port']))
-			data_conf['es_port'] = int(port_es)
-		if bandera_folder_name == 1:
-			folder_rules = form_dialog.getDataNameFolderOrFile("Enter the name of the folder where the alert rules will be hosted:", data_conf['rules_folder'])
-			data_conf['rules_folder'] = str(folder_rules)
-			if(not os.path.isdir(self.utils.getPathTalert(str(folder_rules)))):
-				os.mkdir(self.utils.getPathTalert(str(folder_rules)))
-		if bandera_use_ssl == 1:
-			if data_conf['use_ssl'] == True:
-				opt_ssl_true = form_dialog.getDataRadioList("Select a option:", options_ssl_true, "Connection via SSL/TLS")
-				if opt_ssl_true == "To disable":
-					data_conf['use_ssl'] = False
+		try:
+			if bandera_version == 1:
+				version_es = form_dialog.getDataNumberDecimal("Enter the ElasticSearch version:", str(data_conf['es_version']))
+				data_conf['es_version'] = str(version_es)
+			if bandera_host == 1:
+				host_es = form_dialog.getDataIP("Enter the ElasticSearch IP address:", str(data_conf['es_host']))
+				data_conf['es_host'] = str(host_es)
+			if bandera_port == 1:
+				port_es = form_dialog.getDataPort("Enter the ElasticSearch listening port:", str(data_conf['es_port']))
+				data_conf['es_port'] = int(port_es)
+			if bandera_folder_name == 1:
+				folder_rules = form_dialog.getDataNameFolderOrFile("Enter the name of the folder where the alert rules will be hosted:", data_conf['rules_folder'])
+				data_conf['rules_folder'] = str(folder_rules)
+				if(not os.path.isdir(self.utils.getPathTalert(str(folder_rules)))):
+					os.mkdir(self.utils.getPathTalert(str(folder_rules)))
+			if bandera_use_ssl == 1:
+				if data_conf['use_ssl'] == True:
+					opt_ssl_true = form_dialog.getDataRadioList("Select a option:", options_ssl_true, "Connection via SSL/TLS")
+					if opt_ssl_true == "To disable":
+						data_conf['use_ssl'] = False
+				else:
+					opt_ssl_false = form_dialog.getDataRadioList("Select a option:", options_ssl_false, "Connection via SSL/TLS")
+					if opt_ssl_false == "Enable":
+						data_conf['use_ssl'] = True
+			if bandera_validate_cert == 1:
+				if data_conf['valid_certificates'] == True:
+					opt_valid_cert_true = form_dialog.getDataRadioList("Select a option:", options_valid_cert_true, "Certificate Validation")
+					if opt_valid_cert_true == "To disable":
+						data_conf['valid_certificates'] = False
+				else:
+					opt_valid_cert_false = form_dialog.getDataRadioList("Select a option:", options_valid_cert_false, "Certificate Validation")
+					if opt_valid_cert_false == "Enable":
+						data_conf['valid_certificates'] = True
+			if bandera_http_auth == 1:
+				if data_conf['use_http_auth'] == True:
+					opt_http_auth_true = form_dialog.getDataRadioList("Select a option:", options_http_auth_true, "HTTP Authentication")
+					if opt_http_auth_true == "To disable":
+						del(data_conf['http_auth_user'])
+						del(data_conf['http_auth_pass'])
+						data_conf['use_http_auth'] = False
+					if opt_http_auth_true == "Modify data":
+						bandera_http_auth_user = 0
+						bandera_http_auth_pass = 0
+						opt_mod_http_auth = form_dialog.getDataCheckList("Select one or more options:", options_http_auth_data, "HTTP Authentication")
+						for opt_mod in opt_mod_http_auth:
+							if opt_mod == "Username":
+								bandera_http_auth_user = 1
+							if opt_mod == "Password":
+								bandera_http_auth_pass = 1
+						if bandera_http_auth_user == 1:
+							user_http_auth_mod = self.utils.encryptAES(form_dialog.getDataInputText("Enter the username for HTTP authentication:", self.utils.decryptAES(data_conf['http_auth_user']).decode('utf-8')))
+							data_conf['http_auth_user'] = user_http_auth_mod.decode('utf-8')
+						if bandera_http_auth_pass == 1:
+							pass_http_auth_mod = self.utils.encryptAES(form_dialog.getDataPassword("Enter the user's password for HTTP authentication:", "password"))
+							data_conf['http_auth_pass'] = pass_http_auth_mod.decode('utf-8')
+				else:
+					opt_http_auth_false = form_dialog.getDataRadioList("Select a option:", options_http_auth_false, "HTTP Authentication")
+					if opt_http_auth_false == "Enable":
+						user_http_auth = self.utils.encryptAES(form_dialog.getDataInputText("Enter the username for HTTP authentication:", "user_http"))
+						pass_http_auth = self.utils.encryptAES(form_dialog.getDataPassword("Enter the user's password for HTTP authentication:", "password"))
+						http_auth_data = {'http_auth_user': user_http_auth.decode('utf-8'), 'http_auth_pass': pass_http_auth.decode('utf-8')}
+						data_conf.update(http_auth_data)
+						data_conf['use_http_auth'] = True
+			if bandera_index_name == 1:
+				write_index = form_dialog.getDataInputText("Enter the name of the index that will be created in ElasticSearch:", str(data_conf['writeback_index']))
+				data_conf['writeback_index'] = str(write_index)
+			if bandera_max_hits == 1:
+				max_hits = form_dialog.getDataNumber("Enter the maximum number of hits for the search (maximum 10000):", str(data_conf['max_hits']))
+				data_conf['max_hits'] = int(max_hits)
+			with open(self.utils.getPathTalert('conf') + '/es_conf.yaml', "w") as file_update:
+				yaml.safe_dump(data_conf, file_update, default_flow_style = False)
+			hash_modify = self.utils.getSha256File(self.utils.getPathTalert('conf') + '/es_conf.yaml')
+			if hash_origen == hash_modify:
+				form_dialog.d.msgbox("\nConfiguration file not modified", 7, 50, title = "Notification message")
 			else:
-				opt_ssl_false = form_dialog.getDataRadioList("Select a option:", options_ssl_false, "Connection via SSL/TLS")
-				if opt_ssl_false == "Enable":
-					data_conf['use_ssl'] = True
-		if bandera_validate_cert == 1:
-			if data_conf['valid_certificates'] == True:
-				opt_valid_cert_true = form_dialog.getDataRadioList("Select a option:", options_valid_cert_true, "Certificate Validation")
-				if opt_valid_cert_true == "To disable":
-					data_conf['valid_certificates'] = False
-			else:
-				opt_valid_cert_false = form_dialog.getDataRadioList("Select a option:", options_valid_cert_false, "Certificate Validation")
-				if opt_valid_cert_false == "Enable":
-					data_conf['valid_certificates'] = True
-		if bandera_http_auth == 1:
-			if data_conf['use_http_auth'] == True:
-				opt_http_auth_true = form_dialog.getDataRadioList("Select a option:", options_http_auth_true, "HTTP Authentication")
-				if opt_http_auth_true == "To disable":
-					del(data_conf['http_auth_user'])
-					del(data_conf['http_auth_pass'])
-					data_conf['use_http_auth'] = False
-				if opt_http_auth_true == "Modify data":
-					bandera_http_auth_user = 0
-					bandera_http_auth_pass = 0
-					opt_mod_http_auth = form_dialog.getDataCheckList("Select one or more options:", options_http_auth_data, "HTTP Authentication")
-					for opt_mod in opt_mod_http_auth:
-						if opt_mod == "Username":
-							bandera_http_auth_user = 1
-						if opt_mod == "Password":
-							bandera_http_auth_pass = 1
-					if bandera_http_auth_user == 1:
-						user_http_auth_mod = self.utils.encryptAES(form_dialog.getDataInputText("Enter the username for HTTP authentication:", self.utils.decryptAES(data_conf['http_auth_user']).decode('utf-8')))
-						data_conf['http_auth_user'] = user_http_auth_mod.decode('utf-8')
-					if bandera_http_auth_pass == 1:
-						pass_http_auth_mod = self.utils.encryptAES(form_dialog.getDataPassword("Enter the user's password for HTTP authentication:", "password"))
-						data_conf['http_auth_pass'] = pass_http_auth_mod.decode('utf-8')
-			else:
-				opt_http_auth_false = form_dialog.getDataRadioList("Select a option:", options_http_auth_false, "HTTP Authentication")
-				if opt_http_auth_false == "Enable":
-					user_http_auth = self.utils.encryptAES(form_dialog.getDataInputText("Enter the username for HTTP authentication:", "user_http"))
-					pass_http_auth = self.utils.encryptAES(form_dialog.getDataPassword("Enter the user's password for HTTP authentication:", "password"))
-					http_auth_data = {'http_auth_user': user_http_auth.decode('utf-8'), 'http_auth_pass': pass_http_auth.decode('utf-8')}
-					data_conf.update(http_auth_data)
-					data_conf['use_http_auth'] = True
-		if bandera_index_name == 1:
-			write_index = form_dialog.getDataInputText("Enter the name of the index that will be created in ElasticSearch:", str(data_conf['writeback_index']))
-			data_conf['writeback_index'] = str(write_index)
-		if bandera_max_hits == 1:
-			max_hits = form_dialog.getDataNumber("Enter the maximum number of hits for the search (maximum 10000):", str(data_conf['max_hits']))
-			data_conf['max_hits'] = int(max_hits)
-		with open(self.utils.getPathTalert('conf') + '/es_conf.yaml', "w") as file_update:
-			yaml.safe_dump(data_conf, file_update, default_flow_style = False)
-		hash_modify = self.utils.getSha256File(self.utils.getPathTalert('conf') + '/es_conf.yaml')
-		if hash_origen == hash_modify:
-			form_dialog.d.msgbox("\nConfiguration file not modified", 7, 50, title = "Notification message")
-		else:
-			form_dialog.d.msgbox("\nModified configuration file", 7, 50, title = "Notification message")
-			self.logger.createLogTool("Modified configuration file", 3)
-		form_dialog.mainMenu()	
+				form_dialog.d.msgbox("\nModified configuration file", 7, 50, title = "Notification message")
+				self.logger.createLogTool("Modified configuration file", 3)
+			form_dialog.mainMenu()	
+		except KeyError as exception:
+			self.logger.createLogTool("Key Error: " + str(exception), 4)
+			form_dialog.d.msgbox("\nKey Error: " + str(exception), 7, 50, title = "Error message")
+			form_dialog.mainMenu()	
 
 	"""
 	Method that allows creating the configuration file with extension .yaml based on what was entered.
@@ -233,4 +248,4 @@ class Configuration:
 			#self.utils.changeUidGid(Utils.getPathTalert('conf') + '/es_conf.yaml')
 			#self.utils.changeUidGid(Utils.getPathTalert(str(data_conf[3])))
 		except OSError as exception:
-			Logger.createLogTool("Error" + str(exception), 4)
+			self.logger.createLogTool("Error" + str(exception), 4)
