@@ -10,6 +10,9 @@ from Crypto.Cipher import AES
 sys.path.append('./modules')
 from LoggerClass import Logger
 
+"""
+Class that allows managing all the utilities that are used for the operation of the application.
+"""
 class Utils:
 
 	passphrase = ""

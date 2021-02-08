@@ -7,24 +7,63 @@ from UtilsClass import Utils
 from CreateConfClass import Configuration 
 from RulesClass import Rules
 from AgentClass import Agent
+from ServiceClass import Service
 
+"""
+Class that allows managing the graphical interfaces of Telk-Alert-Tool.
+"""
 class FormDialogs:
 
+	"""
+	Object of type Dialog.
+	"""
 	d = Dialog(dialog = "dialog")
+
+	"""
+	The title that will appear in the background of Telk-Alert-Tool is assigned.
+	"""
 	d.set_background_title("TELK-ALERT CONFIG TOOL")
 
+	"""
+	Property that contains the options for the graphical interface buttons.
+	"""
 	button_names = {d.OK:	  "OK",
 					d.CANCEL: "Cancel",
 					d.HELP:	  "Help",
 					d.EXTRA:  "Extra"}
-
+	"""
+	Utils type object.
+	"""
 	utils = Utils()
+
+	"""
+	Configuration type object.
+	"""
 	create_conf = Configuration()
+
+	"""
+	Rules type object.
+	"""
 	rules = Rules()
+
+	"""
+	Agent type object.
+	"""
 	agent = Agent()
 
+	"""
+	Service type object.
+	"""
+	service = Service()
+
+	"""
+	Property that contains the options when the configuration file is not created.
+	"""
 	options_conf_false = [("Create configuration", "Create the configuration file", 0)]
 
+	"""
+	Property that contains the options when the configuration file is created.
+	"""
 	options_conf_true = [("Modify configuration", "Modify the configuration file", 0)]
 
 	"""
@@ -501,8 +540,38 @@ class FormDialogs:
 		options_ma = [("1", "Configuration"),
 					 ("2", "Telk-Alert Agent Service")]
 
-		option_mr = self.getMenu(options_ma, "Agent Menu")
-		self.switchMagent(int(option_mr))
+		option_ma = self.getMenu(options_ma, "Agent Menu")
+		self.switchMagent(int(option_ma))
+
+	"""
+	Method that allows creating the menu interface of the Telk-Alert service.
+
+	Parameters:
+	self -- Instance object.
+	"""
+	def getMenuService(self):
+		options_ms = [("1", "Start Service"),
+					  ("2", "Restart Service"),
+					  ("3", "Stop Service"),
+					  ("4", "Service Status")]
+
+		option_ms = self.getMenu(options_ms, "Telk-Alert Service")
+		self.switchMService(int(option_ms))
+
+	"""
+	Method that allows creating the menu interface of the Telk-Alert-Agent service.
+
+	Parameters:
+	self -- Instance object.
+	"""
+	def getMenuServiceAgent(self):
+		options_msa = [("1", "Start Service"),
+					  ("2", "Restart Service"),
+					  ("3", "Stop Service"),
+					  ("4", "Service Status")]
+
+		option_msa = self.getMenu(options_msa, "Telk-Alert-Agent Service")
+		self.switchMServiceAgent(int(option_msa))
 
 	"""
 	Method that allows interacting with the main menu options.
@@ -516,6 +585,8 @@ class FormDialogs:
 			self.getDataConf()
 		if option == 2:
 			self.getMenuRules()
+		if option == 3:
+			self.getMenuService()
 		if option == 4:
 			self.getMenuAgent()
 		if option == 5:
@@ -539,10 +610,51 @@ class FormDialogs:
 			self.rules.showAllAlertRules(FormDialogs())
 
 	"""
+	Method that allows interacting with the options of the Telk-Alert-Agent service menu.
+
+	Parameters:
+	self -- Instance object.
+	option -- Chosen option.
 	"""
 	def switchMagent(self, option):
 		if option == 1:
 			self.getAgentConfiguration()
+		if option == 2:
+			self.getMenuServiceAgent()
+
+	"""
+	Method that allows interacting with the options of the Telk-Alert-Agent service menu.
+
+	Parameters:
+	self -- Instance object.
+	option -- Chosen option.
+	"""
+	def switchMServiceAgent(self, option):
+		if option == 1:
+			self.agent.startService(FormDialogs())
+		if option == 2:
+			self.agent.restartService(FormDialogs())
+		if option == 3:
+			self.agent.stopService(FormDialogs())
+		if option == 4:
+			self.agent.getStatusService(FormDialogs())
+
+	"""
+	Method that allows interacting with the options of the Telk-Alert service menu.
+
+	Parameters:
+	self -- Instance object.
+	option -- Chosen option.
+	"""
+	def switchMService(self, option):
+		if option == 1:
+			self.service.startService(FormDialogs())
+		if option == 2:
+			self.service.restartService(FormDialogs())
+		if option == 3:
+			self.service.stopService(FormDialogs())
+		if option == 4:
+			self.service.getStatusService(FormDialogs())
 
 	"""
 	Method that allows creating the interface with the main menu options.

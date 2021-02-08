@@ -21,18 +21,30 @@ class Rules:
 	"""
 	logger = Logger()
 
+	"""
+	Property that contains the options for the alert rule level.
+	"""
 	options_level_alert = [["Low", "Low level alert", 1],
 						  ["Medium", "Medium level alert", 0],
 						  ["High", "High level alert", 0]]
 
+	"""
+	Property that contains the options for the unit of time.
+	"""
 	options_unit_time = [["minutes", "Time expressed in minutes", 1],
 						["hours", "Time expressed in hours", 0],
 						["days", "Time expressed in days", 0]]
 
+	"""
+	Property that contains the options for the alert sending platforms.
+	"""
 	options_send_alert = [("telegram", "The alert will be sent via Telegram", 0),
 						 ("email", "The alert will be sent via email", 0)]
 
 
+	"""
+	Property that contains the name of the folder where the alert rules are saved.
+	"""
 	folder_rules = ""
 
 	"""
