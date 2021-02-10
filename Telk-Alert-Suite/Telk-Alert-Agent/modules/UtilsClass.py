@@ -1,6 +1,7 @@
 import os
 import sys
 import yaml
+import binascii
 from hashlib import sha256
 from base64 import b64decode
 from Crypto.Util.Padding import unpad
@@ -51,7 +52,8 @@ class Utils:
 				data_yaml = yaml.safe_load(file)
 			return data_yaml
 		except IOError as exception:
-			self.logger.createLogAgent("Error" + str(exception), 4)
+			self.logger.createLogAgent("File Error: " + str(exception), 4)
+			sys.exit(1)
 
 	"""
 	Method that allows creating the path for a Telk-Alert-Agent directory.
@@ -64,9 +66,7 @@ class Utils:
 	path_agent -- Final directory.
 	"""
 	def getPathTagent(self, path_dir):
-
-		path_origen = "/etc/Telk-Alert-Suite/Telk-Alert-Agent"
-		#path_origen = os.getcwd()
+		path_origen = os.getcwd()
 		path_agent = os.path.join(path_origen, path_dir)
 		return path_agent
 
@@ -111,8 +111,12 @@ class Utils:
 	Character string with decrypted text.
 	"""
 	def decryptAES(self, text_encrypt):
-		key = sha256(self.passphrase.encode()).digest()
-		text_encrypt = b64decode(text_encrypt)
-		IV = text_encrypt[:AES.block_size]
-		aes = AES.new(key, AES.MODE_CBC, IV)
-		return unpad(aes.decrypt(text_encrypt[AES.block_size:]), AES.block_size)
+		try:
+			key = sha256(self.passphrase.encode()).digest()
+			text_encrypt = b64decode(text_encrypt)
+			IV = text_encrypt[:AES.block_size]
+			aes = AES.new(key, AES.MODE_CBC, IV)
+			return unpad(aes.decrypt(text_encrypt[AES.block_size:]), AES.block_size)
+		except binascii.Error as exception:
+			self.logger.createLogAgent("Decrypt Error: " + str(exception), 4)
+			sys.exit(1)
