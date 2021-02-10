@@ -7,12 +7,32 @@ from UtilsClass import Utils
 from LoggerClass import Logger
 from TelegramClass import Telegram
 
+"""
+Class that allows to manage the operation of Telk-Alert-Agent.
+"""
 class Service:
 
+	"""
+	Utils type object.
+	"""
 	utils = Utils()
+
+	"""
+	Logger type object.
+	"""
 	logger = Logger()
+
+	"""
+	Telegram type object.
+	"""
 	telegram = Telegram()
 
+	"""
+	Method that allows validating the status of the Telk-Alert service and sending an alert to Telegram.
+
+	Parameters:
+	self -- An instantiated object of the Services class.
+	"""
 	def sendStatusTelkAlertService(self):
 		agent_conf_data = self.utils.readFileYaml(self.utils.getPathTagent('conf') + '/agent_conf.yaml')
 		time_agent_one = agent_conf_data['time_agent_one'].split(':')
