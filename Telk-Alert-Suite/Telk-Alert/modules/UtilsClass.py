@@ -83,6 +83,21 @@ class Utils:
 		file_key.close()
 		return pass_key
 
+	def convertDateToMiliseconds(self, datetime):
+		try:
+			miliseconds = int(datetime.strftime("%s")) * 1000
+			return miliseconds
+		except TypeError as exception:
+			self.logger.createLogAgent("Type Error: " + str(exception), 4)
+
+	def convertTimeToMiliseconds(self, unit_time, total_time):
+		if unit_time == 'minutes':
+			return total_time * 60000
+		if unit_time == 'hours':
+			return total_time * 3600000
+		if unit_time == 'days':
+			return total_time * 86400000
+
 	"""
 	Method that allows deciphering a text.
 

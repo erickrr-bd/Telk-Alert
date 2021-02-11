@@ -41,7 +41,6 @@ class Rules:
 	options_send_alert = [("telegram", "The alert will be sent via Telegram", 0),
 						 ("email", "The alert will be sent via email", 0)]
 
-
 	"""
 	Property that contains the name of the folder where the alert rules are saved.
 	"""
@@ -58,6 +57,9 @@ class Rules:
 		options_type_alert = [("Frequency", "Make the searches in the index periodically", 1)]
 
 		options_filter_alert = [("query_string", "Perform the search using the Query String of ElasticSearch", 1)]
+
+		options_type_alert_send = [("only", "A single alert with the total of events found", 1),
+						 ("multiple", "An alert for each event found", 0)]
 
 		self.folder_rules = self.utils.readFileYaml(self.utils.getPathTalert('conf') + '/es_conf.yaml')['rules_folder']
 		data_rule = []
@@ -85,6 +87,8 @@ class Rules:
 		if filter_type == "query_string":
 			query_string = form_dialog.getDataInputText("Enter the query string:", "event.code : 4120")
 			data_rule.append(query_string)
+			type_alert_send = form_dialog.getDataRadioList("Select a option:", options_type_alert_send, "Alert Sending Type")
+			data_rule.append(type_alert_send)
 			use_restriction_fields = form_dialog.getDataYesOrNo("Do you want your search results to be restricted to certain fields?", "Restriction By Fields")
 			if use_restriction_fields == "ok":
 				data_rule.append(True)
@@ -531,28 +535,30 @@ class Rules:
 		'time_search' : { str(data_rule[5]) : int(data_rule[6]) },
 		'time_back' : { str(data_rule[7]) : int(data_rule[8]) },
 		'filter_search' : [{ str(data_rule[9]) : { 'query' : str(data_rule[10])}}],
-		'use_restriction_fields' : data_rule[11]
+		'type_alert_send' : str(data_rule[11]),
+		'use_restriction_fields' : data_rule[12]
 		}
 
-		if data_rule[11] == True:
-			fields_json = { 'fields' : data_rule[12] }
+		if data_rule[12] == True:
+			fields_json = { 'fields' : data_rule[13] }
 			d_rule.update(fields_json)
+			restrict_by_host = data_rule[14]
+			if restrict_by_host == True:
+				number_events_host = { 'number_events_host' : int(data_rule[15]) }
+				d_rule.update(number_events_host)
+				last_index = 15
+			else:
+				last_index = 14
+		else:
 			restrict_by_host = data_rule[13]
 			if restrict_by_host == True:
-				restriction_json = { 'number_events_host' : int(data_rule[14]) }
-				d_rule.update(restriction_json)
+				number_events_host = { 'number_events_host' : int(data_rule[14]) }
+				d_rule.update(number_events_host)
 				last_index = 14
 			else:
 				last_index = 13
-		else:
-			restrict_by_host = data_rule[12]
-			if restrict_by_host == True:
-				number_events_host = { 'number_events_host' : int(data_rule[13]) }
-				d_rule.update(number_events_host)
-				last_index = 13
-			else:
-				last_index = 12
 		restrict_host_json = { 'restrict_by_host' : restrict_by_host }
+		d_rule.update(restrict_host_json)
 		if bandera_telegram == 1 and bandera_email == 0:
 			alert_json = { 'alert' : ['telegram'] }
 			telegram_json = { 'telegram_bot_token' : data_rule[last_index + 1].decode('utf-8'), 'telegram_chat_id' : data_rule[last_index + 2].decode('utf-8') }

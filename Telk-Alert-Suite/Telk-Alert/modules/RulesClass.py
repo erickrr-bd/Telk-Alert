@@ -51,7 +51,8 @@ class Rules:
 
 
 	def createRule(self, rule_yaml, telk_alert_conf):
-		self.elastic.getConnectionElastic(telk_alert_conf)
+		conn_es = self.elastic.getConnectionElastic(telk_alert_conf)
+		self.elastic.searchRuleElastic(conn_es, rule_yaml)
 
 	"""
 	Method that allows to obtain all the alert rules saved in a directory.
