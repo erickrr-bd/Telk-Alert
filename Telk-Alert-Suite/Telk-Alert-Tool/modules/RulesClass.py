@@ -599,8 +599,11 @@ class Rules:
 	Method that allows to obtain all the alert rules saved in a directory.
 
 	Parameters:
-	self -- Instance object.
+	self -- An instantiated object of the Rules class.
 	path_folder_rules -- Directory where all alert rules are stored.
+
+	Return:
+	list_alert_rules -- List with the names of the alert rules stored in the directory.
 	"""
 	def getAllAlertRules(self, path_folder_rules):
 		list_alert_rules = [os.path.basename(x) for x in glob.glob(path_folder_rules + '/*.yaml')]
