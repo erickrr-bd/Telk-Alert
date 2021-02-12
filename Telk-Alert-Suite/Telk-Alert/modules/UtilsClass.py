@@ -2,6 +2,7 @@ import os
 import sys
 import yaml
 import binascii
+from datetime import datetime
 from hashlib import sha256
 from base64 import b64decode
 from Crypto.Util.Padding import unpad
@@ -83,20 +84,59 @@ class Utils:
 		file_key.close()
 		return pass_key
 
-	def convertDateToMiliseconds(self, datetime):
+	"""
+	Method that converts a date to milliseconds.
+
+	Parameters:
+	self -- An instantiated object of the Utils class.
+	datetime -- Date to convert.
+
+	Return:
+	milliseconds -- Milliseconds obtained from the conversion.
+
+	Exceptions:
+	TypeError -- The TypeError is thrown when an operation or function is applied to an object of an inappropriate type.
+	"""
+	def convertDateToMilliseconds(self, datetime):
 		try:
-			miliseconds = int(datetime.strftime("%s")) * 1000
-			return miliseconds
+			milliseconds = int(datetime.strftime("%s")) * 1000
+			return milliseconds
 		except TypeError as exception:
 			self.logger.createLogAgent("Type Error: " + str(exception), 4)
 
-	def convertTimeToMiliseconds(self, unit_time, total_time):
+	"""
+	Method that converts a quantity expressed in a unit of time in milliseconds.
+
+	Parameters:
+	self -- An instantiated object of the Utils class.
+	unit_time -- Unit of time in which the quantity is expressed.
+	total_time -- Amount of time to convert.
+
+	Return:
+	Milliseconds obtained from the conversion.
+	"""
+	def convertTimeToMilliseconds(self, unit_time, total_time):
 		if unit_time == 'minutes':
 			return total_time * 60000
 		if unit_time == 'hours':
 			return total_time * 3600000
 		if unit_time == 'days':
 			return total_time * 86400000
+
+	"""
+	Method that converts a number of milliseconds into a date.
+
+	Parameters:
+	self -- An instantiated object of the Utils class.
+	milliseconds -- Milliseconds to convert.
+
+	Return:
+	date -- Date obtained from the conversion.
+	"""
+	def convertMillisecondsToDate(self, milliseconds):
+		date = datetime.fromtimestamp(milliseconds / 1000.0)
+		date = date.strftime('%Y-%m-%d %H:%M:%S')
+		return date
 
 	"""
 	Method that allows deciphering a text.

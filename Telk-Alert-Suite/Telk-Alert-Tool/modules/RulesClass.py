@@ -140,6 +140,9 @@ class Rules:
 	Parameters:
 	self -- Instance object.
 	form_dialog -- A FormClass class object.
+
+	Exceptions:
+	KeyError -- A Python KeyError exception is what is raised when you try to access a key that isn’t in a dictionary (dict). 
 	"""
 	def modifyAlertRule(self, form_dialog, name_alert_rule):
 		options_fields_update = [("Name", "Alert rule name", 0),

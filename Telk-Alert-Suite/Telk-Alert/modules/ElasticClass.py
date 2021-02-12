@@ -6,11 +6,13 @@ from elasticsearch_dsl import Q, Search
 sys.path.append('./modules')
 from UtilsClass import Utils
 from LoggerClass import Logger
+from TelegramClass import Telegram
 
 class Elastic:
 
 	utils = Utils()
 	logger = Logger()
+	telegram = Telegram()
 
 	def getConnectionElastic(self, telk_alert_conf):
 		if (not telk_alert_conf['use_ssl']) and (not telk_alert_conf['use_http_auth']):
@@ -92,9 +94,9 @@ class Elastic:
 			if conn_es.indices.exists(index = rule_yaml['index_name']):
 				if rule_yaml['type_alert'] == 'Frequency':
 					for unit_time in rule_yaml['time_search']:
-						time_search = self.utils.convertTimeToMiliseconds(unit_time, rule_yaml['time_search'][unit_time])
+						time_search = self.utils.convertTimeToMilliseconds(unit_time, rule_yaml['time_search'][unit_time])
 					for unit_time in rule_yaml['time_back']:
-						time_back = self.utils.convertTimeToMiliseconds(unit_time, rule_yaml['time_back'][unit_time])
+						time_back = self.utils.convertTimeToMilliseconds(unit_time, rule_yaml['time_back'][unit_time])
 					query_string_rule = rule_yaml['filter_search'][0]['query_string']['query']
 					search_rule = Search(index = rule_yaml['index_name']).using(conn_es)
 					search_rule = search_rule[0:int(10000)]
@@ -102,11 +104,13 @@ class Elastic:
 					while True:
 						if not rule_yaml['restrict_by_host']:
 							if rule_yaml['use_restriction_fields']:
-								result_search = search_rule.query(query).query('range', ** { '@timestamp' : { 'gte' : self.utils.convertDateToMiliseconds(datetime.now()) - time_back, 'lte' : self.utils.convertDateToMiliseconds(datetime.now()) } }).source(rule_yaml['fields'])
+								result_search = search_rule.query(query).query('range', ** { '@timestamp' : { 'gte' : self.utils.convertDateToMilliseconds(datetime.now()) - time_back, 'lte' : self.utils.convertDateToMilliseconds(datetime.now()) } }).source(rule_yaml['fields'])
 							else:
-								result_search = search_rule.query(query).query('range', ** { '@timestamp' : { 'gte' : self.utils.convertDateToMiliseconds(datetime.now()) - time_back, 'lte' : self.utils.convertDateToMiliseconds(datetime.now()) } })
+								result_search = search_rule.query(query).query('range', ** { '@timestamp' : { 'gte' : self.utils.convertDateToMilliseconds(datetime.now()) - time_back, 'lte' : self.utils.convertDateToMilliseconds(datetime.now()) } })
+							message_telegram = self.telegram.getTelegramHeader(rule_yaml, time_back)
 							for hit in result_search:
-								print(hit)
+								message_telegram += self.telegram.getTelegramMessage(hit)
+							print(message_telegram)
 						time.sleep(time_search)
 		except KeyError as exception:
 			print("Key Error: " + str(exception))
