@@ -33,6 +33,7 @@ class Rules:
 		print("License: GPLv3\n")
 		try:
 			telk_alert_conf = self.utils.readFileYaml(self.utils.getPathTalert('conf') + '/es_conf.yaml')
+			conn_es = self.elastic.getConnectionElastic(telk_alert_conf)
 			path_rules_folder = self.utils.getPathTalert(telk_alert_conf['rules_folder'])
 			list_alert_rules = self.getAllAlertRules(path_rules_folder)
 			print(str(len(list_alert_rules)) + " alert rule(s) found in " + path_rules_folder + '\n')
@@ -40,7 +41,7 @@ class Rules:
 				for alert_rule in list_alert_rules:
 					rule_yaml = self.utils.readFileYaml(path_rules_folder + '/' + alert_rule)
 					print("Rule " + alert_rule + ' loaded and executed\n')
-					thread_rule = threading.Thread(target = self.createRule, args = (rule_yaml, telk_alert_conf, )).start()
+					thread_rule = threading.Thread(target = self.createRule, args = (rule_yaml, telk_alert_conf, conn_es,)).start()
 			else:
 				print("No alert rule found in directory.")
 				self.logger.createLogTelkAlert("No alert rule found in directory.", 3)
@@ -50,9 +51,8 @@ class Rules:
 			sys.exit(1)
 
 
-	def createRule(self, rule_yaml, telk_alert_conf):
-		conn_es = self.elastic.getConnectionElastic(telk_alert_conf)
-		self.elastic.searchRuleElastic(conn_es, rule_yaml)
+	def createRule(self, rule_yaml, telk_alert_conf, conn_es):
+		self.elastic.searchRuleElastic(conn_es, rule_yaml, telk_alert_conf)
 
 	"""
 	Method that allows to obtain all the alert rules saved in a directory.

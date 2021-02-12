@@ -77,12 +77,20 @@ class Utils:
 
 	Return:
 	pass_key -- Passphrase in a character string.
+
+	Exceptions:
+	FileNotFoundError -- his is an exception in python and it comes when a file does not exist and we want to use it. 
 	"""
 	def getPassphrase(self):
-		file_key = open(self.getPathTalert('conf') + '/key','r')
-		pass_key = file_key.read()
-		file_key.close()
-		return pass_key
+		try:
+			file_key = open(self.getPathTalert('conf') + '/key','r')
+			pass_key = file_key.read()
+			file_key.close()
+			return pass_key
+		except FileNotFoundError as exceptions:
+			print("File not found...\n\nFor more information see the application logs.")
+			self.logger.createLogTelkAlert(str(exceptions), 4)
+			sys.exit(1)
 
 	"""
 	Method that converts a date to milliseconds.
@@ -102,7 +110,7 @@ class Utils:
 			milliseconds = int(datetime.strftime("%s")) * 1000
 			return milliseconds
 		except TypeError as exception:
-			self.logger.createLogAgent("Type Error: " + str(exception), 4)
+			self.logger.createLogTelkAlert("Type Error: " + str(exception), 4)
 
 	"""
 	Method that converts a quantity expressed in a unit of time in milliseconds.
@@ -147,6 +155,9 @@ class Utils:
 
 	Return:
 	Character string with decrypted text.
+
+	Exceptions:
+	binascii.Error -- Is raised if were incorrectly padded or if there are non-alphabet characters present in the string. 
 	"""
 	def decryptAES(self, text_encrypt):
 		try:
@@ -156,5 +167,6 @@ class Utils:
 			aes = AES.new(key, AES.MODE_CBC, IV)
 			return unpad(aes.decrypt(text_encrypt[AES.block_size:]), AES.block_size)
 		except binascii.Error as exception:
-			self.logger.createLogAgent("Decrypt Error: " + str(exception), 4)
+			print("Decryption failed.\n\nFor more information see the application logs.")
+			self.logger.createLogTelkAlert("Decrypt Error: " + str(exception), 4)
 			sys.exit(1)

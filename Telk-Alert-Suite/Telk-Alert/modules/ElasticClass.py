@@ -77,7 +77,7 @@ class Elastic:
 											ssl_show_warn=False)
 					print("Cluster name: " + conn_es.info()['cluster_name'])
 					if conn_es.ping():
-						print("\nConnection established to: " + telk_alert_conf['es_host'] + ':' + str(telk_alert_conf['es_port']))
+						print("\nConnection established to: " + telk_alert_conf['es_host'] + ':' + str(telk_alert_conf['es_port']) + '\n')
 					return conn_es
 				except exceptions.ConnectionError as exception:
 					print("\nFailed connection to: " + telk_alert_conf['es_host'] + ':' + str(telk_alert_conf['es_port']))
@@ -89,17 +89,24 @@ class Elastic:
 					sys.exit(1)
 
 
-	def searchRuleElastic(self, conn_es, rule_yaml):
+	def searchRuleElastic(self, conn_es, rule_yaml, telk_alert_conf):
 		try:
 			if conn_es.indices.exists(index = rule_yaml['index_name']):
 				if rule_yaml['type_alert'] == 'Frequency':
+					flag_email = 0
+					flag_telegram = 0
+					for i in range(len(rule_yaml['alert'])):
+						if rule_yaml['alert'][i] == "email":
+							flag_email = 1
+						if rule_yaml['alert'][i] == "telegram":
+							flag_telegram = 1
 					for unit_time in rule_yaml['time_search']:
 						time_search = self.utils.convertTimeToMilliseconds(unit_time, rule_yaml['time_search'][unit_time])
 					for unit_time in rule_yaml['time_back']:
 						time_back = self.utils.convertTimeToMilliseconds(unit_time, rule_yaml['time_back'][unit_time])
 					query_string_rule = rule_yaml['filter_search'][0]['query_string']['query']
 					search_rule = Search(index = rule_yaml['index_name']).using(conn_es)
-					search_rule = search_rule[0:int(10000)]
+					search_rule = search_rule[0:int(telk_alert_conf['max_hits'])]
 					query = Q("query_string", query = query_string_rule)
 					while True:
 						if not rule_yaml['restrict_by_host']:
@@ -107,10 +114,26 @@ class Elastic:
 								result_search = search_rule.query(query).query('range', ** { '@timestamp' : { 'gte' : self.utils.convertDateToMilliseconds(datetime.now()) - time_back, 'lte' : self.utils.convertDateToMilliseconds(datetime.now()) } }).source(rule_yaml['fields'])
 							else:
 								result_search = search_rule.query(query).query('range', ** { '@timestamp' : { 'gte' : self.utils.convertDateToMilliseconds(datetime.now()) - time_back, 'lte' : self.utils.convertDateToMilliseconds(datetime.now()) } })
-							message_telegram = self.telegram.getTelegramHeader(rule_yaml, time_back)
-							for hit in result_search:
-								message_telegram += self.telegram.getTelegramMessage(hit)
-							print(message_telegram)
+							if rule_yaml['type_alert_send'] == "multiple":
+								for hit in result_search:
+									if flag_telegram == 1:
+										message_telegram = self.telegram.getTelegramHeader(rule_yaml, time_back)
+										message_telegram += self.telegram.getTelegramMessage(hit)
+										telegram_code = self.telegram.sendTelegramAlert(self.utils.decryptAES(rule_yaml['telegram_chat_id']).decode('utf-8'), self.utils.decryptAES(rule_yaml['telegram_bot_token']).decode('utf-8'), message_telegram)
+										self.telegram.getStatusByTelegramCode(telegram_code)
+							if rule_yaml['type_alert_send'] == "only":
+								cont = 0
+								message_telegram = self.telegram.getTelegramHeader(rule_yaml, time_back)
+								for hit in result_search:
+									if cont == 0:
+										message_telegram += self.telegram.getTelegramMessage(hit)
+									cont += 1
+								if cont >= rule_yaml["num_events"]:
+									if flag_telegram == 1:
+										message_telegram += self.telegram.getTotalEventsFound(cont)
+										print(message_telegram)
+										telegram_code = self.telegram.sendTelegramAlert(self.utils.decryptAES(rule_yaml['telegram_chat_id']).decode('utf-8'), self.utils.decryptAES(rule_yaml['telegram_bot_token']).decode('utf-8'), message_telegram)
+										self.telegram.getStatusByTelegramCode(telegram_code)
 						time.sleep(time_search)
 		except KeyError as exception:
 			print("Key Error: " + str(exception))

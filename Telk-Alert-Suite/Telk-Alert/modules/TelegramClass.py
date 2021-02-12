@@ -30,8 +30,11 @@ class Telegram:
 	telegram_chat_id -- Telegram channel identifier to which the letter will be sent.
 	telegram_bot_token -- Token of the Telegram bot that is the administrator of the Telegram channel to which the alerts will be sent.
 	message -- Message to be sent to the Telegram channel.
+
+	Return:
+	HTTP code of the request to Telegram.
 	"""
-	def sendTelegramAgent(self, telegram_chat_id, telegram_bot_token, message):
+	def sendTelegramAlert(self, telegram_chat_id, telegram_bot_token, message):
 		c = pycurl.Curl()
 		url = 'https://api.telegram.org/bot' + str(telegram_bot_token) + '/sendMessage'
 		c.setopt(c.URL, url)
@@ -71,11 +74,11 @@ class Telegram:
 	Method that allows generating the message that will be sent to the Telegram channel.
 
 	Parameters:
-	self -- Instance object.
-	hit -- Current status of the Telk-Alert service.
+	self -- An instantiated object of the Telegram class.
+	hit -- Object that contains all the information found in the ElasticSearch search.
 
 	Return: 
-	message -- 
+	message -- Message with the parsed data, which will be sent to Telegram.
 	"""
 	def getTelegramMessage(self, hit):
 		message = "FOUND EVENT: " + '\n\n'
@@ -87,8 +90,43 @@ class Telegram:
 					if (type(hit[str(hits)][str(hits_two)]) is str) or (type(hit[str(hits)][str(hits_two)]) is int):
 						message += u'\u2611\uFE0F' + " " + hits + "." + hits_two + " = " + str(hit[str(hits)][str(hits_two)]) + '\n'
 					else:
-						for hits_three in hit[str(hits)[str(hits_two)]]:
+						for hits_three in hit[str(hits)][str(hits_two)]:
 							if (type(hit[str(hits)][str(hits_two)][str(hits_three)]) is str) or (type(hit[str(hits)][str(hits_two)][str(hits_three)]) is int):
 								message += u'\u2611\uFE0F' + " " + hits + "." + hits_two + "." + hits_three + " = " + str(hit[str(hits)][str(hits_two)][str(hits_three)]) + '\n'
 		message += "\n\n"
 		return message
+
+	"""
+	Method that generates the message with the total of events found.
+
+	Parameters:
+	self -- An instantiated object of the Telegram class.
+	total_events -- Total events found in the search.
+
+	Return: 
+	message_total_events -- Message with the total of events.
+	"""
+	def getTotalEventsFound(self, total_events):
+		message_total_events = "TOTAL EVENTS FOUND: " + str(total_events)
+		return message_total_events
+
+	"""
+	Method that prints the status of the alert delivery based on the response HTTP code.
+
+	Parameters:
+	self -- An instantiated object of the Telegram class.
+	telegram_code -- HTTP code in response to the request made to Telegram.
+	"""
+	def getStatusByTelegramCode(self, telegram_code):
+		if telegram_code == 200:
+			print("\nAlert sent to Telegram.")
+			self.logger.createLogTelkAlert("Telegram alert sent.", 2)
+		if telegram_code == 400:
+			print("Telegram alert not sent. Bad request.")
+			self.logger.createLogTelkAlert("Telegram alert not sent. Bad request.", 4)
+		if telegram_code == 401:
+			print("Telegram alert not sent. Unauthorized.")
+			self.logger.createLogTelkAlert("Telegram alert not sent. Unauthorized.", 4)
+		if telegram_code == 404:
+			print("Telegram alert not sent. Not found.")
+			self.logger.createLogTelkAlert("Telegram alert not sent. Not found.", 4)
