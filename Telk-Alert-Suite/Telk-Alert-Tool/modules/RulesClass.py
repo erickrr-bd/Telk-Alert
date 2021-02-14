@@ -103,6 +103,8 @@ class Rules:
 			number_events_hostname = form_dialog.getDataNumber("Enter the total number of events per hostname to which the alert will be sent:", "3")
 			data_rule.append(True)
 			data_rule.append(number_events_hostname)
+			field_hostname = form_dialog.getDataInputText("Enter the name of the field that contains the hostname:", "host.hostname")
+			data_rule.append(field_hostname)
 		else:
 			data_rule.append(False)
 		opt_alert_send = form_dialog.getDataCheckList("Select one or more options:", self.options_send_alert, "Alert Sending Platforms")
@@ -547,17 +549,17 @@ class Rules:
 			d_rule.update(fields_json)
 			restrict_by_host = data_rule[14]
 			if restrict_by_host == True:
-				number_events_host = { 'number_events_host' : int(data_rule[15]) }
+				number_events_host = { 'number_events_host' : int(data_rule[15]), 'field_hostname' : str(data_rule[16]) }
 				d_rule.update(number_events_host)
-				last_index = 15
+				last_index = 16
 			else:
 				last_index = 14
 		else:
 			restrict_by_host = data_rule[13]
 			if restrict_by_host == True:
-				number_events_host = { 'number_events_host' : int(data_rule[14]) }
+				number_events_host = { 'number_events_host' : int(data_rule[14]), 'field_hostname' : str(data_rule[15]) }
 				d_rule.update(number_events_host)
-				last_index = 14
+				last_index = 15
 			else:
 				last_index = 13
 		restrict_host_json = { 'restrict_by_host' : restrict_by_host }

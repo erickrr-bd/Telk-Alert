@@ -113,15 +113,6 @@ class Elastic:
 					search_rule = Search(index = rule_yaml['index_name']).using(conn_es)
 					search_rule = search_rule[0:int(telk_alert_conf['max_hits'])]
 					query = Q("query_string", query = query_string_rule)
-					
-					a = A('terms', field = 'host.hostname')
-					search_aux = search_rule.query(query).query('range', ** { '@timestamp' : { 'gte' : self.utils.convertDateToMilliseconds(datetime.now()) - time_back, 'lte' : self.utils.convertDateToMilliseconds(datetime.now()) } }).source(fields = None)
-					search_aux.aggs.bucket('events', a)
-					response = search_aux.execute()
-					for tag in response.aggregations.events.buckets:
-						print(tag.key, tag.doc_count)
-
-					"""
 					while True:
 						if not rule_yaml['restrict_by_host']:
 							total_events = 0
@@ -138,8 +129,8 @@ class Elastic:
 										if flag_telegram == 1:
 											message_telegram = self.telegram.getTelegramHeader(rule_yaml, time_back)
 											message_telegram += self.telegram.getTelegramMessage(hit)
-											telegram_code = self.telegram.sendTelegramAlert(self.utils.decryptAES(rule_yaml['telegram_chat_id']).decode('utf-8'), self.utils.decryptAES(rule_yaml['telegram_bot_token']).decode('utf-8'), message_telegram)
-											self.telegram.getStatusByTelegramCode(telegram_code)
+											#telegram_code = self.telegram.sendTelegramAlert(self.utils.decryptAES(rule_yaml['telegram_chat_id']).decode('utf-8'), self.utils.decryptAES(rule_yaml['telegram_bot_token']).decode('utf-8'), message_telegram)
+											#self.telegram.getStatusByTelegramCode(telegram_code)
 								if rule_yaml['type_alert_send'] == "only":
 									message_telegram = self.telegram.getTelegramHeader(rule_yaml, time_back)
 									for hit in result_search:
@@ -148,12 +139,23 @@ class Elastic:
 									if flag_telegram == 1:
 										message_telegram += self.telegram.getTotalEventsFound(total_events)
 										print(message_telegram)
-										telegram_code = self.telegram.sendTelegramAlert(self.utils.decryptAES(rule_yaml['telegram_chat_id']).decode('utf-8'), self.utils.decryptAES(rule_yaml['telegram_bot_token']).decode('utf-8'), message_telegram)
-										self.telegram.getStatusByTelegramCode(telegram_code)
+										#telegram_code = self.telegram.sendTelegramAlert(self.utils.decryptAES(rule_yaml['telegram_chat_id']).decode('utf-8'), self.utils.decryptAES(rule_yaml['telegram_bot_token']).decode('utf-8'), message_telegram)
+										#self.telegram.getStatusByTelegramCode(telegram_code)
 						else:
-							print("Otro")
+							a = A('terms', field = rule_yaml['field_hostname'])
+							search_aux = search_rule.query(query).query('range', ** { '@timestamp' : { 'gte' : self.utils.convertDateToMilliseconds(datetime.now()) - time_back, 'lte' : self.utils.convertDateToMilliseconds(datetime.now()) } }).source(fields = None)
+							search_aux.aggs.bucket('events', a)
+							result_search = search_aux.execute()
+							for tag in result_search.aggregations.events.buckets:
+								print(tag.key, tag.doc_count)
+								if int(tag.doc_count) >= rule_yaml['number_events_host']:
+									for hit in result_search:
+										if flag_telegram == 1:
+											message_telegram = self.telegram.getTelegramHeader(rule_yaml, time_back)
+											message_telegram += self.telegram.getTelegramMessage(hit)
+											telegram_code = self.telegram.sendTelegramAlert(self.utils.decryptAES(rule_yaml['telegram_chat_id']).decode('utf-8'), self.utils.decryptAES(rule_yaml['telegram_bot_token']).decode('utf-8'), message_telegram)
+											self.telegram.getStatusByTelegramCode(telegram_code)
 						time.sleep(time_search)
-						"""
 		except KeyError as exception:
 			print("Key Error: " + str(exception))
 			sys.exit(1)
