@@ -88,7 +88,7 @@ class Utils:
 			file_key.close()
 			return pass_key
 		except FileNotFoundError as exceptions:
-			print("File not found...\n\nFor more information see the application logs.")
+			print("File not found.\n\nFor more information see the application logs.")
 			self.logger.createLogTelkAlert(str(exceptions), 4)
 			sys.exit(1)
 

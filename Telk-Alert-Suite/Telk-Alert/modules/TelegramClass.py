@@ -3,6 +3,7 @@ import time
 import pycurl
 from datetime import datetime
 from urllib.parse import urlencode
+from elasticsearch_dsl import utils
 sys.path.append('./modules')
 from UtilsClass import Utils
 from LoggerClass import Logger
@@ -35,6 +36,8 @@ class Telegram:
 	HTTP code of the request to Telegram.
 	"""
 	def sendTelegramAlert(self, telegram_chat_id, telegram_bot_token, message):
+		if len(message) > 4096:
+			message = "The size of the message in Telegram (4096) has been exceeded. Overall size: " + str(len(message))
 		c = pycurl.Curl()
 		url = 'https://api.telegram.org/bot' + str(telegram_bot_token) + '/sendMessage'
 		c.setopt(c.URL, url)
@@ -83,18 +86,22 @@ class Telegram:
 	def getTelegramMessage(self, hit):
 		message = "FOUND EVENT: " + '\n\n'
 		for hits in hit:
-			if (type(hit[str(hits)]) is str) or (type(hit[str(hits)]) is int):
+			if not (type(hit[str(hits)]) is utils.AttrDict):
 				message += u'\u2611\uFE0F' + " " + hits + " = " + str(hit[str(hits)]) + '\n'
 			else:
 				for hits_two in hit[str(hits)]:
-					if (type(hit[str(hits)][str(hits_two)]) is str) or (type(hit[str(hits)][str(hits_two)]) is int):
+					if not (type(hit[str(hits)][str(hits_two)]) is utils.AttrDict):
 						message += u'\u2611\uFE0F' + " " + hits + "." + hits_two + " = " + str(hit[str(hits)][str(hits_two)]) + '\n'
 					else:
 						for hits_three in hit[str(hits)][str(hits_two)]:
-							if (type(hit[str(hits)][str(hits_two)][str(hits_three)]) is str) or (type(hit[str(hits)][str(hits_two)][str(hits_three)]) is int):
+							if not (type(hit[str(hits)][str(hits_two)][str(hits_three)]) is utils.AttrDict):
 								message += u'\u2611\uFE0F' + " " + hits + "." + hits_two + "." + hits_three + " = " + str(hit[str(hits)][str(hits_two)][str(hits_three)]) + '\n'
+							else:
+								for hits_four in hit[str(hits)][str(hits_two)][str(hits_three)]:
+									if not (type(hit[str(hits)][str(hits_two)][str(hits_three)][str(hits_four)]) is utils.AttrDict):
+										message += u'\u2611\uFE0F' + " " + hits + "." + hits_two + "." + hits_three + "." + hits_four + " = " + str(hit[str(hits)][str(hits_two)][str(hits_three)]) + '\n'
 		message += "\n\n"
-		return message
+		return message								
 
 	"""
 	Method that generates the message with the total of events found.

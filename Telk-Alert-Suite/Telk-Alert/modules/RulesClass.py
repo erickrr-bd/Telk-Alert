@@ -28,14 +28,17 @@ class Rules:
 	elastic = Elastic()
 
 	def readAllAlertRules(self):
-		print("Telk-Alert started ...\n")
+		print("Telk-Alert v3.0\n")
+		print("@2021 Tekium. All rights reserved.\n")
 		print("Author: Erick Rodriguez erickrr.tbd93@gmail.com\n")
 		print("License: GPLv3\n")
+		print("\nTelk-Alert started...")
 		try:
 			telk_alert_conf = self.utils.readFileYaml(self.utils.getPathTalert('conf') + '/es_conf.yaml')
 			conn_es = self.elastic.getConnectionElastic(telk_alert_conf)
 			path_rules_folder = self.utils.getPathTalert(telk_alert_conf['rules_folder'])
 			list_alert_rules = self.getAllAlertRules(path_rules_folder)
+			print("ALERT RULES DATA\n")
 			print(str(len(list_alert_rules)) + " alert rule(s) found in " + path_rules_folder + '\n')
 			if len(list_alert_rules) != 0:
 				for alert_rule in list_alert_rules:
