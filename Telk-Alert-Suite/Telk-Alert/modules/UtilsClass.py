@@ -1,6 +1,7 @@
 import os
 import sys
 import yaml
+import time
 import binascii
 from datetime import datetime
 from hashlib import sha256
@@ -50,8 +51,24 @@ class Utils:
 				data_yaml = yaml.safe_load(file)
 			return data_yaml
 		except IOError as exception:
+			print("Yaml file not found. For more information see the application logs.")
 			self.logger.createLogAgent("File Error: " + str(exception), 4)
 			sys.exit(1)
+
+	"""
+	
+	"""
+	def readTemplateEmail(self, json_message, name_rule):
+		try:
+			template_email = open(self.getPathTalert('modules/template/temp_email.html'), 'r')
+			message = template_email.read()
+			message = message.replace('nameRules', name_rule)
+			message = message.replace('date', time.strftime("%c"))
+			message = message.replace('esjson', json_message)
+			template_email.close()
+		except IOError as exception:
+			print("Email template not found. For more information see the application logs.")
+			self.logger.createLogAgent("File Error: " + str(exception), 4)
 
 	"""
 	Method that allows creating the path for a Telk-Alert directory.

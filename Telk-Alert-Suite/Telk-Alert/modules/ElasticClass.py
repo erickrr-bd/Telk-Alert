@@ -114,48 +114,74 @@ class Elastic:
 					search_rule = search_rule[0:int(telk_alert_conf['max_hits'])]
 					query = Q("query_string", query = query_string_rule)
 					while True:
-						if not rule_yaml['restrict_by_host']:
-							total_events = 0
-							if rule_yaml['use_restriction_fields']:
-								result_search = search_rule.query(query).query('range', ** { '@timestamp' : { 'gte' : self.utils.convertDateToMilliseconds(datetime.now()) - time_back, 'lte' : self.utils.convertDateToMilliseconds(datetime.now()) } }).source(rule_yaml['fields'])
-							else:
-								search_aux = search_rule.query(query).query('range', ** { '@timestamp' : { 'gte' : self.utils.convertDateToMilliseconds(datetime.now()) - time_back, 'lte' : self.utils.convertDateToMilliseconds(datetime.now()) } }).source(fields = None)
-								result_search = search_aux.execute()
-							for hit in result_search:
-								total_events += 1
-							if total_events >= rule_yaml["num_events"]:
-								if rule_yaml['type_alert_send'] == "multiple":
-									for hit in result_search:
-										if flag_telegram == 1:
-											message_telegram = self.telegram.getTelegramHeader(rule_yaml, time_back)
-											message_telegram += self.telegram.getTelegramMessage(hit)
-											#telegram_code = self.telegram.sendTelegramAlert(self.utils.decryptAES(rule_yaml['telegram_chat_id']).decode('utf-8'), self.utils.decryptAES(rule_yaml['telegram_bot_token']).decode('utf-8'), message_telegram)
-											#self.telegram.getStatusByTelegramCode(telegram_code)
-								if rule_yaml['type_alert_send'] == "only":
-									message_telegram = self.telegram.getTelegramHeader(rule_yaml, time_back)
-									for hit in result_search:
-										message_telegram += self.telegram.getTelegramMessage(hit)
-										break
-									if flag_telegram == 1:
-										message_telegram += self.telegram.getTotalEventsFound(total_events)
-										print(message_telegram)
-										#telegram_code = self.telegram.sendTelegramAlert(self.utils.decryptAES(rule_yaml['telegram_chat_id']).decode('utf-8'), self.utils.decryptAES(rule_yaml['telegram_bot_token']).decode('utf-8'), message_telegram)
-										#self.telegram.getStatusByTelegramCode(telegram_code)
+						if rule_yaml['use_restriction_fields']:
+							search_aux = search_rule.query(query).query('range', ** { '@timestamp' : { 'gte' : self.utils.convertDateToMilliseconds(datetime.now()) - time_back, 'lte' : self.utils.convertDateToMilliseconds(datetime.now()) } }).source(rule_yaml['fields'])
 						else:
+							search_aux = search_rule.query(query).query('range', ** { '@timestamp' : { 'gte' : self.utils.convertDateToMilliseconds(datetime.now()) - time_back, 'lte' : self.utils.convertDateToMilliseconds(datetime.now()) } }).source(fields = None)
+						if rule_yaml['restrict_by_host']:
 							a = A('terms', field = rule_yaml['field_hostname'])
 							search_aux = search_rule.query(query).query('range', ** { '@timestamp' : { 'gte' : self.utils.convertDateToMilliseconds(datetime.now()) - time_back, 'lte' : self.utils.convertDateToMilliseconds(datetime.now()) } }).source(fields = None)
 							search_aux.aggs.bucket('events', a)
-							result_search = search_aux.execute()
-							for tag in result_search.aggregations.events.buckets:
-								print(tag.key, tag.doc_count)
-								if int(tag.doc_count) >= rule_yaml['number_events_host']:
-									for hit in result_search:
-										if flag_telegram == 1:
-											message_telegram = self.telegram.getTelegramHeader(rule_yaml, time_back)
-											message_telegram += self.telegram.getTelegramMessage(hit)
-											telegram_code = self.telegram.sendTelegramAlert(self.utils.decryptAES(rule_yaml['telegram_chat_id']).decode('utf-8'), self.utils.decryptAES(rule_yaml['telegram_bot_token']).decode('utf-8'), message_telegram)
-											self.telegram.getStatusByTelegramCode(telegram_code)
+						result_search = search_aux.execute()
+						total_events = 0
+						for hit in result_search:
+								total_events += 1
+						if total_events >= rule_yaml['num_events']:
+							if rule_yaml['restrict_by_host']:
+								for tag in result_search.aggregations.events.buckets:
+									if int(tag.doc_count) >= rule_yaml['number_events_host']:
+										if rule_yaml['type_alert_send'] == "multiple":
+											self.sendMultipleAlerts(result_search, rule_yaml, flag_telegram, time_back)
+										if rule_yaml['type_alert_send'] == "only":
+											self.sendOnlyAlert(result_search, rule_yaml, flag_telegram, time_back, tag.doc_count)
+							else:
+								if rule_yaml['type_alert_send'] == "multiple":
+									self.sendMultipleAlerts(result_search, rule_yaml, flag_telegram, time_back)
+								if rule_yaml['type_alert_send'] == "only":
+									self.sendOnlyAlert(result_search, rule_yaml, flag_telegram, time_back, total_events)
 						time.sleep(time_search)
 		except KeyError as exception:
-			print("Key Error: " + str(exception))
+			print("Key Error: " + str(exception) + '. For more information see the application logs.')
+			self.logger.createLogTelkAlert("Key error: " + str(exception), 4)
 			sys.exit(1)
+
+	"""
+	Method that performs the multiple sending of alerts.
+
+	Parameters:
+	self --  An instantiated object of the Elastic class.
+	result_search -- An object that contains the results of the ElasticSearch search.
+	rule_yaml -- List containing all the data of the alert rule.
+	flag_telegram -- Flag that indicates if the alert should be sent to telegram.
+	time_back -- Backward time in milliseconds.
+	"""
+	def sendMultipleAlerts(self, result_search, rule_yaml, flag_telegram, time_back):
+		for hit in result_search:
+			if flag_telegram == 1:
+				message_telegram = self.telegram.getTelegramHeader(rule_yaml, time_back)
+				message_telegram += self.telegram.getTelegramMessage(hit)
+				print(message_telegram)
+				telegram_code = self.telegram.sendTelegramAlert(self.utils.decryptAES(rule_yaml['telegram_chat_id']).decode('utf-8'), self.utils.decryptAES(rule_yaml['telegram_bot_token']).decode('utf-8'), message_telegram)
+				self.telegram.getStatusByTelegramCode(telegram_code)
+
+	"""
+	Method that performs the unique sending of alerts.
+
+	Parameters:
+	self --  An instantiated object of the Elastic class.
+	result_search -- An object that contains the results of the ElasticSearch search.
+	rule_yaml -- List containing all the data of the alert rule.
+	flag_telegram -- Flag that indicates if the alert should be sent to telegram.
+	time_back -- Backward time in milliseconds.
+	total_events -- Total events found in the search.
+	"""
+	def sendOnlyAlert(self, result_search, rule_yaml, flag_telegram, time_back, total_events):
+		message_telegram = self.telegram.getTelegramHeader(rule_yaml, time_back)
+		for hit in result_search:
+			message_telegram += self.telegram.getTelegramMessage(hit)
+			break
+		if flag_telegram == 1:
+			message_telegram += self.telegram.getTotalEventsFound(total_events)
+			print(message_telegram)
+			telegram_code = self.telegram.sendTelegramAlert(self.utils.decryptAES(rule_yaml['telegram_chat_id']).decode('utf-8'), self.utils.decryptAES(rule_yaml['telegram_bot_token']).decode('utf-8'), message_telegram)
+			self.telegram.getStatusByTelegramCode(telegram_code)
