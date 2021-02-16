@@ -11,6 +11,9 @@ from Crypto.Cipher import AES
 sys.path.append('./modules')
 from LoggerClass import Logger
 
+"""
+Class that allows you to manage the utilities that the application will use for its operation.
+"""
 class Utils:
 
 	"""
@@ -52,23 +55,35 @@ class Utils:
 			return data_yaml
 		except IOError as exception:
 			print("Yaml file not found. For more information see the application logs.")
-			self.logger.createLogAgent("File Error: " + str(exception), 4)
+			self.logger.createLogTelkAlert("File Error: " + str(exception), 4)
 			sys.exit(1)
 
 	"""
-	
+	Method that reads the HTML template to send the alert via email.
+
+	Parameters:
+	self -- An instantiated object of the Utils class.
+	json_message -- String that contains all the data obtained during the search.
+	name_rule -- Name of the alert rule.
+
+	Return:
+	message -- 
+
+	Exceptions:
+	IOError -- It is an error raised when an input/output operation fails.
 	"""
 	def readTemplateEmail(self, json_message, name_rule):
 		try:
 			template_email = open(self.getPathTalert('modules/template/temp_email.html'), 'r')
 			message = template_email.read()
-			message = message.replace('nameRules', name_rule)
+			message = message.replace('nameRule', name_rule)
 			message = message.replace('date', time.strftime("%c"))
 			message = message.replace('esjson', json_message)
 			template_email.close()
+			return message
 		except IOError as exception:
 			print("Email template not found. For more information see the application logs.")
-			self.logger.createLogAgent("File Error: " + str(exception), 4)
+			self.logger.createLogTelkAlert("File Error: " + str(exception), 4)
 
 	"""
 	Method that allows creating the path for a Telk-Alert directory.
@@ -105,7 +120,7 @@ class Utils:
 			file_key.close()
 			return pass_key
 		except FileNotFoundError as exceptions:
-			print("File not found.\n\nFor more information see the application logs.")
+			print("Key File not found. For more information see the application logs.")
 			self.logger.createLogTelkAlert(str(exceptions), 4)
 			sys.exit(1)
 
@@ -127,6 +142,7 @@ class Utils:
 			milliseconds = int(datetime.strftime("%s")) * 1000
 			return milliseconds
 		except TypeError as exception:
+			print("Type Error:" + str(exception) + ". For more information see the application logs.")
 			self.logger.createLogTelkAlert("Type Error: " + str(exception), 4)
 
 	"""
@@ -184,6 +200,6 @@ class Utils:
 			aes = AES.new(key, AES.MODE_CBC, IV)
 			return unpad(aes.decrypt(text_encrypt[AES.block_size:]), AES.block_size)
 		except binascii.Error as exception:
-			print("Decryption failed.\n\nFor more information see the application logs.")
+			print("Decryption failed. For more information see the application logs.")
 			self.logger.createLogTelkAlert("Decrypt Error: " + str(exception), 4)
 			sys.exit(1)

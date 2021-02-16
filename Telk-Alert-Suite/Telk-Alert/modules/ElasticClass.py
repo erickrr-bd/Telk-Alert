@@ -7,6 +7,7 @@ sys.path.append('./modules')
 from UtilsClass import Utils
 from LoggerClass import Logger
 from TelegramClass import Telegram
+from EmailClass import Email
 
 """
 Class that allows you to manage everything related to ElasticSearch.
@@ -27,6 +28,11 @@ class Elastic:
 	Telegram type object.
 	"""
 	telegram = Telegram()
+
+	"""
+	Telegram type object.
+	"""
+	email = Email()
 
 	"""
 	Method that establishes the connection of Telk-Alert with ElasticSearch.
@@ -78,6 +84,7 @@ class Elastic:
 			print("ElasticSearch Version: " + conn_es.info()['version']['number'])
 			if conn_es.ping():
 				print("Connection established to: " + telk_alert_conf['es_host'] + ':' + str(telk_alert_conf['es_port']) + '\n')
+				self.logger.createLogTelkAlert("Connection established to: " + telk_alert_conf['es_host'] + ':' + str(telk_alert_conf['es_port']), 2)
 				return conn_es
 		except KeyError as exception:
 			print("\nKey error: " + str(exception) + '. For more information see the application logs.')
@@ -93,6 +100,15 @@ class Elastic:
 			sys.exit(1)
 	
 	"""
+
+	Parameters:
+	self -- An instantiated object of the Elastic class.
+	conn_es -- Object that contains the connection to ElasticSearch.
+	rule_yaml -- List containing all the data of the alert rule.
+	telk_alert_conf -- List containing all the information in the Telk-Alert configuration file.
+
+	Exceptions:
+	KeyError -- A Python KeyError exception is what is raised when you try to access a key that isn’t in a dictionary (dict). 
 	"""
 	def searchRuleElastic(self, conn_es, rule_yaml, telk_alert_conf):
 		try:
@@ -127,19 +143,25 @@ class Elastic:
 						for hit in result_search:
 								total_events += 1
 						if total_events >= rule_yaml['num_events']:
+							print(str(total_events) + " events found in the rule: " + rule_yaml['name_rule'])
+							self.logger.createLogTelkAlert(str(total_events) + " events found in the rule: " + rule_yaml['name_rule'], 2)
 							if rule_yaml['restrict_by_host']:
 								for tag in result_search.aggregations.events.buckets:
 									if int(tag.doc_count) >= rule_yaml['number_events_host']:
+										print(str(tag.doc_count) + " events found in the rule: " + rule_yaml['name_rule'])
+										self.logger.createLogTelkAlert(str(tag.doc_count) + " events found in the rule: " + rule_yaml['name_rule'], 2)
 										if rule_yaml['type_alert_send'] == "multiple":
-											self.sendMultipleAlerts(result_search, rule_yaml, flag_telegram, time_back)
+											self.sendMultipleAlerts(result_search, rule_yaml, flag_telegram, flag_email, time_back)
 										if rule_yaml['type_alert_send'] == "only":
-											self.sendOnlyAlert(result_search, rule_yaml, flag_telegram, time_back, tag.doc_count)
+											self.sendOnlyAlert(result_search, rule_yaml, flag_telegram, flag_email, time_back, tag.doc_count)
 							else:
 								if rule_yaml['type_alert_send'] == "multiple":
-									self.sendMultipleAlerts(result_search, rule_yaml, flag_telegram, time_back)
+									self.sendMultipleAlerts(result_search, rule_yaml, flag_telegram, flag_email, time_back)
 								if rule_yaml['type_alert_send'] == "only":
-									self.sendOnlyAlert(result_search, rule_yaml, flag_telegram, time_back, total_events)
+									self.sendOnlyAlert(result_search, rule_yaml, flag_telegram, flag_email, time_back, total_events)
 						time.sleep(time_search)
+			else:
+				self.logger.createLogTelkAlert("The index does not exist in ElasticSearch.", 4)
 		except KeyError as exception:
 			print("Key Error: " + str(exception) + '. For more information see the application logs.')
 			self.logger.createLogTelkAlert("Key error: " + str(exception), 4)
@@ -154,15 +176,27 @@ class Elastic:
 	rule_yaml -- List containing all the data of the alert rule.
 	flag_telegram -- Flag that indicates if the alert should be sent to telegram.
 	time_back -- Backward time in milliseconds.
+
+	Exceptions:
+	KeyError -- A Python KeyError exception is what is raised when you try to access a key that isn’t in a dictionary (dict). 
 	"""
-	def sendMultipleAlerts(self, result_search, rule_yaml, flag_telegram, time_back):
-		for hit in result_search:
-			if flag_telegram == 1:
-				message_telegram = self.telegram.getTelegramHeader(rule_yaml, time_back)
-				message_telegram += self.telegram.getTelegramMessage(hit)
-				print(message_telegram)
-				telegram_code = self.telegram.sendTelegramAlert(self.utils.decryptAES(rule_yaml['telegram_chat_id']).decode('utf-8'), self.utils.decryptAES(rule_yaml['telegram_bot_token']).decode('utf-8'), message_telegram)
-				self.telegram.getStatusByTelegramCode(telegram_code)
+	def sendMultipleAlerts(self, result_search, rule_yaml, flag_telegram, flag_email, time_back):
+		try:
+			for hit in result_search:
+				if flag_telegram == 1:
+					message_telegram = self.telegram.getTelegramHeader(rule_yaml, time_back)
+					message_telegram += self.telegram.getTelegramMessage(hit)
+					telegram_code = self.telegram.sendTelegramAlert(self.utils.decryptAES(rule_yaml['telegram_chat_id']).decode('utf-8'), self.utils.decryptAES(rule_yaml['telegram_bot_token']).decode('utf-8'), message_telegram)
+					self.telegram.getStatusByTelegramCode(telegram_code, rule_yaml['name_rule'])
+				if flag_email == 1:
+					message_email = self.email.getEmailHeader(rule_yaml, time_back)
+					message_email += self.email.getEmailMessage(hit)
+					self.email.sendEmailAlert(rule_yaml['email_from'], self.utils.decryptAES(rule_yaml['email_from_password']).decode('utf-8'), rule_yaml['email_to'], message_email, rule_yaml['name_rule'])
+		except KeyError as exception:
+			print("Key Error: " + str(exception) + '. For more information see the application logs.')
+			self.logger.createLogTelkAlert("Key error: " + str(exception), 4)
+			sys.exit(1)
+
 
 	"""
 	Method that performs the unique sending of alerts.
@@ -174,14 +208,26 @@ class Elastic:
 	flag_telegram -- Flag that indicates if the alert should be sent to telegram.
 	time_back -- Backward time in milliseconds.
 	total_events -- Total events found in the search.
+
+	Exceptions:
+	KeyError -- A Python KeyError exception is what is raised when you try to access a key that isn’t in a dictionary (dict). 
 	"""
-	def sendOnlyAlert(self, result_search, rule_yaml, flag_telegram, time_back, total_events):
+	def sendOnlyAlert(self, result_search, rule_yaml, flag_telegram, flag_email, time_back, total_events):
 		message_telegram = self.telegram.getTelegramHeader(rule_yaml, time_back)
+		message_email = self.email.getEmailHeader(rule_yaml, time_back)
 		for hit in result_search:
 			message_telegram += self.telegram.getTelegramMessage(hit)
+			message_email += self.email.getEmailMessage(hit)
 			break
-		if flag_telegram == 1:
-			message_telegram += self.telegram.getTotalEventsFound(total_events)
-			print(message_telegram)
-			telegram_code = self.telegram.sendTelegramAlert(self.utils.decryptAES(rule_yaml['telegram_chat_id']).decode('utf-8'), self.utils.decryptAES(rule_yaml['telegram_bot_token']).decode('utf-8'), message_telegram)
-			self.telegram.getStatusByTelegramCode(telegram_code)
+		try:
+			if flag_telegram == 1:
+				message_telegram += self.telegram.getTotalEventsFound(total_events)
+				telegram_code = self.telegram.sendTelegramAlert(self.utils.decryptAES(rule_yaml['telegram_chat_id']).decode('utf-8'), self.utils.decryptAES(rule_yaml['telegram_bot_token']).decode('utf-8'), message_telegram)
+				self.telegram.getStatusByTelegramCode(telegram_code, rule_yaml['name_rule'])
+			if flag_email == 1:
+				message_email += self.email.getTotalEventsFound(total_events)
+				self.email.sendEmailAlert(rule_yaml['email_from'], self.utils.decryptAES(rule_yaml['email_from_password']).decode('utf-8'), rule_yaml['email_to'], message_email, rule_yaml['name_rule'])
+		except KeyError as exception:
+			print("Key Error: " + str(exception) + '. For more information see the application logs.')
+			self.logger.createLogTelkAlert("Key error: " + str(exception), 4)
+			sys.exit(1)

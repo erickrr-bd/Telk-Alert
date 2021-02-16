@@ -44,7 +44,7 @@ class Telegram:
 		data = { 'chat_id' : telegram_chat_id, 'text' : message }
 		pf = urlencode(data)
 		c.setopt(c.POSTFIELDS, pf)
-		c.perform()
+		c.perform_rs()
 		status_code = c.getinfo(pycurl.HTTP_CODE)
 		c.close()
 		return int(status_code)
@@ -123,17 +123,18 @@ class Telegram:
 	Parameters:
 	self -- An instantiated object of the Telegram class.
 	telegram_code -- HTTP code in response to the request made to Telegram.
+	name_rule -- Name of the alert rule.
 	"""
-	def getStatusByTelegramCode(self, telegram_code):
+	def getStatusByTelegramCode(self, telegram_code, name_rule):
 		if telegram_code == 200:
-			print("\nAlert sent to Telegram.")
-			self.logger.createLogTelkAlert("Telegram alert sent.", 2)
+			print("\nAlert sent to Telegram. Name rule: " + name_rule)
+			self.logger.createLogTelkAlert("Telegram alert sent. Name rule: " + name_rule, 2)
 		if telegram_code == 400:
-			print("Telegram alert not sent. Bad request.")
-			self.logger.createLogTelkAlert("Telegram alert not sent. Bad request.", 4)
+			print("Telegram alert not sent. Bad request. Name rule: " + name_rule)
+			self.logger.createLogTelkAlert("Telegram alert not sent. Bad request. Name rule: " + name_rule, 4)
 		if telegram_code == 401:
-			print("Telegram alert not sent. Unauthorized.")
-			self.logger.createLogTelkAlert("Telegram alert not sent. Unauthorized.", 4)
+			print("Telegram alert not sent. Unauthorized. Name rule: " + name_rule)
+			self.logger.createLogTelkAlert("Telegram alert not sent. Unauthorized. Name rule: " + name_rule, 4)
 		if telegram_code == 404:
-			print("Telegram alert not sent. Not found.")
-			self.logger.createLogTelkAlert("Telegram alert not sent. Not found.", 4)
+			print("Telegram alert not sent. Not found. Name rule: " + name_rule)
+			self.logger.createLogTelkAlert("Telegram alert not sent. Not found. Name rule: " + name_rule, 4)
