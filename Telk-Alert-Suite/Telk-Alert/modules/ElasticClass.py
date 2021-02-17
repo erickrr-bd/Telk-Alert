@@ -48,6 +48,7 @@ class Elastic:
 	KeyError -- A Python KeyError exception is what is raised when you try to access a key that isn’t in a dictionary (dict). 
 	exceptions.ConnectionError --  Error raised when there was an exception while talking to ES. 
 	exceptions.AuthenticationException -- Exception representing a 401 status code.
+	exceptions.AuthorizationException -- Exception representing a 403 status code.
 	"""
 	def getConnectionElastic(self, telk_alert_conf):
 		try:
@@ -98,6 +99,10 @@ class Elastic:
 			print("HTTP authentication failed. For more information see the application logs.")
 			self.logger.createLogTelkAlert(str(exception), 4)
 			sys.exit(1)
+		except exceptions.AuthorizationException as exception:
+			print("Unauthorized access. For more information see the application logs.")
+			self.logger.createLogTelkAlert(str(exception), 4)
+			sys.exit(1)
 	
 	"""
 
@@ -129,6 +134,7 @@ class Elastic:
 					search_rule = Search(index = rule_yaml['index_name']).using(conn_es)
 					search_rule = search_rule[0:int(telk_alert_conf['max_hits'])]
 					query = Q("query_string", query = query_string_rule)
+					#self.createLogES(telk_alert_conf['writeback_index'], rule_yaml['name_rule'], 2, conn_es)
 					while True:
 						if rule_yaml['use_restriction_fields']:
 							search_aux = search_rule.query(query).query('range', ** { '@timestamp' : { 'gte' : self.utils.convertDateToMilliseconds(datetime.now()) - time_back, 'lte' : self.utils.convertDateToMilliseconds(datetime.now()) } }).source(rule_yaml['fields'])
@@ -231,3 +237,29 @@ class Elastic:
 			print("Key Error: " + str(exception) + '. For more information see the application logs.')
 			self.logger.createLogTelkAlert("Key error: " + str(exception), 4)
 			sys.exit(1)
+
+	"""
+	"""
+	def createLogES(self, index_name, name_rule, total_events, conn_es, type_log):
+		if type_log == 1:
+			log_json = {
+			'@timestamp' : datetime.utcnow(),
+			'name_rule' : name_rule,
+			'total_events' : total_events
+			}
+		if type_log == 2:
+			log_json = {
+			'@timestamp' : datetime.utcnow(),
+			'name_rule' : name_rule,
+			'alert_status' : alert_status,
+			'total_events' : total_events
+			}
+		if type_log == 3:
+			log_json = {
+			'@timestamp' : datetime.utcnow(),
+			'name_rule' : name_rule,
+			'rule_status' : rule_status
+			}
+
+		index_name += "-" + datetime.now().strftime("%Y-%m-%d")
+		conn_es.index(index = index_name, body = log_json)

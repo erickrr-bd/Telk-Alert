@@ -51,9 +51,10 @@ class Email:
 				s = smtplib.SMTP('smtp.gmail.com: 587')
 			s.starttls()
 			s.login(message_email['From'], email_from_pass)
-			s.sendmail(message_email['From'], email_to, message_email.as_string())
-			print("\n\nAlert sent correctly by email: " + " ".join(email_to))
-			self.logger.createLogTelkAlert("Alert sent correctly by email: " + " ".join(email_to), 2)
+			response = s.sendmail(message_email['From'], email_to, message_email.as_string())
+			if len(response) == 0:
+				print("\nAlert sent correctly by email: " + " ".join(email_to))
+				self.logger.createLogTelkAlert("Alert sent correctly by email: " + " ".join(email_to), 2)
 		except smtplib.SMTPAuthenticationError as exception:
 			print("Authentication failed in SMTP. For more information see the application logs.")
 			self.logger.createLogTelkAlert("Error: " + str(exception), 4)
