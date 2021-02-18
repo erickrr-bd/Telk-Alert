@@ -170,12 +170,12 @@ class Elastic:
 										if rule_yaml['type_alert_send'] == "multiple":
 											self.sendMultipleAlerts(result_search, rule_yaml, flag_telegram, flag_email, time_back)
 										if rule_yaml['type_alert_send'] == "only":
-											self.sendOnlyAlert(result_search, rule_yaml, flag_telegram, flag_email, time_back, tag.doc_count)
+											self.sendOnlyAlert(result_search, rule_yaml, flag_telegram, flag_email, time_back, tag.doc_count, conn_es, telk_alert_conf['writeback_index'])
 							else:
 								if rule_yaml['type_alert_send'] == "multiple":
 									self.sendMultipleAlerts(result_search, rule_yaml, flag_telegram, flag_email, time_back)
 								if rule_yaml['type_alert_send'] == "only":
-									self.sendOnlyAlert(result_search, rule_yaml, flag_telegram, flag_email, time_back, total_events)
+									self.sendOnlyAlert(result_search, rule_yaml, flag_telegram, flag_email, time_back, total_events, conn_es, telk_alert_conf['writeback_index'])
 						time.sleep(time_search)
 			else:
 				self.logger.createLogTelkAlert("The index does not exist in ElasticSearch.", 4)
@@ -229,7 +229,7 @@ class Elastic:
 	Exceptions:
 	KeyError -- A Python KeyError exception is what is raised when you try to access a key that isn’t in a dictionary (dict). 
 	"""
-	def sendOnlyAlert(self, result_search, rule_yaml, flag_telegram, flag_email, time_back, total_events):
+	def sendOnlyAlert(self, result_search, rule_yaml, flag_telegram, flag_email, time_back, total_events, conn_es, index_name):
 		message_telegram = self.telegram.getTelegramHeader(rule_yaml, time_back)
 		message_email = self.email.getEmailHeader(rule_yaml, time_back)
 		for hit in result_search:
@@ -240,6 +240,7 @@ class Elastic:
 			if flag_telegram == 1:
 				message_telegram += self.telegram.getTotalEventsFound(total_events)
 				telegram_code = self.telegram.sendTelegramAlert(self.utils.decryptAES(rule_yaml['telegram_chat_id']).decode('utf-8'), self.utils.decryptAES(rule_yaml['telegram_bot_token']).decode('utf-8'), message_telegram)
+				self.generateLogES(index_name, conn_es, self.createLogAlertTelegram(rule_yaml['name_rule'], total_events, telegram_code))
 				self.telegram.getStatusByTelegramCode(telegram_code, rule_yaml['name_rule'])
 			if flag_email == 1:
 				message_email += self.email.getTotalEventsFound(total_events)
@@ -290,14 +291,23 @@ class Elastic:
 		}
 		return log_json
 
-	def createLogRules(self, name_rule, status_rule):
+	"""
+	"""
+	def createLogAlertTelegram(self, name_rule, total_events, telegram_code):
+		telegram_res = ""
+		if telegram_code == 200:
+			telegram_res = "Success"
+		else:
+			telegram_res = "Failed"
 		log_json = {
 			'@timestamp' : datetime.utcnow(),
 			'TELK.host.name' : self.host_name,
 			'TELK.host.ip' : self.host_ip,
 			'TELK.host.os.name' : self.host_os_name,
 			'RULE.name' : name_rule,
-			'ALERT.events.total' : total_events
+			'ALERT.events.total' : total_events,
+			'ALERT.telegram.code': telegram_code,
+			'ALERT.telegram.res' : telegram_res 
 		}
 		return log_json
 
