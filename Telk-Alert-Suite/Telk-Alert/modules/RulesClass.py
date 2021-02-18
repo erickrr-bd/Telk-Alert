@@ -50,11 +50,13 @@ class Rules:
 			list_alert_rules = self.getAllAlertRules(path_rules_folder)
 			print("ALERT RULES DATA\n")
 			print(str(len(list_alert_rules)) + " alert rule(s) found in " + path_rules_folder + '\n')
+			self.elastic.generateLogES(telk_alert_conf['writeback_index'], conn_es, self.elastic.createLogAction(str(len(list_alert_rules)) + " alert rule(s) found in " + path_rules_folder))
 			self.logger.createLogTelkAlert(str(len(list_alert_rules)) + " alert rule(s) found in " + path_rules_folder, 2)
 			if len(list_alert_rules) != 0:
 				for alert_rule in list_alert_rules:
 					rule_yaml = self.utils.readFileYaml(path_rules_folder + '/' + alert_rule)
 					print("Rule " + alert_rule + ' loaded and executed\n')
+					self.elastic.generateLogES(telk_alert_conf['writeback_index'], conn_es, self.elastic.createLogRules(alert_rule, 'loaded and executed'))
 					self.logger.createLogTelkAlert("Rule " + alert_rule + ' loaded and executed', 2)
 					thread_rule = threading.Thread(target = self.elastic.searchRuleElastic, args = (conn_es, rule_yaml, telk_alert_conf,)).start()
 			else:
