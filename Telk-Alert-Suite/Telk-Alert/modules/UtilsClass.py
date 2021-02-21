@@ -144,6 +144,7 @@ class Utils:
 		except TypeError as exception:
 			print("Type Error:" + str(exception) + ". For more information see the application logs.")
 			self.logger.createLogTelkAlert("Type Error: " + str(exception), 4)
+			sys.exit(1)
 
 	"""
 	Method that converts a quantity expressed in a unit of time in milliseconds.
@@ -155,14 +156,22 @@ class Utils:
 
 	Return:
 	Milliseconds obtained from the conversion.
+
+	Exceptions:
+	TypeError -- The TypeError is thrown when an operation or function is applied to an object of an inappropriate type.
 	"""
 	def convertTimeToMilliseconds(self, unit_time, total_time):
-		if unit_time == 'minutes':
-			return total_time * 60000
-		if unit_time == 'hours':
-			return total_time * 3600000
-		if unit_time == 'days':
-			return total_time * 86400000
+		try:
+			if unit_time == 'minutes':
+				return total_time * 60000
+			if unit_time == 'hours':
+				return total_time * 3600000
+			if unit_time == 'days':
+				return total_time * 86400000
+		except TypeError as exception:
+			print("Type Error:" + str(exception) + ". For more information see the application logs.")
+			self.logger.createLogTelkAlert("Type Error: " + str(exception), 4)
+			sys.exit(1)
 
 	"""
 	Method that converts a number of milliseconds into a date.
@@ -173,11 +182,19 @@ class Utils:
 
 	Return:
 	date -- Date obtained from the conversion.
+
+	Exceptions:
+	TypeError -- The TypeError is thrown when an operation or function is applied to an object of an inappropriate type.
 	"""
 	def convertMillisecondsToDate(self, milliseconds):
-		date = datetime.fromtimestamp(milliseconds / 1000.0)
-		date = date.strftime('%Y-%m-%d %H:%M:%S')
-		return date
+		try:
+			date = datetime.fromtimestamp(milliseconds / 1000.0)
+			date = date.strftime('%Y-%m-%d %H:%M:%S')
+			return date
+		except TypeError as exception:
+			print("Type Error:" + str(exception) + ". For more information see the application logs.")
+			self.logger.createLogTelkAlert("Type Error: " + str(exception), 4)
+			sys.exit(1)
 
 	"""
 	Method that allows deciphering a text.
@@ -200,6 +217,6 @@ class Utils:
 			aes = AES.new(key, AES.MODE_CBC, IV)
 			return unpad(aes.decrypt(text_encrypt[AES.block_size:]), AES.block_size)
 		except binascii.Error as exception:
-			print("Decryption failed. For more information see the application logs.")
+			print("\nDecryption failed. For more information see the application logs.")
 			self.logger.createLogTelkAlert("Decrypt Error: " + str(exception), 4)
 			sys.exit(1)

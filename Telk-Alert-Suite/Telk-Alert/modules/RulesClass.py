@@ -65,8 +65,13 @@ class Rules:
 					self.elastic.generateLogES(telk_alert_conf['writeback_index'], conn_es, self.elastic.createLogAction("No alert rule found in directory"))
 					self.logger.createLogTelkAlert("No alert rule found in directory.", 3)
 					sys.exit(1)
-			except (TypeError, KeyError) as exception:
-				self.logger.createLogTelkAlert("Error: " + str(exception), 4)
+			except KeyError as exception:
+				print("\nKey Error: " + str(exception))
+				self.logger.createLogTelkAlert("Key Error: " + str(exception), 4)
+				sys.exit(1)
+			except TypeError as exception:
+				print("\nType Error: " + str(exception))
+				self.logger.createLogTelkAlert("Type Error: " + str(exception), 4)
 				sys.exit(1)
 		else:
 			print("ElasticSearch version not supported.")

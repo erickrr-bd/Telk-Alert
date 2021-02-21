@@ -1,6 +1,7 @@
 import sys
 import time
 import socket
+import requests
 import platform
 from datetime import datetime
 from elasticsearch import Elasticsearch, RequestsHttpConnection, exceptions
@@ -16,8 +17,19 @@ Class that allows you to manage everything related to ElasticSearch.
 """
 class Elastic:
 
+	"""
+	Property that stores the IP where Telk-Alert is working.
+	"""
 	host_ip = ""
+
+	"""
+	Property that stores the name of the host where Telk-Alert is working.
+	"""
 	host_name = ""
+
+	"""
+	Property where the operating system of the host where Telk-Alert is working is stored.
+	"""
 	host_os_name = ""
 
 	"""
@@ -40,6 +52,12 @@ class Elastic:
 	"""
 	email = Email()
 
+	"""
+	Constructor for the Elastic class.
+
+	Parameters:
+	self -- An instantiated object of the Elastic class.
+	"""
 	def __init__(self):
 		self.host_name = socket.gethostname()
 		self.host_ip = socket.gethostbyname(self.host_name)
@@ -60,30 +78,31 @@ class Elastic:
 	exceptions.ConnectionError --  Error raised when there was an exception while talking to ES. 
 	exceptions.AuthenticationException -- Exception representing a 401 status code.
 	exceptions.AuthorizationException -- Exception representing a 403 status code.
+	requests.exceptions.InvalidURL -- The URL provided was somehow invalid
 	"""
 	def getConnectionElastic(self, telk_alert_conf):
 		try:
-			if (not telk_alert_conf['use_ssl']) and (not telk_alert_conf['use_http_auth']):
+			if (not telk_alert_conf['use_ssl'] == True) and (not telk_alert_conf['use_http_auth'] == True):
 				conn_es = Elasticsearch([telk_alert_conf['es_host']], 
 										port = telk_alert_conf['es_port'],
 										connection_class = RequestsHttpConnection,
 										use_ssl = False)
-			if (not telk_alert_conf['use_ssl']) and telk_alert_conf['use_http_auth']:
+			if (not telk_alert_conf['use_ssl'] == True) and telk_alert_conf['use_http_auth'] == True:
 				conn_es = Elasticsearch([telk_alert_conf['es_host']], 
 										port = telk_alert_conf['es_port'],
 										connection_class = RequestsHttpConnection,
 										http_auth = (self.utils.decryptAES(telk_alert_conf['http_auth_user']).decode('utf-8'), self.utils.decryptAES(telk_alert_conf['http_auth_pass']).decode('utf-8')),
 										use_ssl = False)
-			if telk_alert_conf['use_ssl'] and (not telk_alert_conf['use_http_auth']):
-				if not telk_alert_conf['valid_certificates']:
+			if telk_alert_conf['use_ssl'] == True and (not telk_alert_conf['use_http_auth'] == True):
+				if not telk_alert_conf['valid_certificates'] == True:
 					conn_es = Elasticsearch([telk_alert_conf['es_host']], 
 											port = telk_alert_conf['es_port'],
 											connection_class = RequestsHttpConnection,
 											use_ssl = True,
 											verify_certs = False,
 											ssl_show_warn=False)
-			if telk_alert_conf['use_ssl'] and telk_alert_conf['use_http_auth']:
-				if not telk_alert_conf['valid_certificates']:
+			if telk_alert_conf['use_ssl'] == True and telk_alert_conf['use_http_auth'] == True:
+				if not telk_alert_conf['valid_certificates'] == True:
 					conn_es = Elasticsearch([telk_alert_conf['es_host']], 
 											port = telk_alert_conf['es_port'],
 											connection_class = RequestsHttpConnection,
@@ -115,6 +134,10 @@ class Elastic:
 			print("Unauthorized access. For more information see the application logs.")
 			self.logger.createLogTelkAlert(str(exception), 4)
 			sys.exit(1)
+		except requests.exceptions.InvalidURL as exception:
+			print(str(exception))
+			self.logger.createLogTelkAlert(str(exception), 4)
+			sys.exit(1)
 	
 	"""
 
@@ -126,6 +149,8 @@ class Elastic:
 
 	Exceptions:
 	KeyError -- A Python KeyError exception is what is raised when you try to access a key that isn’t in a dictionary (dict). 
+	ValueError -- Is raised when a function receives an argument of the correct type but an inappropriate value. 
+	TypeError -- The TypeError is thrown when an operation or function is applied to an object of an inappropriate type.
 	"""
 	def searchRuleElastic(self, conn_es, rule_yaml, telk_alert_conf):
 		try:
@@ -147,11 +172,11 @@ class Elastic:
 					search_rule = search_rule[0:int(telk_alert_conf['max_hits'])]
 					query = Q("query_string", query = query_string_rule)
 					while True:
-						if rule_yaml['use_restriction_fields']:
+						if rule_yaml['use_restriction_fields'] == True:
 							search_aux = search_rule.query(query).query('range', ** { '@timestamp' : { 'gte' : self.utils.convertDateToMilliseconds(datetime.now()) - time_back, 'lte' : self.utils.convertDateToMilliseconds(datetime.now()) } }).source(rule_yaml['fields'])
 						else:
 							search_aux = search_rule.query(query).query('range', ** { '@timestamp' : { 'gte' : self.utils.convertDateToMilliseconds(datetime.now()) - time_back, 'lte' : self.utils.convertDateToMilliseconds(datetime.now()) } }).source(fields = None)
-						if rule_yaml['restrict_by_host']:
+						if rule_yaml['restrict_by_host'] == True:
 							a = A('terms', field = rule_yaml['field_hostname'])
 							search_aux = search_rule.query(query).query('range', ** { '@timestamp' : { 'gte' : self.utils.convertDateToMilliseconds(datetime.now()) - time_back, 'lte' : self.utils.convertDateToMilliseconds(datetime.now()) } }).source(fields = None)
 							search_aux.aggs.bucket('events', a)
@@ -162,26 +187,36 @@ class Elastic:
 						if total_events >= rule_yaml['num_events']:
 							print(str(total_events) + " events found in the rule: " + rule_yaml['name_rule'])
 							self.logger.createLogTelkAlert(str(total_events) + " events found in the rule: " + rule_yaml['name_rule'], 2)
-							if rule_yaml['restrict_by_host']:
+							self.generateLogES(telk_alert_conf['writeback_index'], conn_es, self.createLogAction(str(total_events) + " events found in the rule: " + rule_yaml['name_rule']))
+							if rule_yaml['restrict_by_host'] == True:
 								for tag in result_search.aggregations.events.buckets:
 									if int(tag.doc_count) >= rule_yaml['number_events_host']:
-										print(str(tag.doc_count) + " events found in the rule: " + rule_yaml['name_rule'])
-										self.logger.createLogTelkAlert(str(tag.doc_count) + " events found in the rule: " + rule_yaml['name_rule'], 2)
+										print(str(tag.doc_count) + " events found in the host " + tag.key +  " in the rule: " + rule_yaml['name_rule'])
+										self.logger.createLogTelkAlert(str(tag.doc_count) + " events found in the host " + tag.key + " in the rule: " + rule_yaml['name_rule'], 2)
+										self.generateLogES(telk_alert_conf['writeback_index'], conn_es, self.createLogAction(str(tag.doc_count) + " events found in the host " + tag.key +" in the rule: " + rule_yaml['name_rule']))
 										if rule_yaml['type_alert_send'] == "multiple":
-											self.sendMultipleAlerts(result_search, rule_yaml, flag_telegram, flag_email, time_back)
+											self.sendMultipleAlerts(result_search, rule_yaml, flag_telegram, flag_email, time_back, conn_es, telk_alert_conf['writeback_index'])
 										if rule_yaml['type_alert_send'] == "only":
 											self.sendOnlyAlert(result_search, rule_yaml, flag_telegram, flag_email, time_back, tag.doc_count, conn_es, telk_alert_conf['writeback_index'])
 							else:
 								if rule_yaml['type_alert_send'] == "multiple":
-									self.sendMultipleAlerts(result_search, rule_yaml, flag_telegram, flag_email, time_back)
+									self.sendMultipleAlerts(result_search, rule_yaml, flag_telegram, flag_email, time_back, conn_es, telk_alert_conf['writeback_index'])
 								if rule_yaml['type_alert_send'] == "only":
 									self.sendOnlyAlert(result_search, rule_yaml, flag_telegram, flag_email, time_back, total_events, conn_es, telk_alert_conf['writeback_index'])
 						time.sleep(time_search)
 			else:
 				self.logger.createLogTelkAlert("The index does not exist in ElasticSearch.", 4)
 		except KeyError as exception:
-			print("Key Error: " + str(exception) + '. For more information see the application logs.')
-			self.logger.createLogTelkAlert("Key error: " + str(exception), 4)
+			print("\nKey Error: " + str(exception) + '. For more information see the application logs.')
+			self.logger.createLogTelkAlert("Key Error: " + str(exception), 4)
+			sys.exit(1)
+		except ValueError as exception:
+			print("\nValue Error: " + str(exception))
+			self.logger.createLogTelkAlert("Value Error: " + str(exception), 4)
+			sys.exit(1)
+		except TypeError as exception:
+			print("\nType Error:" + str(exception) + ". For more information see the application logs.")
+			self.logger.createLogTelkAlert("Type Error: " + str(exception), 4)
 			sys.exit(1)
 
 	"""
@@ -197,18 +232,21 @@ class Elastic:
 	Exceptions:
 	KeyError -- A Python KeyError exception is what is raised when you try to access a key that isn’t in a dictionary (dict). 
 	"""
-	def sendMultipleAlerts(self, result_search, rule_yaml, flag_telegram, flag_email, time_back):
+	def sendMultipleAlerts(self, result_search, rule_yaml, flag_telegram, flag_email, time_back, conn_es, index_name):
 		try:
 			for hit in result_search:
 				if flag_telegram == 1:
 					message_telegram = self.telegram.getTelegramHeader(rule_yaml, time_back)
 					message_telegram += self.telegram.getTelegramMessage(hit)
 					telegram_code = self.telegram.sendTelegramAlert(self.utils.decryptAES(rule_yaml['telegram_chat_id']).decode('utf-8'), self.utils.decryptAES(rule_yaml['telegram_bot_token']).decode('utf-8'), message_telegram)
+					self.generateLogES(index_name, conn_es, self.createLogAlertTelegram(rule_yaml['name_rule'], 1, telegram_code))
 					self.telegram.getStatusByTelegramCode(telegram_code, rule_yaml['name_rule'])
 				if flag_email == 1:
 					message_email = self.email.getEmailHeader(rule_yaml, time_back)
 					message_email += self.email.getEmailMessage(hit)
-					self.email.sendEmailAlert(rule_yaml['email_from'], self.utils.decryptAES(rule_yaml['email_from_password']).decode('utf-8'), rule_yaml['email_to'], message_email, rule_yaml['name_rule'])
+					response = self.email.sendEmailAlert(rule_yaml['email_from'], self.utils.decryptAES(rule_yaml['email_from_password']).decode('utf-8'), rule_yaml['email_to'], message_email, rule_yaml['name_rule'])
+					self.email.getStatusEmailAlert(response, rule_yaml['email_to'])
+					self.generateLogES(index_name, conn_es, self.createLogAlertEmail(rule_yaml['name_rule'], 1, response))
 		except KeyError as exception:
 			print("Key Error: " + str(exception) + '. For more information see the application logs.')
 			self.logger.createLogTelkAlert("Key error: " + str(exception), 4)
@@ -244,7 +282,9 @@ class Elastic:
 				self.telegram.getStatusByTelegramCode(telegram_code, rule_yaml['name_rule'])
 			if flag_email == 1:
 				message_email += self.email.getTotalEventsFound(total_events)
-				self.email.sendEmailAlert(rule_yaml['email_from'], self.utils.decryptAES(rule_yaml['email_from_password']).decode('utf-8'), rule_yaml['email_to'], message_email, rule_yaml['name_rule'])
+				response = self.email.sendEmailAlert(rule_yaml['email_from'], self.utils.decryptAES(rule_yaml['email_from_password']).decode('utf-8'), rule_yaml['email_to'], message_email, rule_yaml['name_rule'])
+				self.email.getStatusEmailAlert(response, rule_yaml['email_to'])
+				self.generateLogES(index_name, conn_es, self.createLogAlertEmail(rule_yaml['name_rule'], total_events, response))
 		except KeyError as exception:
 			print("Key Error: " + str(exception) + '. For more information see the application logs.')
 			self.logger.createLogTelkAlert("Key error: " + str(exception), 4)
@@ -271,11 +311,12 @@ class Elastic:
 		return log_json
 
 	"""
-	Method that generates the JSON of the actions carried out in Telk-Alert that will be saved in ElasticSearch.
+	Method that generates the JSON of the alert rules created so far.
 
 	Parameters:
 	self -- An instantiated object of the Elastic class.
-	action -- Action performed.
+	name_rule -- Name of the alert rule.
+	status_rule -- State in which the rule is.
 
 	Return:
 	log_json -- JSON object that contains the data that will be stored in ElasticSearch.
@@ -292,6 +333,16 @@ class Elastic:
 		return log_json
 
 	"""
+	Method that generates the JSON of the alerts sent to Telegram.
+
+	Parameters:
+	self -- An instantiated object of the Elastic class.
+	name_rule -- Name of the alert rule.
+	total_events -- Total events found in the search.
+	telegram_code -- HTTP code in response to the request made to Telegram.
+
+	Return:
+	log_json -- JSON object that contains the data that will be stored in ElasticSearch.
 	"""
 	def createLogAlertTelegram(self, name_rule, total_events, telegram_code):
 		telegram_res = ""
@@ -308,6 +359,21 @@ class Elastic:
 			'ALERT.events.total' : total_events,
 			'ALERT.telegram.code': telegram_code,
 			'ALERT.telegram.res' : telegram_res 
+		}
+		return log_json
+
+
+	def createLogAlertEmail(self, name_rule, total_events, response):
+		if len(response) == 0:
+			response = "Success"
+		log_json = {
+			'@timestamp' : datetime.utcnow(),
+			'TELK.host.name' : self.host_name,
+			'TELK.host.ip' : self.host_ip,
+			'TELK.host.os.name' : self.host_os_name,
+			'RULE.name' : name_rule,
+			'ALERT.events.total' : total_events,
+			'ALERT.email.res': str(response)
 		}
 		return log_json
 

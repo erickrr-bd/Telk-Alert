@@ -33,6 +33,9 @@ class Email:
 	json_message -- String that contains the data of the search result in ElasticSearch.
 	name_rule -- Name of the alert rule.
 
+	Return:
+	response -- Response of sending the email to the recipients.
+
 	Exceptions:
 	smtplib.SMTPAuthenticationError: SMTP authentication went wrong. 
 	"""
@@ -43,8 +46,8 @@ class Email:
 		message_email['From'] = email_from
 		message_email.add_header('Content-Type', 'text/html')
 		message_email.set_payload(message_aux)
-		domain_email = email_from.split('@')[1]
 		try:
+			domain_email = email_from.split('@')[1]
 			if domain_email == 'outlook.com':
 				s = smtplib.SMTP('smtp-mail-outlook.com: 587')
 			if domain_email == 'gmail.com':
@@ -52,12 +55,14 @@ class Email:
 			s.starttls()
 			s.login(message_email['From'], email_from_pass)
 			response = s.sendmail(message_email['From'], email_to, message_email.as_string())
-			if len(response) == 0:
-				print("\nAlert sent correctly by email: " + " ".join(email_to))
-				self.logger.createLogTelkAlert("Alert sent correctly by email: " + " ".join(email_to), 2)
+			return response
 		except smtplib.SMTPAuthenticationError as exception:
-			print("Authentication failed in SMTP. For more information see the application logs.")
-			self.logger.createLogTelkAlert("Error: " + str(exception), 4)
+			print("\nAuthentication failed in SMTP. For more information see the application logs.")
+			self.logger.createLogTelkAlert("SMTP Error: " + str(exception), 4)
+		except IndexError as exception:
+			print("\nIndex Error: " + str(exception))
+			self.logger.createLogTelkAlert("Index Error: " + str(exception), 4)
+
 
 	"""
 	Method that allows creating the header of the alert to be sent to Email.
@@ -131,3 +136,14 @@ class Email:
 	def getTotalEventsFound(self, total_events):
 		message_total_events = "<b>TOTAL EVENTS FOUND: </b>" + str(total_events)
 		return message_total_events
+
+	"""
+
+	"""
+	def getStatusEmailAlert(self, response, email_to):
+		if len(response) == 0:
+			print("\nAlert sent correctly by email: " + " ".join(email_to))
+			self.logger.createLogTelkAlert("Alert sent correctly by email: " + " ".join(email_to), 2)
+		else:
+			print("\n" + str(response))
+			self.logger.createLogTelkAlert(str(response), 3)
