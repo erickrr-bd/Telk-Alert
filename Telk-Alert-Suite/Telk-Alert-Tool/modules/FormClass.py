@@ -2,12 +2,11 @@ import sys
 import os
 import re
 from dialog import Dialog
-sys.path.append('./modules')
-from UtilsClass import Utils
-from CreateConfClass import Configuration 
-from RulesClass import Rules
-from AgentClass import Agent
-from ServiceClass import Service
+from modules.UtilsClass import Utils
+from modules.ConfigClass import Configuration 
+from modules.RulesClass import Rules
+from modules.AgentClass import Agent
+from modules.ServiceClass import Service
 
 """
 Class that allows managing the graphical interfaces of Telk-Alert-Tool.
@@ -70,12 +69,12 @@ class FormDialogs:
 	Method that allows generating the menu interface.
 
 	Parameters:
-	self -- Instance object.
+	self -- An instantiated object of the FormDialogs class.
 	options -- List of options that make up the menu.
 	title -- Title that will be given to the interface and that will be shown to the user.
 
 	Return:
-	The option chosen by the user.
+	tag_mm -- The option chosen by the user.
 	"""
 	def getMenu(self, options, title):
 		code_mm, tag_mm = self.d.menu("Choose an option", choices=options,title=title)
@@ -88,7 +87,7 @@ class FormDialogs:
 	Method that allows displaying a message to the user in a scroll box.
 
 	Parameters:
-	self -- Instance object.
+	self -- An instantiated object of the FormDialogs class.
 	text -- Text that will be shown to the user.
 	title -- Title that will be given to the interface and that will be shown to the user.
 	"""
@@ -101,13 +100,13 @@ class FormDialogs:
 	Method that allows to generate an interface where you can only choose one option from among several.
 
 	Parameters:
-	self -- Instance object.
+	self -- An instantiated object of the FormDialogs class.
 	text -- Text that will be shown to the user.
 	options -- List of options that make up the interface.
 	title -- Title that will be given to the interface and that will be shown to the user.
 
 	Return:
-	The option chosen by the user.
+	tag_rl -- The option chosen by the user.
 	"""
 	def getDataRadioList(self, text, options, title):
 		while True:
@@ -128,13 +127,13 @@ class FormDialogs:
 	Method that allows generating an interface where you can only choose several options at the same time.
 
 	Parameters:
-	self -- Instance object.
+	self -- An instantiated object of the FormDialogs class.
 	text -- Text that will be shown to the user.
 	options -- List of options that make up the interface.
 	title -- Title that will be given to the interface and that will be shown to the user.
 
 	Return:
-	List with the chosen options.
+	tag_cl -- List with the chosen options.
 	"""
 	def getDataCheckList(self, text, options, title):
 		while True:
@@ -155,12 +154,12 @@ class FormDialogs:
 	Method that allows validating that an entered value corresponds to a decimal value.
 
 	Parameters:
-	self -- Instance object.
+	self -- An instantiated object of the FormDialogs class.
 	text -- Text that will be shown to the user.
 	initial_value -- Default value that will be shown to the user in the interface.
 
 	Return:
-	Decimal value entered.
+	tag_nd -- Decimal value entered.
 	"""
 	def getDataNumberDecimal(self, text, initial_value):
 		decimal_reg_exp = re.compile(r'^[1-9](\.[0-9]+)?$')
@@ -181,12 +180,12 @@ class FormDialogs:
 	Method that allows validating that an entered value corresponds to an IP address.
 
 	Parameters:
-	self -- Instance object.
+	self -- An instantiated object of the FormDialogs class.
 	text -- Text that will be shown to the user.
 	initial_value -- Default value that will be shown to the user in the interface.
 
 	Return:
-	IP address entered.
+	tag_ip -- IP address entered.
 	"""
 	def getDataIP(self, text, initial_value):
 		ip_reg_exp = re.compile(r'^(?:(?:[1-9]?[0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}(?:[1-9]?[0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$|^localhost$')
@@ -204,12 +203,12 @@ class FormDialogs:
 	Method that allows to validate an entered value that corresponds to a port.
 
 	Parameters:
-	self -- Instance object.
+	self -- An instantiated object of the FormDialogs class.
 	text -- Text that will be shown to the user.
 	initial_value -- Default value that will be shown to the user in the interface.
 
 	Return:
-	Port entered.
+	tag_port -- Port entered.
 	"""
 	def getDataPort(self, text, initial_value):
 		port_reg_exp = re.compile(r'^([0-9]{1,4}|[1-5][0-9]{4}|6[0-4][0-9]{3}|65[0-4][0-9]{2}|655[0-2][0-9]|6553[0-5])$')
@@ -227,12 +226,12 @@ class FormDialogs:
 	Method that allows to validate an entered value that corresponds to a name of a file or directory.
 
 	Parameters:
-	self -- Instance object.
+	self -- An instantiated object of the FormDialogs class.
 	text -- Text that will be shown to the user.
 	initial_value -- Default value that will be shown to the user in the interface.
 
 	Return:
-	File or directory name entered.
+	tag_fname -- File or directory name entered.
 	"""
 	def getDataNameFolderOrFile(self, text, initial_value):
 		name_file_reg_exp = re.compile(r'^[^\\/?%*:|"<>]+$')
@@ -250,12 +249,12 @@ class FormDialogs:
 	Method that allows the user to enter an email and validate it.
 
 	Parameters:
-	self -- Instance object.
+	self -- An instantiated object of the FormDialogs class.
 	text -- Text that will be shown to the user.
 	initial_value -- Default value that will be shown to the user in the interface.
 
 	Return:
-	The email address entered.
+	tag_email -- The email address entered.
 	"""
 	def getDataEmail(self, text, initial_value):
 		email_reg_exp = re.compile(r'^[a-z0-9]+[\._]?[a-z0-9]+[@]\w+[.]\w{2,3}$')
@@ -273,12 +272,12 @@ class FormDialogs:
 	Method that allows creating an interface where the only options available are yes or no.
 
 	Parameters:
-	self -- Instance object.
+	self -- An instantiated object of the FormDialogs class.
 	text -- Text that will be shown to the user.
 	title -- Title that will be given to the interface and that will be shown to the user.
 
 	Return:
-	Chosen option (yes or no).
+	tag_yesorno -- Chosen option (yes or no).
 	"""
 	def getDataYesOrNo(self, text, title):
 		tag_yesorno = self.d.yesno(text, 10, 50, title = title)
@@ -288,12 +287,12 @@ class FormDialogs:
 	Method that allows creating an interface to enter a text string without restrictions.
 
 	Parameters:
-	self -- Instance object.
+	self -- An instantiated object of the FormDialogs class.
 	text -- Text that will be shown to the user.
 	initial_value -- Default value that will be shown to the user in the interface.
 
 	Return:
-	Text entered.
+	tag_input -- Text entered.
 	"""
 	def getDataInputText(self, text, initial_value):
 		while True:
@@ -310,12 +309,12 @@ class FormDialogs:
 	Method that allows creating an interface to enter a password.
 
 	Parameters:
-	self -- Instance object.
+	self -- An instantiated object of the FormDialogs class.
 	text -- Text that will be shown to the user.
 	initial_value -- Default value that will be shown to the user in the interface.
 
 	Return:
-	Password entered.
+	tag_pass -- Password entered.
 	"""
 	def getDataPassword(self, text, initial_value):
 		while True:
@@ -332,12 +331,12 @@ class FormDialogs:
 	Method that allows creating an interface to enter an integer type number.
 
 	Parameters:
-	self -- Instance object.
+	self -- An instantiated object of the FormDialogs class.
 	text -- Text that will be shown to the user.
 	initial_value -- Default value that will be shown to the user in the interface.
 
 	Return:
-	Number entered.
+	tag_num -- Number entered.
 	"""
 	def getDataNumber(self, text, initial_value):
 		number_reg_exp = re.compile(r'^([0-9]{1,4}|[1-5][0-9]{4}|6[0-4][0-9]{3}|65[0-4][0-9]{2}|655[0-2][0-9]|6553[0-5])$')
@@ -355,13 +354,13 @@ class FormDialogs:
 	Method that allows to obtain an hour with minutes.
 
 	Parameters:
-	self -- Instance object.
+	self -- An instantiated object of the FormDialogs class.
 	text -- Text that will be shown to the user.
 	hour -- Hour entered.
 	minutes -- Minutes entered.
 
 	Return:
-	Time entered.
+	tag_time -- Time entered.
 	"""
 	def getDataTime(self, text, hour, minutes):
 		code_time, tag_time = self.d.timebox(text,
@@ -377,13 +376,13 @@ class FormDialogs:
 	Method that allows creating the form where more than one value will be entered at the same time.
 
 	Parameters:
-	self -- Instance object.
+	self -- An instantiated object of the FormDialogs class.
 	list_fields -- List of all the fields that will be entered through the form.
 	title -- Title that will be given to the interface and that will be shown to the user.
 	text -- Text that will be shown to the user.
 
 	Return:
-	List with the names of the fields with which the search will be restricted.
+	tag_nf -- List with the names of the fields with which the search will be restricted.
 	"""
 	def getFields(self, list_fields, title, text):
 		list_new_fields = []
@@ -414,13 +413,13 @@ class FormDialogs:
 	Method that allows generating the form where the emails to which the alert will be sent will be entered.
 
 	Parameters:
-	self -- Instance object.
+	self -- An instantiated object of the FormDialogs class.
 	list_emails -- List of total emails that will be entered.
 	title -- Title that will be given to the interface and that will be shown to the user.
 	text -- Text that will be shown to the user.
 
 	Return:
-	List of emails entered by the user.
+	tag_et -- List of emails entered by the user.
 	"""
 	def getEmailsTo(self, list_emails, title, text):
 		email_reg_exp = re.compile(r'^[a-z0-9]+[\._]?[a-z0-9]+[@]\w+[.]\w{2,3}$')
@@ -452,11 +451,11 @@ class FormDialogs:
 	Method that allows generating a list with the total number of fields entered by the user.
 
 	Parameters:
-	self -- Instance object.
+	self -- An instantiated object of the FormDialogs class.
 	total_fields -- Total of fields entered by the user.
 	
 	Return:
-	The list with the total of fields that will be entered.
+	list_new_fields -- The list with the total of fields that will be entered.
 	"""
 	def getFieldsAdd(self, total_fields):
 		list_new_fields = []
@@ -468,11 +467,11 @@ class FormDialogs:
 	Method that allows generating a list with the total number of emails entered by the user.
 
 	Parameters:
-	self -- Instance object.
+	self -- An instantiated object of the FormDialogs class.
 	total_emails -- Total number of emails entered by the user.
 
 	Return:
-	List with the total of emails that will be entered.
+	list_new_emails -- List with the total of emails that will be entered.
 	"""
 	def getEmailAdd(self, total_emails):
 		list_new_emails = []
@@ -484,7 +483,7 @@ class FormDialogs:
 	Method that allows defining if the configuration file should be created or modified.
 
 	Parameters:
-	self -- Instance object.
+	self -- An instantiated object of the FormDialogs class.
 	"""
 	def getDataConf(self):
 		if not os.path.exists(self.utils.getPathTalert("conf") + "/es_conf.yaml"):
@@ -500,7 +499,7 @@ class FormDialogs:
 	Method that allows managing whether the Telk-Alert-Agent configuration is created or modified.
 
 	Parameters:
-	self -- Instance object.
+	self -- An instantiated object of the FormDialogs class.
 	"""
 	def getAgentConfiguration(self):
 		if not os.path.exists(self.utils.getPathTagent('conf') + '/agent_conf.yaml'):
@@ -516,7 +515,7 @@ class FormDialogs:
 	Method that allows creating the menu interface for the operations that can be performed with the alert rules.
 
 	Parameters:
-	self -- Instance object.
+	self -- An instantiated object of the FormDialogs class.
 	"""
 	def getMenuRules(self):
 		options_mr = [("1", "Create new alert rule"),
@@ -534,7 +533,7 @@ class FormDialogs:
 	Method that allows creating the interface for the Telk-Alert-Agent options menu.
 
 	Parameters:
-	self -- Instance object.
+	self -- An instantiated object of the FormDialogs class.
 	"""
 	def getMenuAgent(self):
 		options_ma = [("1", "Configuration"),
@@ -547,7 +546,7 @@ class FormDialogs:
 	Method that allows creating the menu interface of the Telk-Alert service.
 
 	Parameters:
-	self -- Instance object.
+	self -- An instantiated object of the FormDialogs class.
 	"""
 	def getMenuService(self):
 		options_ms = [("1", "Start Service"),
@@ -562,7 +561,7 @@ class FormDialogs:
 	Method that allows creating the menu interface of the Telk-Alert-Agent service.
 
 	Parameters:
-	self -- Instance object.
+	self -- An instantiated object of the FormDialogs class.
 	"""
 	def getMenuServiceAgent(self):
 		options_msa = [("1", "Start Service"),
@@ -577,7 +576,7 @@ class FormDialogs:
 	Method that allows interacting with the main menu options.
 
 	Parameters:
-	self -- Instance object.
+	self -- An instantiated object of the FormDialogs class.
 	option -- Chosen option.
 	"""
 	def switchMmenu(self, option):
@@ -596,7 +595,7 @@ class FormDialogs:
 	Method that allows interacting with the options of the alert rules menu.
 
 	Parameters:
-	self -- Instance object.
+	self -- An instantiated object of the FormDialogs class.
 	option -- Chosen option.
 	"""
 	def switchMrules(self, option):
@@ -613,7 +612,7 @@ class FormDialogs:
 	Method that allows interacting with the options of the Telk-Alert-Agent service menu.
 
 	Parameters:
-	self -- Instance object.
+	self -- An instantiated object of the FormDialogs class.
 	option -- Chosen option.
 	"""
 	def switchMagent(self, option):
@@ -626,7 +625,7 @@ class FormDialogs:
 	Method that allows interacting with the options of the Telk-Alert-Agent service menu.
 
 	Parameters:
-	self -- Instance object.
+	self -- An instantiated object of the FormDialogs class.
 	option -- Chosen option.
 	"""
 	def switchMServiceAgent(self, option):
@@ -643,7 +642,7 @@ class FormDialogs:
 	Method that allows interacting with the options of the Telk-Alert service menu.
 
 	Parameters:
-	self -- Instance object.
+	self -- An instantiated object of the FormDialogs class.
 	option -- Chosen option.
 	"""
 	def switchMService(self, option):
@@ -660,7 +659,7 @@ class FormDialogs:
 	Method that allows creating the interface with the main menu options.
 
 	Parameters:
-	self -- Instance object.
+	self -- An instantiated object of the FormDialogs class.
 	"""
 	def mainMenu(self):
 		options_mm = [("1", "Telk-Alert Configuration"),

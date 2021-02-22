@@ -1,6 +1,6 @@
 import os
 import io
-from LoggerClass import Logger
+from modules.LoggerClass import Logger
 
 """
 Class that allows you to manage everything related to the Telk-Alert service.

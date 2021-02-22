@@ -7,8 +7,7 @@ from base64 import b64encode, b64decode
 from Crypto import Random
 from Crypto.Util.Padding import pad, unpad
 from Crypto.Cipher import AES
-sys.path.append('./modules')
-from LoggerClass import Logger
+from modules.LoggerClass import Logger
 
 """
 Class that allows managing all the utilities that are used for the operation of the application.

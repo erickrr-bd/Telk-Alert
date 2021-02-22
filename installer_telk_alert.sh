@@ -41,8 +41,8 @@ if [ $opc = "I" ] || [ $opc = "i" ]; then
 	cp telk-alert.service /etc/systemd/system/
 	cp telk-alert-agent.service /etc/systemd/system
 	systemctl daemon-reload
-	#systemctl enable telk-alert.service
-	#systemctl enable telk-alert-agent.service
+	systemctl enable telk-alert.service
+	systemctl enable telk-alert-agent.service
 	echo ''
 	echo -e '\e[96mCreated services...\e[0m'
 	sleep 3

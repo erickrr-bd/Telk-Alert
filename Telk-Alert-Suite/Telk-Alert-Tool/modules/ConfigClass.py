@@ -1,9 +1,7 @@
-import yaml
 import os
-import sys
-sys.path.append('./modules')
-from UtilsClass import Utils
-from LoggerClass import Logger
+import yaml
+from modules.UtilsClass import Utils
+from modules.LoggerClass import Logger
 
 """
 Class that allows managing everything related to the Telk-Alert configuration.

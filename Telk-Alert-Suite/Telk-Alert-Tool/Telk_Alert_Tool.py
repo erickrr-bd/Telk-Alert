@@ -1,8 +1,6 @@
 #! /usr/bin/env python3
 
-import sys
-sys.path.append('./modules')
-from FormClass import FormDialogs
+from modules.FormClass import FormDialogs
 
 """
 FormDialogs type object

@@ -1,11 +1,9 @@
-import yaml
 import os
-import sys
 import io
+import yaml
 from datetime import datetime
-sys.path.append('./modules')
-from UtilsClass import Utils
-from LoggerClass import Logger
+from modules.UtilsClass import Utils
+from modules.LoggerClass import Logger
 
 """
 Class that allows managing everything related to Telk-Alert-Agent.
