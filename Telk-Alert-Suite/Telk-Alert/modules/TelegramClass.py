@@ -4,9 +4,9 @@ import pycurl
 from datetime import datetime
 from urllib.parse import urlencode
 from elasticsearch_dsl import utils
-sys.path.append('./modules')
-from UtilsClass import Utils
-from LoggerClass import Logger
+#sys.path.append('./modules')
+from modules.LoggerClass import Logger
+from modules.UtilsClass import Utils
 
 """
 Class that allows you to manage the sending of alerts through Telegram.

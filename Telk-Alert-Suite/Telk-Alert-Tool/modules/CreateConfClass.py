@@ -245,7 +245,7 @@ class Configuration:
 			 os.mkdir(self.utils.getPathTalert(str(data_conf[3])))
 			with open(self.utils.getPathTalert('conf') + '/es_conf.yaml', 'w') as yaml_file:
 				yaml.dump(d, yaml_file, default_flow_style = False)
-			#self.utils.changeUidGid(Utils.getPathTalert('conf') + '/es_conf.yaml')
-			#self.utils.changeUidGid(Utils.getPathTalert(str(data_conf[3])))
+			self.utils.changeUidGid(Utils.getPathTalert('conf') + '/es_conf.yaml')
+			self.utils.changeUidGid(Utils.getPathTalert(str(data_conf[3])))
 		except OSError as exception:
 			self.logger.createLogTool("Error" + str(exception), 4)

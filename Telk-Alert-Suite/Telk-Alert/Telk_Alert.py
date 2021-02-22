@@ -1,8 +1,6 @@
 #! /usr/bin/env python3
 
-import sys
-sys.path.append('./modules')
-from RulesClass import Rules
+from modules.RulesClass import Rules 
 
 """
 Rules type object.

@@ -8,8 +8,7 @@ from hashlib import sha256
 from base64 import b64decode
 from Crypto.Util.Padding import unpad
 from Crypto.Cipher import AES
-sys.path.append('./modules')
-from LoggerClass import Logger
+from modules.LoggerClass import Logger
 
 """
 Class that allows you to manage the utilities that the application will use for its operation.
@@ -24,7 +23,7 @@ class Utils:
 	"""
 	Logger type object
 	"""
-	logger = Logger()
+	#logger = Logger()
 
 	"""
 	Constructor for the Utils class.
@@ -96,7 +95,7 @@ class Utils:
 	path_final -- Final directory.
 	"""
 	def getPathTalert(self, path_dir):
-		path_origen = "/etc/Telk-Alert-Suite/Telk-Alert"
+		path_origen = '/etc/Telk-Alert-Suite/Telk-Alert'
 		#path_origen = os.getcwd()
 		path_final = os.path.join(path_origen, path_dir)
 		return path_final

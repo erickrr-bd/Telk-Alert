@@ -15,9 +15,22 @@ Class that allows managing all the utilities that are used for the operation of 
 """
 class Utils:
 
+	"""
+	Property that saves the passphrase that will be used for the decryption process.
+	"""
 	passphrase = ""
+
+	"""
+	Logger type object
+	"""
 	logger = Logger()
 
+	"""
+	Constructor for the Utils class.
+
+	Parameters:
+	self -- An instantiated object of the Utils class.
+	"""
 	def __init__(self):
 		self.passphrase = self.getPassphrase()
 
@@ -37,9 +50,20 @@ class Utils:
 				data_yaml = yaml.safe_load(file)
 			return data_yaml
 		except IOError as exception:
+			print("Yaml file not found. For more information see the application logs.")
 			self.logger.createLogTool("Error" + str(exception), 4)
+			sys.exit(1)
 
-	
+	"""
+	Method that allows creating the path for a Telk-Alert directory.
+
+	Parameters:
+	self -- An instantiated object of the Utils class.
+	path_dir -- Folder or directory that will be added to the source path of Telk-Alert.
+
+	Return:
+	path_final -- Final directory.
+	"""
 	def getPathTalert(self, path_dir):
 		path_origen = "/etc/Telk-Alert-Suite/Telk-Alert"
 		path_final = os.path.join(path_origen, path_dir)
@@ -57,6 +81,18 @@ class Utils:
 		path_agent = os.path.join(path_origen, path_dir)
 		return path_agent
 
+	"""
+	Method that allows obtaining the passphrase of a file.
+
+	Parameters:
+	self -- An instantiated object of the Utils class.
+
+	Return:
+	pass_key -- Passphrase in a character string.
+
+	Exceptions:
+	FileNotFoundError -- his is an exception in python and it comes when a file does not exist and we want to use it. 
+	"""
 	def getPassphrase(self):
 		file_key = open(self.getPathTalert('conf') + '/key','r')
 		pass_key = file_key.read()
@@ -68,9 +104,12 @@ class Utils:
 			return False
 		return True
 
-	def changeUidGid(path):
-		uid = pwd.getpwnam('telkalert').pw_uid
-		gid = pwd.getpwnam('telkalert').pw_gid
+	"""
+	
+	"""
+	def changeUidGid(self, path):
+		uid = pwd.getpwnam('telk_alert').pw_uid
+		gid = pwd.getpwnam('telk_alert').pw_gid
 		os.chown(path, uid, gid)
 
 	def getSha256File(self, file):

@@ -584,6 +584,7 @@ class Rules:
 		try:
 			with open(self.utils.getPathTalert(self.folder_rules) + '/' + str(data_rule[0]) + '.yaml', 'w') as rule_file:
 				yaml.dump(d_rule, rule_file, default_flow_style = False)
+			self.utils.changeUidGid(self.utils.getPathTalert(self.folder_rules) + '/' + str(data_rule[0]) + '.yaml')
 		except OSError as exception:
 			self.logger.createLogTool('Error: ' + str(exception), 4)
 

@@ -2,10 +2,10 @@ import os
 import sys
 import glob
 import threading
-sys.path.append('./modules')
-from UtilsClass import Utils
-from LoggerClass import Logger
-from ElasticClass import Elastic
+#sys.path.append('./modules')
+from modules.LoggerClass import Logger
+from modules.UtilsClass import Utils
+from modules.ElasticClass import Elastic
 
 """
 Class that allows managing alert rules.

@@ -6,11 +6,10 @@ import platform
 from datetime import datetime
 from elasticsearch import Elasticsearch, RequestsHttpConnection, exceptions
 from elasticsearch_dsl import Q, Search, A
-sys.path.append('./modules')
-from UtilsClass import Utils
-from LoggerClass import Logger
-from TelegramClass import Telegram
-from EmailClass import Email
+from modules.LoggerClass import Logger
+from modules.UtilsClass import Utils
+from modules.TelegramClass import Telegram
+from modules.EmailClass import Email
 
 """
 Class that allows you to manage everything related to ElasticSearch.
