@@ -3,7 +3,6 @@ import smtplib
 import email.message
 from datetime import datetime
 from elasticsearch_dsl import utils
-#sys.path.append('./modules')
 from modules.LoggerClass import Logger
 from modules.UtilsClass import Utils
 

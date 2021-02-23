@@ -10,7 +10,7 @@ class Logger:
 	Method that allows to write the application logs in a file.
 
 	Parameters:
-	self -- Instance object.
+	self -- An instantiated object of the Logger class.
 	message -- Message to be shown in the log.
 	type_log -- Type of log to write.
 	"""

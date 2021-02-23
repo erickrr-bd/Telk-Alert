@@ -39,6 +39,9 @@ class Rules:
 	options_send_alert = [("telegram", "The alert will be sent via Telegram", 0),
 						 ("email", "The alert will be sent via email", 0)]
 
+	options_type_alert_send = [["only", "A single alert with the total of events found", 1],
+						 ["multiple", "An alert for each event found", 0]]
+
 	"""
 	Property that contains the name of the folder where the alert rules are saved.
 	"""
@@ -55,9 +58,6 @@ class Rules:
 		options_type_alert = [("Frequency", "Make the searches in the index periodically", 1)]
 
 		options_filter_alert = [("query_string", "Perform the search using the Query String of ElasticSearch", 1)]
-
-		options_type_alert_send = [("only", "A single alert with the total of events found", 1),
-						 ("multiple", "An alert for each event found", 0)]
 
 		self.folder_rules = self.utils.readFileYaml(self.utils.getPathTalert('conf') + '/es_conf.yaml')['rules_folder']
 		data_rule = []
@@ -85,7 +85,7 @@ class Rules:
 		if filter_type == "query_string":
 			query_string = form_dialog.getDataInputText("Enter the query string:", "event.code : 4120")
 			data_rule.append(query_string)
-			type_alert_send = form_dialog.getDataRadioList("Select a option:", options_type_alert_send, "Alert Sending Type")
+			type_alert_send = form_dialog.getDataRadioList("Select a option:", self.options_type_alert_send, "Alert Sending Type")
 			data_rule.append(type_alert_send)
 			use_restriction_fields = form_dialog.getDataYesOrNo("Do you want your search results to be restricted to certain fields?", "Restriction By Fields")
 			if use_restriction_fields == "ok":
@@ -154,6 +154,7 @@ class Rules:
 								("Query String", "Query string for event search", 0),
 								("Restriction Fields", "The search result only returns certain fields", 0),
 								("Restriction Hostname", "Sending of the alert is retracted by hostname", 0),
+								("Shipping Type", "How the alert will be sent", 0),
 								("Sending Alert", "Alerts sending platforms", 0)]
 
 		options_rest_field_false = [("Enable", "Enable restriction by fields", 0)]
@@ -203,6 +204,7 @@ class Rules:
 		flag_query_string = 0
 		flag_restriction_fields = 0
 		flag_restriction_hostname = 0
+		flag_type_alert = 0
 		flag_sending_alert = 0
 		list_fields_update = form_dialog.getDataCheckList("Select one option or more:", options_fields_update, "Alert Rule Fields")
 		for field_update in list_fields_update:
@@ -224,6 +226,8 @@ class Rules:
 				flag_restriction_fields = 1
 			if field_update == "Restriction Hostname":
 				flag_restriction_hostname = 1
+			if field_update == "Shipping Type":
+				flag_type_alert = 1
 			if field_update == "Sending Alert":
 				flag_sending_alert = 1
 		with open(self.utils.getPathTalert(self.folder_rules) + '/' + name_alert_rule, "rU") as file_rule:
@@ -328,6 +332,14 @@ class Rules:
 						if opt_rest_host_modify == "Number of Events":
 							number_events_hostname = form_dialog.getDataNumber("Enter the total number of events per hostname to which the alert will be sent:", str(data_rule['number_events_host']))
 							data_rule['number_events_host'] = int(number_events_hostname)
+			if flag_type_alert == 1:
+				for opt_type_send in self.options_type_alert_send:
+					if opt_type_send[0] == data_rule['type_alert_send']:
+						opt_type_send[2] = 1
+					else:
+						opt_type_send[2] = 0
+				type_alert_send = form_dialog.getDataRadioList("Select a option:", self.options_type_alert_send, "Alert Sending Type")
+				data_rule['type_alert_send'] = str(type_alert_send)
 			if flag_sending_alert == 1:
 				flag_telegram = 0
 				flag_email = 0

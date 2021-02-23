@@ -20,7 +20,7 @@ class Utils:
 	passphrase = ""
 
 	"""
-	Logger type object
+	Logger type object.
 	"""
 	logger = Logger()
 
@@ -49,7 +49,6 @@ class Utils:
 				data_yaml = yaml.safe_load(file)
 			return data_yaml
 		except IOError as exception:
-			print("Yaml file not found. For more information see the application logs.")
 			self.logger.createLogTool("Error" + str(exception), 4)
 			sys.exit(1)
 
@@ -93,24 +92,52 @@ class Utils:
 	FileNotFoundError -- his is an exception in python and it comes when a file does not exist and we want to use it. 
 	"""
 	def getPassphrase(self):
-		file_key = open(self.getPathTalert('conf') + '/key','r')
-		pass_key = file_key.read()
-		file_key.close()
-		return pass_key
+		try:
+			file_key = open(self.getPathTalert('conf') + '/key','r')
+			pass_key = file_key.read()
+			file_key.close()
+			return pass_key
+		except FileNotFoundError as exceptions:
+			self.logger.createLogTool(str(exceptions), 4)
+			sys.exit(1)
 
+	"""
+	Method that validates data from a regular expression.
+
+	self -- An instantiated object of the Utils class.
+	regular_expression -- Regular expression with which the data will be validated.
+	data -- Data to be validated.
+	"""
 	def validateRegularExpression(self, regular_expression, data):
 		if(not regular_expression.match(data)):
 			return False
 		return True
 
 	"""
-	
+	Method that changes the uid and gid of a file for that of telk_alert.
+
+	Parameters:
+	self -- An instantiated object of the Utils class.
+	path -- Path where the file or directory is located.
 	"""
 	def changeUidGid(self, path):
 		uid = pwd.getpwnam('telk_alert').pw_uid
 		gid = pwd.getpwnam('telk_alert').pw_gid
 		os.chown(path, uid, gid)
 
+	"""
+	Method that allows obtaining the hash function of a file through the sha-256 algorithm.
+
+	Parameters:
+	self -- An instantiated object of the Utils class.
+	file -- Path of the file from which the hash function will be obtained.
+
+	Return:
+	Hash obtained.
+
+	Exceptions:
+	Exception -- Thrown when any mistake happens.
+	"""
 	def getSha256File(self, file):
 		try:
 			hashsha = sha256()
@@ -119,8 +146,18 @@ class Utils:
 					hashsha.update(block)
 			return hashsha.hexdigest()
 		except Exception as exception:
-			self.logger.createLogTool("Error" + str(exception), 4)
+			self.logger.createLogTool("Error: " + str(exception), 4)
 
+	"""
+	Method that allows to encrypt a text through the AES algorithm.
+
+	Parameters:
+	self -- An instantiated object of the Utils class.
+	text -- Text to encrypt.
+
+	Return:
+	Encrypted text.
+	"""
 	def encryptAES(self, text):
 		text_bytes = bytes(text, 'utf-8')
 		key = sha256(self.passphrase.encode()).digest()
@@ -128,9 +165,26 @@ class Utils:
 		aes = AES.new(key, AES.MODE_CBC, IV)
 		return b64encode(IV + aes.encrypt(pad(text_bytes, AES.block_size)))
 
+	"""
+	Method that allows deciphering a text.
+
+	Parameters:
+	self -- An instantiated object of the Utils class.
+	text_encrypt -- Text to decipher.
+
+	Return:
+	Character string with decrypted text.
+
+	Exceptions:
+	binascii.Error -- Is raised if were incorrectly padded or if there are non-alphabet characters present in the string. 
+	"""
 	def decryptAES(self, text_encrypt):
-		key = sha256(self.passphrase.encode()).digest()
-		text_encrypt = b64decode(text_encrypt)
-		IV = text_encrypt[:AES.block_size]
-		aes = AES.new(key, AES.MODE_CBC, IV)
-		return unpad(aes.decrypt(text_encrypt[AES.block_size:]), AES.block_size)
+		try:
+			key = sha256(self.passphrase.encode()).digest()
+			text_encrypt = b64decode(text_encrypt)
+			IV = text_encrypt[:AES.block_size]
+			aes = AES.new(key, AES.MODE_CBC, IV)
+			return unpad(aes.decrypt(text_encrypt[AES.block_size:]), AES.block_size)
+		except binascii.Error as exception:
+			self.logger.createLogTool("Decrypt Error: " + str(exception), 4)
+			sys.exit(1)

@@ -92,7 +92,7 @@ class FormDialogs:
 	title -- Title that will be given to the interface and that will be shown to the user.
 	"""
 	def getScrollBox(self, text, title):
-		code_sb = self.d.scrollbox(text, 15, 50, title = title)
+		code_sb = self.d.scrollbox(text, 15, 70, title = title)
 		if code_sb == self.d.OK:
 			self.mainMenu()
 

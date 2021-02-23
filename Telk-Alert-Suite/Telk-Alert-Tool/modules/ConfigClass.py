@@ -9,7 +9,7 @@ Class that allows managing everything related to the Telk-Alert configuration.
 class Configuration:
 
 	"""
-	Utils type object
+	Utils type object.
 	"""
 	utils = Utils()
 
@@ -72,6 +72,9 @@ class Configuration:
 	Parameters:
 	self -- Instance object.
 	form_dialog -- A FormClass class object.
+
+	Exceptions:
+	KeyError -- A Python KeyError exception is what is raised when you try to access a key that isn’t in a dictionary (dict). 
 	"""
 	def modifyConfiguration(self, form_dialog):
 		options_conf_prop = [("Version", "ElasticSearch Version", 0),

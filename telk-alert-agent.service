@@ -1,14 +1,14 @@
 [Unit]
 Description=Tekium Telk-Alert-Agent v3.0 Service
 After=networking.target
+StartLimitIntervalSec=0
 
 [Service]
 Type=simple
 ExecStart=/etc/Telk-Alert-Suite/Telk-Alert-Agent/Telk_Alert_Agent.py
+User=telk_alert
 Restart=on-failure
-RestartSec=10
-StartLimitBurst=5
-StartLimitInterval=600
+RestartSec=1
 
 [Install]
-WantesBy=multi-user.target
+WantedBy=multi-user.target
