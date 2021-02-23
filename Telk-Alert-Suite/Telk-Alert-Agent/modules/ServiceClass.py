@@ -1,11 +1,9 @@
 import os
 import time
-import sys
 from datetime import datetime
-sys.path.append('./modules')
-from UtilsClass import Utils
-from LoggerClass import Logger
-from TelegramClass import Telegram
+from modules.UtilsClass import Utils
+from modules.LoggerClass import Logger
+from modules.TelegramClass import Telegram
 
 """
 Class that allows to manage the operation of Telk-Alert-Agent.

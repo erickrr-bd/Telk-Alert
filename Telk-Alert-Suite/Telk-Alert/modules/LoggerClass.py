@@ -1,3 +1,5 @@
+import os
+import pwd
 import logging
 from datetime import date
 
@@ -32,3 +34,6 @@ class Logger:
 			logger.error(message)
 		if type_log == 5:
 			logger.critical(message)
+		uid = pwd.getpwnam('telk_alert').pw_uid
+		gid = pwd.getpwnam('telk_alert').pw_gid
+		os.chown('/var/log/Telk-Alert/telk_alert_log' + str(date.today()) + '.log', uid, gid)

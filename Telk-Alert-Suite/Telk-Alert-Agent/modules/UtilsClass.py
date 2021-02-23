@@ -6,8 +6,7 @@ from hashlib import sha256
 from base64 import b64decode
 from Crypto.Util.Padding import unpad
 from Crypto.Cipher import AES
-sys.path.append('./modules')
-from LoggerClass import Logger
+from modules.LoggerClass import Logger
 
 """
 Class that allows to manage the utilities of the application.
@@ -93,12 +92,19 @@ class Utils:
 
 	Return:
 	pass_key -- Passphrase in a character string.
+
+	Exceptions:
+	FileNotFoundError -- his is an exception in python and it comes when a file does not exist and we want to use it. 
 	"""
 	def getPassphrase(self):
-		file_key = open(self.getPathTalert('conf') + '/key','r')
-		pass_key = file_key.read()
-		file_key.close()
-		return pass_key
+		try:
+			file_key = open(self.getPathTalert('conf') + '/key','r')
+			pass_key = file_key.read()
+			file_key.close()
+			return pass_key
+		except FileNotFoundError as exceptions:
+			self.logger.createLogAgent(str(exceptions), 4)
+			sys.exit(1)
 
 	"""
 	Method that allows deciphering a text.

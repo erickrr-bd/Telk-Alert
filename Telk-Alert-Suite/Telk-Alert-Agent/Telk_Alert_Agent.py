@@ -1,8 +1,6 @@
 #! /usr/bin/env python3
 
-import sys
-sys.path.append('./modules')
-from ServiceClass import Service
+from modules.ServiceClass import Service
 
 """
 Service type object

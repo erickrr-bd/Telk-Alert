@@ -39,6 +39,9 @@ class Rules:
 	options_send_alert = [("telegram", "The alert will be sent via Telegram", 0),
 						 ("email", "The alert will be sent via email", 0)]
 
+	"""
+	Property that stores the options for the types of sending alerts.
+	"""
 	options_type_alert_send = [["only", "A single alert with the total of events found", 1],
 						 ["multiple", "An alert for each event found", 0]]
 
@@ -523,8 +526,6 @@ class Rules:
 			for rule in list_all_rules:
 				message += "-" + rule + "\n"
 			form_dialog.getScrollBox(message, "Alert Rules")
-
-
 
 	"""
 	Method that allows creating the alert rule file with extension .yaml based on what was entered.

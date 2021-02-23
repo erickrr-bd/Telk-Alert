@@ -137,7 +137,12 @@ class Email:
 		return message_total_events
 
 	"""
+	Method that obtains the status of the sending of email alerts and displays it on the screen.
 
+	Parameters:
+	self -- An instantiated object of the Email class.
+	response -- Response of sending alerts by email.
+	email_to -- List with the email addresses to which the alerts will be sent.
 	"""
 	def getStatusEmailAlert(self, response, email_to):
 		if len(response) == 0:
