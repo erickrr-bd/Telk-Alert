@@ -1,6 +1,7 @@
 # Telk-Alert v3.0
 
 Author: Erick Rodríguez erickrr.tbd93@gmail.com
+
 License: GPLv3
 
 Telk-Alert is an application developed in Python, which allows alerts based on searches made in ElasticSearch.
@@ -26,11 +27,15 @@ Telk-Alert auxiliary tool that allows checking the status of the service that al
   - pycryptodome
 
 # Installation
-Run the executable ./installer
+Run the executable ./installer_telk_alert.sh, which is in charge of installing the packages and libraries necessary for the operation of Telk-Alert (these can also be installed manually). It also creates all the necessary resources so it must be run with administrator permissions.
 
 # Commercial Support
+![Tekium](https://github.com/unmanarc/uAuditAnalyzer2/blob/master/art/tekium_slogo.jpeg)
+
 Tekium is a cybersecurity company specialized in red team and blue team activities based in Mexico, it has clients in the financial, telecom and retail sectors.
 
 Tekium is an active sponsor of the project, and provides commercial support in the case you need it.
 
 For integration with other platforms such as the Elastic stack, SIEMs, managed security providers in-house solutions, or for any other requests for extending current functionality that you wish to see included in future versions, please contact us: info at tekium.mx
+
+For more information, go to: https://www.tekium.mx/
