@@ -14,3 +14,12 @@ Telk-Alert auxiliary graphic tool that allows the generation of configuration fi
 
 ## Telk-Alert-Agent
 Telk-Alert auxiliary tool that allows checking the status of the service that allows Telk-Alert to function. This is done at two different times defined by the user, and once the status is validated, it sends a message to a Telegram channel with the result.
+
+# Requirements
+- Python 3.6
+- Python Libraries
+  - elasticsearch-dsl
+  - requests
+  - pycurl
+  - pythondialog
+  - pycryptodome
