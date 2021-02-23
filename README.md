@@ -16,6 +16,7 @@ Telk-Alert auxiliary graphic tool that allows the generation of configuration fi
 Telk-Alert auxiliary tool that allows checking the status of the service that allows Telk-Alert to function. This is done at two different times defined by the user, and once the status is validated, it sends a message to a Telegram channel with the result.
 
 # Requirements
+- CentOS 8 (So far it has only been tested in this version) 
 - Python 3.6
 - Python Libraries
   - elasticsearch-dsl
@@ -23,3 +24,13 @@ Telk-Alert auxiliary tool that allows checking the status of the service that al
   - pycurl
   - pythondialog
   - pycryptodome
+
+# Installation
+Run the executable ./installer
+
+# Commercial Support
+Tekium is a cybersecurity company specialized in red team and blue team activities based in Mexico, it has clients in the financial, telecom and retail sectors.
+
+Tekium is an active sponsor of the project, and provides commercial support in the case you need it.
+
+For integration with other platforms such as the Elastic stack, SIEMs, managed security providers in-house solutions, or for any other requests for extending current functionality that you wish to see included in future versions, please contact us: info at tekium.mx
