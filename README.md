@@ -4,7 +4,7 @@ Author: Erick Rodríguez erickrr.tbd93@gmail.com
 
 License: GPLv3
 
-Telk-Alert is an application developed in Python, which allows alerts based on searches made in ElasticSearch.
+Telk-Alert is an application developed in Python, which allows alerts based on searches made in ElasticSearch. Developed mainly for use in information security issues, for monitoring activities and timely alerting.
 
 # Applications
 ## Telk-Alert
