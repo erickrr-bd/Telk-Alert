@@ -26,6 +26,7 @@ Telk-Alert auxiliary tool that allows checking the status of the service that al
   - pycurl
   - pythondialog
   - pycryptodome
+  - pyyaml
 
 # Installation
 Run the executable installer_telk_alert.sh, which is in charge of installing the packages and libraries necessary for the operation of Telk-Alert (these can also be installed manually).It is also responsible for copying and creating the necessary files and directories, creating a user and a group and also the services for the operation of the application. Run with a user with administrator permissions.
