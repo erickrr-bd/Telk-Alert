@@ -16,17 +16,23 @@ read opc
 if [ $opc = "I" ] || [ $opc = "i" ]; then
 	echo -e '\e[96mStarting the Telk-Alert installation...\e[0m'
 	echo ''
-	yum install python3-pip -y
-	dnf install dialog -y
-	pip3 install pythondialog 
-	pip3 install pycryptodome 
-	pip3 install pycurl 
-	pip3 install elasticsearch-dsl 
-	pip3 install requests 
-	echo ''
-	echo -e '\e[96mRequired installed libraries...\e[0m'
-	sleep 3
-	echo ''
+	echo 'Do you want to install the packages and libraries necessary for the operation of Telk-Alert (Y/N)?'
+	read opc_lib
+	if [ $opc_lib = "Y" ] || [ $opc_lib = "y" ]; then
+		echo ''
+		echo -e '\e[96mStarting the installation of the required packages and libraries...\e[0m'
+		yum install python3-pip -y
+		dnf install dialog -y
+		pip3 install pythondialog 
+		pip3 install pycryptodome 
+		pip3 install pycurl 
+		pip3 install elasticsearch-dsl 
+		pip3 install requests 
+		echo ''
+		echo -e '\e[96mRequired installed libraries...\e[0m'
+		sleep 3
+		echo ''
+	fi
 	echo -e '\e[96mCreating user and group for Telk-Alert...\e[0m'
 	groupadd telk_alert
 	useradd -M -s /bin/nologin -g telk_alert -d /etc/Telk-Alert-Suite telk_alert

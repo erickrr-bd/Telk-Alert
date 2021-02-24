@@ -119,13 +119,13 @@ class Agent:
 	form_dialog -- A FormDialogs object.
 	"""
 	def startService(self, form_dialog):
-		result = os.system("systemctl start telk_alert_agent.service")
+		result = os.system("systemctl start telk-alert-agent.service")
 		if int(result) == 0:
 			form_dialog.d.msgbox("\nService started", 7, 50, title = "Error message")
 			self.logger.createLogTool("Service started", 2)
 		if int(result) == 1280:
-			form_dialog.d.msgbox("\nFailed to start telk_alert_agent.service: Not found", 7, 50, title = "Error message")
-			self.logger.createLogTool("Service Error: Failed to start telk_alert_agent.service: Not found", 4)
+			form_dialog.d.msgbox("\nFailed to start telk-alert-agent.service: Not found", 7, 50, title = "Error message")
+			self.logger.createLogTool("Service Error: Failed to start telk-alert-agent.service: Not found", 4)
 
 	"""
 	Method that allows restarting the Telk-Alert-Agent service.
@@ -135,13 +135,13 @@ class Agent:
 	form_dialog -- A FormDialogs object.
 	"""
 	def restartService(self, form_dialog):
-		result = os.system("systemctl restart telk_alert_agent.service")
+		result = os.system("systemctl restart telk-alert-agent.service")
 		if int(result) == 0:
 			form_dialog.d.msgbox("\nService restarted", 7, 50, title = "Error message")
 			self.logger.createLogTool("Service restarted", 2)
 		if int(result) == 1280:
-			form_dialog.d.msgbox("\nFailed to restart telk_alert_agent.service: Not found", 7, 50, title = "Error message")
-			self.logger.createLogTool("Service Error: Failed to restart telk_alert_agent.service: Not found", 4)
+			form_dialog.d.msgbox("\nFailed to restart telk-alert-agent.service: Not found", 7, 50, title = "Error message")
+			self.logger.createLogTool("Service Error: Failed to restart telk-alert-agent.service: Not found", 4)
 
 	"""
 	Method to stop the Telk-Alert-Agent service.
@@ -151,13 +151,13 @@ class Agent:
 	form_dialog -- A FormDialogs object.
 	"""
 	def stopService(self, form_dialog):
-		result = os.system("systemctl stop telk_alert_agent.service")
+		result = os.system("systemctl stop telk-alert-agent.service")
 		if int(result) == 0:
 			form_dialog.d.msgbox("\nService stopped", 7, 50, title = "Error message")
 			self.logger.createLogTool("Service stopped", 2)
 		if int(result) == 1280:
-			form_dialog.d.msgbox("\nFailed to stop telk_alert_agent.service: Not found", 7, 50, title = "Error message")
-			self.logger.createLogTool("Service Error: Failed to stop telk_alert_agent.service: Not found", 4)
+			form_dialog.d.msgbox("\nFailed to stop telk-alert-agent.service: Not found", 7, 50, title = "Error message")
+			self.logger.createLogTool("Service Error: Failed to stop telk-alert-agent.service: Not found", 4)
 
 	"""
 	Method that allows obtaining the status of the Telk-Alert-Agent service.
@@ -169,7 +169,7 @@ class Agent:
 	def getStatusService(self, form_dialog):
 		if os.path.exists('/tmp/telk_alert_agent.status'):
 			os.remove('/tmp/telk_alert_agent.status')
-		os.system('(systemctl is-active --quiet telk_alert_agent.service && echo "Telk-Alert Agent service is running!" || echo "Telk-Alert Agent service is not running!") >> /tmp/telk_alert_agent.status')
+		os.system('(systemctl is-active --quiet telk-alert-agent.service && echo "Telk-Alert Agent service is running!" || echo "Telk-Alert Agent service is not running!") >> /tmp/telk_alert_agent.status')
 		os.system('echo "Detailed service status:" >> /tmp/telk_alert_agent.status')
 		os.system('systemctl -l status telk_alert_agent.service >> /tmp/telk_alert_agent.status')
 		with io.open('/tmp/telk_alert_agent.status', 'r', encoding = 'utf-8') as file_status:
