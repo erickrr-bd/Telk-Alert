@@ -23,7 +23,7 @@ class Utils:
 	"""
 	Logger type object
 	"""
-	#logger = Logger()
+	logger = Logger()
 
 	"""
 	Constructor for the Utils class.

@@ -23,8 +23,13 @@ if [ $opc = "I" ] || [ $opc = "i" ]; then
 		echo -e '\e[96mStarting the installation of the required packages and libraries...\e[0m'
 		yum install python3-pip -y
 		dnf install dialog -y
+		dnf install gcc -y
+		dnf install python3-devel -y
+		dnf install libcurl-devel -y
+		dnf install openssl-devel -y
 		pip3 install pythondialog 
-		pip3 install pycryptodome 
+		pip3 install pycryptodome
+		pip3 install pyyaml 
 		pip3 install pycurl 
 		pip3 install elasticsearch-dsl 
 		pip3 install requests 
@@ -82,7 +87,7 @@ EOF
 	echo -e '\e[96mStarting Telk-Alert-Tool...\e[0m'
 	sleep 5
 	cd /etc/Telk-Alert-Suite/Telk-Alert-Tool
-	./Telk-Alert-Tool
+	./Telk_Alert_Tool
 fi 
 if [ $opc = "U" ] || [ $opc = "u" ]; then
 	dir=$(sudo pwd)
