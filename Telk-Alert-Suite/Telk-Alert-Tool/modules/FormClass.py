@@ -257,7 +257,7 @@ class FormDialogs:
 	tag_email -- The email address entered.
 	"""
 	def getDataEmail(self, text, initial_value):
-		email_reg_exp = re.compile(r'^[a-z0-9]+[\._]?[a-z0-9]+[@]\w+[.]\w{2,3}$')
+		email_reg_exp = re.compile(r'^[a-z0-9]+[\._]?[a-z0-9]+[@]\w+[.]\w+$' )
 		while True:
 			code_email, tag_email = self.d.inputbox(text, 10, 50, initial_value)
 			if code_email == self.d.OK:
@@ -422,7 +422,7 @@ class FormDialogs:
 	tag_et -- List of emails entered by the user.
 	"""
 	def getEmailsTo(self, list_emails, title, text):
-		email_reg_exp = re.compile(r'^[a-z0-9]+[\._]?[a-z0-9]+[@]\w+[.]\w{2,3}$')
+		email_reg_exp = re.compile(r'^[a-z0-9]+[\._]?[a-z0-9]+[@]\w+[.]\w+$')
 		list_new_emails = []
 		i = 0
 		for email in list_emails:

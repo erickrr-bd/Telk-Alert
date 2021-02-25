@@ -10,12 +10,12 @@ Class that allows managing alert rules.
 class Rules:
 
 	"""
-	Utils type object
+	Utils type object.
 	"""
 	utils = Utils()
 
 	"""
-	Logger type object
+	Logger type object.
 	"""
 	logger = Logger()
 
@@ -51,11 +51,11 @@ class Rules:
 	folder_rules = ""
 
 	"""
-	Method that allows the user to request the data to create a new alert rule.
+	Method that requests the data for the creation of an alert rule.
 
 	Parameters:
-	self -- Instance object.
-	form_dialog -- A FormClass class object.
+	self -- An instantiated object of the Rules class.
+	form_dialog -- A FormDialogs class object.
 	"""
 	def createNewRule(self, form_dialog):
 		options_type_alert = [("Frequency", "Make the searches in the index periodically", 1)]
@@ -90,7 +90,7 @@ class Rules:
 			data_rule.append(query_string)
 			type_alert_send = form_dialog.getDataRadioList("Select a option:", self.options_type_alert_send, "Alert Sending Type")
 			data_rule.append(type_alert_send)
-			use_restriction_fields = form_dialog.getDataYesOrNo("Do you want your search results to be restricted to certain fields?", "Restriction By Fields")
+			use_restriction_fields = form_dialog.getDataYesOrNo("\nDo you want your search results to be restricted to certain fields?", "Restriction By Fields")
 			if use_restriction_fields == "ok":
 				data_rule.append(True)
 				number_fields = form_dialog.getDataNumber("Enter how many fields you want to enter for the restriction:", "2")
@@ -99,7 +99,7 @@ class Rules:
 				data_rule.append(es_fields)
 			else:
 				data_rule.append(False)
-		restrict_hostname = form_dialog.getDataYesOrNo("Do you want the sending of the alert to be restricted to a certain number of events per hostname?", "Restriction By Hostname")
+		restrict_hostname = form_dialog.getDataYesOrNo("\nDo you want the sending of the alert to be restricted to a certain number of events per hostname?", "Restriction By Hostname")
 		if restrict_hostname == "ok":
 			number_events_hostname = form_dialog.getDataNumber("Enter the total number of events per hostname to which the alert will be sent:", "3")
 			data_rule.append(True)
@@ -109,19 +109,19 @@ class Rules:
 		else:
 			data_rule.append(False)
 		opt_alert_send = form_dialog.getDataCheckList("Select one or more options:", self.options_send_alert, "Alert Sending Platforms")
-		bandera_telegram = 0
-		bandera_email = 0
+		flag_telegram = 0
+		flag_email = 0
 		for opt_alert in opt_alert_send:
 			if opt_alert == "telegram":
-				bandera_telegram = 1
+				flag_telegram = 1
 			if opt_alert == "email":
-				bandera_email = 1
-		if bandera_telegram == 1:
+				flag_email = 1
+		if flag_telegram == 1:
 			telegram_bot_token = self.utils.encryptAES(form_dialog.getDataInputText("Enter the Telegram bot token:", "751988420:AAHrzn7RXWxVQQNha0tQUzyouE5lUcPde1g"))
 			telegram_chat_id = self.utils.encryptAES(form_dialog.getDataInputText("Enter the Telegram channel identifier:", "-1002365478941"))
 			data_rule.append(telegram_bot_token)
 			data_rule.append(telegram_chat_id)
-		if bandera_email == 1:
+		if flag_email == 1:
 			email_from = form_dialog.getDataEmail("Enter the email address from which the alerts will be sent (gmail or outlook):", "usuario@gmail.com")
 			email_from_password = self.utils.encryptAES(form_dialog.getDataPassword("Enter the password of the email address from which the alerts will be sent:", "password"))
 			number_email_to = form_dialog.getDataNumber("Enter the total number of email addresses to which the alert will be sent:", "3")
@@ -130,7 +130,7 @@ class Rules:
 			data_rule.append(email_from)
 			data_rule.append(email_from_password)
 			data_rule.append(list_email_to)
-		self.createRuleYaml(data_rule, bandera_telegram, bandera_email)
+		self.createRuleYaml(data_rule, flag_telegram, flag_email)
 		if(not os.path.exists(self.utils.getPathTalert(self.folder_rules) + '/' + name_rule + '.yaml')):
 			form_dialog.d.msgbox("\nError creating alert rule", 7, 50, title = "Error message")
 		else:
@@ -138,11 +138,11 @@ class Rules:
 		form_dialog.mainMenu()
 
 	"""
-	Method that allows modifying one or more fields of an alert rule.
+	Method that modifies one or more fields of a specific alert rule.
 
 	Parameters:
-	self -- Instance object.
-	form_dialog -- A FormClass class object.
+	self -- An instantiated object of the Rules class.
+	form_dialog -- A FormDialogs class object.
 
 	Exceptions:
 	KeyError -- A Python KeyError exception is what is raised when you try to access a key that isn’t in a dictionary (dict). 
@@ -488,11 +488,11 @@ class Rules:
 			form_dialog.mainMenu()
 
 	"""
-	Method that allows eliminating one or more alert rules.
+	Method that eliminates one or more alert rules.
 
 	Parameters:
-	self -- Instance object.
-	form_dialog -- A FormClass class object.
+	self -- An instantiated object of the Rules class.
+	form_dialog -- A FormDialogs class object.
 	"""
 	def getDeleteRules(self, form_dialog):
 		self.folder_rules = self.utils.readFileYaml(self.utils.getPathTalert('conf') + '/es_conf.yaml')['rules_folder']
@@ -510,11 +510,11 @@ class Rules:
 		form_dialog.mainMenu()
 
 	"""
-	Method that allows displaying the name of all alert rules created so far.
+	Method that shows all the alert rules created so far on the screen.
 
 	Parameters:
-	self -- Instance object.
-	form_dialog -- A FormClass class object.
+	self -- An instantiated object of the Rules class.
+	form_dialog -- A FormDialogs class object.
 	"""
 	def showAllAlertRules(self, form_dialog):
 		self.folder_rules = self.utils.readFileYaml(self.utils.getPathTalert('conf') + '/es_conf.yaml')['rules_folder']
@@ -531,16 +531,16 @@ class Rules:
 	Method that allows creating the alert rule file with extension .yaml based on what was entered.
 
 	Parameters:
-	self -- Instance object.
+	self -- An instantiated object of the Rules class.
 	data_rule -- List with all the data entered for the alert rule.
-	bandera_telegram -- Flag that lets you know if the alert will be sent by telegram or not.
-	bandera_email -- Flag that lets you know if the alert will be sent by email or not.
+	flag_telegram -- Flag that lets you know if the alert will be sent by telegram or not.
+	flag_email -- Flag that lets you know if the alert will be sent by email or not.
 
 	Exceptions:
 	OSError -- This exception is raised when a system function returns a system-related error, including I/O failures such as “file not found” 
 	or “disk full” (not for illegal argument types or other incidental errors).
 	"""
-	def createRuleYaml(self, data_rule, bandera_telegram, bandera_email):
+	def createRuleYaml(self, data_rule, flag_telegram, flag_email):
 		self.folder_rules = self.utils.readFileYaml(self.utils.getPathTalert('conf') + '/es_conf.yaml')['rules_folder']
 
 		d_rule = {'name_rule' : str(data_rule[0]),
@@ -575,17 +575,17 @@ class Rules:
 				last_index = 13
 		restrict_host_json = { 'restrict_by_host' : restrict_by_host }
 		d_rule.update(restrict_host_json)
-		if bandera_telegram == 1 and bandera_email == 0:
+		if flag_telegram == 1 and flag_email == 0:
 			alert_json = { 'alert' : ['telegram'] }
 			telegram_json = { 'telegram_bot_token' : data_rule[last_index + 1].decode('utf-8'), 'telegram_chat_id' : data_rule[last_index + 2].decode('utf-8') }
 			d_rule.update(telegram_json)
 			d_rule.update(alert_json)
-		if bandera_email == 1 and bandera_telegram == 0:
+		if flag_email == 1 and flag_telegram == 0:
 			alert_json = { 'alert' : ['email'] }
 			email_json = { 'email_from' : str(data_rule[last_index + 1]), 'email_from_password' : data_rule[last_index + 2].decode('utf-8'), 'email_to' : data_rule[last_index + 3] }
 			d_rule.update(email_json)
 			d_rule.update(alert_json)
-		if bandera_telegram == 1 and bandera_email == 1:
+		if flag_telegram == 1 and flag_email == 1:
 			alert_json = { 'alert' : ['telegram', 'email'] }
 			telegram_json = { 'telegram_bot_token' : data_rule[last_index + 1].decode('utf-8'), 'telegram_chat_id' : data_rule[last_index + 2].decode('utf-8') }
 			email_json = { 'email_from' : str(data_rule[last_index + 3]), 'email_from_password' : data_rule[last_index + 4].decode('utf-8'), 'email_to' : data_rule[last_index + 5] }
@@ -600,11 +600,11 @@ class Rules:
 			self.logger.createLogTool('Error: ' + str(exception), 4)
 
 	"""
-	Method that allows to create an interface with the list of alert rules and thus be able to choose the one to be modified.
+	Method that shows on screen all the alert rules created so far to select one, which will be modified.
 
 	Parameters:
-	self -- Instance object.
-	form_dialog -- A FormClass class object.
+	self -- An instantiated object of the Rules class.
+	form_dialog -- A FormDialogs class object.
 	"""
 	def getUpdateAlertRules(self, form_dialog):
 		self.folder_rules = self.utils.readFileYaml(self.utils.getPathTalert('conf') + '/es_conf.yaml')['rules_folder']
@@ -619,7 +619,7 @@ class Rules:
 			self.modifyAlertRule(form_dialog, rule_to_modify)
 
 	"""
-	Method that allows to obtain all the alert rules saved in a directory.
+	Method that gets a list with all the names of the alert rules stored in the rules directory.
 
 	Parameters:
 	self -- An instantiated object of the Rules class.
