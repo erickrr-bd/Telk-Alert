@@ -9,7 +9,7 @@ echo -e '\e[96mAuthor: Erick Rodríguez erickrr.tbd93@gmail.com\e[0m'
 echo ''
 echo -e '\e[96mLicense: GPLv3\e[0m'
 echo ''
-echo -e '\e[1;33m--------------------------------------------------------\e[0m'
+echo -e '\e[1;33m--------------------------------------------------------------------------------\e[0m'
 echo ''
 echo 'Do you want to install or update Telk-Alert on the computer (I/U)?'
 read opc
@@ -46,7 +46,6 @@ if [ $opc = "I" ] || [ $opc = "i" ]; then
 	sleep 3
 	echo ''
 	echo -e '\e[96mCreating the necessary services for Telk-Alert...\e[0m'
-	echo ''
 	dir=$(sudo pwd)
 	cd $dir
 	cp telk-alert.service /etc/systemd/system/
@@ -64,12 +63,10 @@ if [ $opc = "I" ] || [ $opc = "i" ]; then
 	mkdir /etc/Telk-Alert-Suite/Telk-Alert/conf
 	mkdir /etc/Telk-Alert-Suite/Telk-Alert-Agent/conf
 	mkdir /var/log/Telk-Alert
-	echo ''
 	echo -e '\e[96mDirectories copied and created...\e[0m'
 	sleep 3
 	echo ''
 	echo -e '\e[96mCreating passphrase...\e[0m'
-	echo ''
 	passphrase=$(cat /dev/random | tr -dc '[:alpha:]' | head -c 30; echo)
 	cat << EOF > /etc/Telk-Alert-Suite/Telk-Alert/conf/key 
 $passphrase
@@ -80,17 +77,28 @@ EOF
 	echo ''
 	chown telk_alert:telk_alert -R /etc/Telk-Alert-Suite
 	chown telk_alert:telk_alert -R /var/log/Telk-Alert
-	echo ''
 	echo -e '\e[96mTelk-Alert installed on the computer...\e[0m'
 	sleep 3	
 	echo ''
 	echo -e '\e[96mStarting Telk-Alert-Tool...\e[0m'
 	sleep 5
 	cd /etc/Telk-Alert-Suite/Telk-Alert-Tool
-	./Telk_Alert_Tool
-fi 
-if [ $opc = "U" ] || [ $opc = "u" ]; then
+	python3 Telk_Alert_Tool.py
+elif [ $opc = "U" ] || [ $opc = "u" ]; then
+	echo ''
+	echo -e '\e[96mStarting the Telk-Alert update...\e[0m'
+	echo ''
 	dir=$(sudo pwd)
 	cp -r Telk-Alert-Suite /etc/
 	chown telk_alert:telk_alert -R /etc/Telk-Alert-Suite
-fi
+	sleep 3
+	echo -e '\e[96mTelk-Alert updated...\e[0m'
+	echo ''
+	echo -e '\e[96mStarting Telk-Alert-Tool...\e[0m'
+	sleep 5
+	cd /etc/Telk-Alert-Suite/Telk-Alert-Tool
+	python3 Telk_Alert_Tool.py
+else
+	clear
+	exit
+fi 

@@ -14,16 +14,16 @@ class Configuration:
 	utils = Utils()
 
 	"""
-	Logger type object
+	Logger type object.
 	"""
 	logger = Logger()
 
 	"""
-	Method that allows requesting the data required to create the Telk-Alert configuration file.
+	Method that requests the data for the creation of the Telk-Alert configuration file.
 
 	Parameters:
-	self -- Instance object.
-	form_dialog -- A FormClass class object.
+	self -- An instantiated object of the Configuration class.
+	form_dialog -- A FormDialogs class object.
 	"""
 	def createConfiguration(self, form_dialog):
 		data_conf = []
@@ -31,21 +31,21 @@ class Configuration:
 		host_es = form_dialog.getDataIP("Enter the ElasticSearch IP address:", "localhost")
 		port_es = form_dialog.getDataPort("Enter the ElasticSearch listening port:", "9200")
 		folder_rules = form_dialog.getDataNameFolderOrFile("Enter the name of the folder where the alert rules will be hosted:", "alert_rules")
-		use_ssl = form_dialog.getDataYesOrNo("Do you want Telk-Alert to connect to ElasticSearch using the SSL/TLS protocol?", "Connection Via SSL/TLS")
+		use_ssl = form_dialog.getDataYesOrNo("\nDo you want Telk-Alert to connect to ElasticSearch using the SSL/TLS protocol?", "Connection Via SSL/TLS")
 		data_conf.append(version_es)
 		data_conf.append(host_es)
 		data_conf.append(port_es)
 		data_conf.append(folder_rules)
 		if use_ssl == "ok":
 			data_conf.append(True)
-			valid_certificates = form_dialog.getDataYesOrNo("Do you want the certificates for SSL/TLS communication to be validated?", "Certificate Validation")
+			valid_certificates = form_dialog.getDataYesOrNo("\nDo you want the certificates for SSL/TLS communication to be validated?", "Certificate Validation")
 			if valid_certificates == "ok":
 				data_conf.append(True)
 			else:
 				data_conf.append(False)
 		else:
 			data_conf.append(False)
-		http_auth = form_dialog.getDataYesOrNo("Is the use of HTTP authentication required to connect to ElasticSearch?", "HTTP Authentication")
+		http_auth = form_dialog.getDataYesOrNo("\nIs the use of HTTP authentication required to connect to ElasticSearch?", "HTTP Authentication")
 		if http_auth == "ok":
 			data_conf.append(True)
 			user_http_auth = self.utils.encryptAES(form_dialog.getDataInputText("Enter the username for HTTP authentication:", "user_http"))
@@ -54,7 +54,7 @@ class Configuration:
 			data_conf.append(pass_http_auth)
 		else:
 			data_conf.append(False)
-		write_index = form_dialog.getDataInputText("Enter the name of the index that will be created in ElasticSearch:", "telkalert")
+		write_index = form_dialog.getDataInputText("Enter the name of the index that will be created in ElasticSearch:", "telk_alert")
 		max_hits = form_dialog.getDataNumber("Enter the maximum number of hits for the search (maximum 10000):", "10000")
 		data_conf.append(write_index)
 		data_conf.append(max_hits)
@@ -67,11 +67,11 @@ class Configuration:
 		form_dialog.mainMenu()
 
 	"""
-	Method that allows creating the data request to modify one or more fields of the configuration file.
+	Method that modifies one or more fields of the Telk-Alert configuration file.
 
 	Parameters:
-	self -- Instance object.
-	form_dialog -- A FormClass class object.
+	self -- An instantiated object of the Configuration class.
+	form_dialog -- A FormDialogs class object.
 
 	Exceptions:
 	KeyError -- A Python KeyError exception is what is raised when you try to access a key that isn’t in a dictionary (dict). 
@@ -82,12 +82,12 @@ class Configuration:
 							("Port", "ElasticSearch Port", 0),
 							("Folder name", "Rules Folder", 0),
 							("Use SSL/TLS", "Enable or disable SSL/TLS connection", 0),
-							("Validate certificates", "Enable or disable certificate validation", 0),
 							("Use HTTP auth", "Enable or disable Http authentication", 0),
 							("Index name", "Index name for logs", 0),
 							("Hits", "Maximum hits in a search", 0)]
 
-		options_ssl_true = [("To disable", "Disable SSL/TLS communication", 0)]
+		options_ssl_true = [("To disable", "Disable SSL/TLS communication", 0),
+							("Modify", "Modify certificate validation", 0)]
 
 		options_ssl_false = [("Enable", "Enable SSL/TLS communication", 0)]
 
@@ -103,72 +103,79 @@ class Configuration:
 		options_http_auth_data = [("Username", "Username for HTTP Authentication", 0),
 								 ("Password", "User password", 0)]
 
-		bandera_version = 0
-		bandera_host = 0
-		bandera_port = 0
-		bandera_folder_name = 0
-		bandera_use_ssl = 0
-		bandera_validate_cert = 0
-		bandera_http_auth = 0
-		bandera_index_name = 0
-		bandera_max_hits = 0
+		flag_version = 0
+		flag_host = 0
+		flag_port = 0
+		flag_folder_name = 0
+		flag_use_ssl = 0
+		flag_http_auth = 0
+		flag_index_name = 0
+		flag_max_hits = 0
 		with open(self.utils.getPathTalert('conf') + '/es_conf.yaml', "rU") as f:
 			data_conf = yaml.safe_load(f)
 		hash_origen = self.utils.getSha256File(self.utils.getPathTalert('conf') + '/es_conf.yaml')
 		opt_conf_prop = form_dialog.getDataCheckList("Select one or more options", options_conf_prop, "Update configuration file")
 		for opt_prop in opt_conf_prop:
 			if opt_prop == "Version":
-				bandera_version = 1
+				flag_version = 1
 			if opt_prop == "Host":
-				bandera_host = 1
+				flag_host = 1
 			if opt_prop == "Port":
-				bandera_port = 1
+				flag_port = 1
 			if opt_prop == "Folder name":
-				bandera_folder_name = 1
+				flag_folder_name = 1
 			if opt_prop == "Use SSL/TLS":
-				bandera_use_ssl = 1
+				flag_use_ssl = 1
 			if opt_prop == "Validate certificates":
-				bandera_validate_cert = 1
+				flag_validate_cert = 1
 			if opt_prop == "Use HTTP auth":
-				bandera_http_auth = 1
+				flag_http_auth = 1
 			if opt_prop == "Index name":
-				bandera_index_name = 1
+				flag_index_name = 1
 			if opt_prop == "Hits":
-				bandera_max_hits = 1
+				flag_max_hits = 1
 		try:
-			if bandera_version == 1:
+			if flag_version == 1:
 				version_es = form_dialog.getDataNumberDecimal("Enter the ElasticSearch version:", str(data_conf['es_version']))
 				data_conf['es_version'] = str(version_es)
-			if bandera_host == 1:
+			if flag_host == 1:
 				host_es = form_dialog.getDataIP("Enter the ElasticSearch IP address:", str(data_conf['es_host']))
 				data_conf['es_host'] = str(host_es)
-			if bandera_port == 1:
+			if flag_port == 1:
 				port_es = form_dialog.getDataPort("Enter the ElasticSearch listening port:", str(data_conf['es_port']))
 				data_conf['es_port'] = int(port_es)
-			if bandera_folder_name == 1:
+			if flag_folder_name == 1:
 				folder_rules = form_dialog.getDataNameFolderOrFile("Enter the name of the folder where the alert rules will be hosted:", data_conf['rules_folder'])
 				data_conf['rules_folder'] = str(folder_rules)
 				if(not os.path.isdir(self.utils.getPathTalert(str(folder_rules)))):
 					os.mkdir(self.utils.getPathTalert(str(folder_rules)))
-			if bandera_use_ssl == 1:
+					self.utils.changeUidGid(self.utils.getPathTalert(str(folder_rules)))
+			if flag_use_ssl == 1:
 				if data_conf['use_ssl'] == True:
 					opt_ssl_true = form_dialog.getDataRadioList("Select a option:", options_ssl_true, "Connection via SSL/TLS")
 					if opt_ssl_true == "To disable":
+						del data_conf['valid_certificates']
 						data_conf['use_ssl'] = False
+					if opt_ssl_true == "Modify":
+						if data_conf['valid_certificates'] == True:
+							opt_valid_cert_true = form_dialog.getDataRadioList("Select a option:", options_valid_cert_true, "Certificate Validation")
+							if opt_valid_cert_true == "To disable":
+								data_conf['valid_certificates'] = False
+						else:
+							opt_valid_cert_false = form_dialog.getDataRadioList("Select a option:", options_valid_cert_false, "Certificate Validation")
+							if opt_valid_cert_false == "Enable":
+								data_conf['valid_certificates'] = True
 				else:
 					opt_ssl_false = form_dialog.getDataRadioList("Select a option:", options_ssl_false, "Connection via SSL/TLS")
 					if opt_ssl_false == "Enable":
 						data_conf['use_ssl'] = True
-			if bandera_validate_cert == 1:
-				if data_conf['valid_certificates'] == True:
-					opt_valid_cert_true = form_dialog.getDataRadioList("Select a option:", options_valid_cert_true, "Certificate Validation")
-					if opt_valid_cert_true == "To disable":
-						data_conf['valid_certificates'] = False
-				else:
-					opt_valid_cert_false = form_dialog.getDataRadioList("Select a option:", options_valid_cert_false, "Certificate Validation")
-					if opt_valid_cert_false == "Enable":
-						data_conf['valid_certificates'] = True
-			if bandera_http_auth == 1:
+						valid_certificates = form_dialog.getDataYesOrNo("\nDo you want the certificates for SSL/TLS communication to be validated?", "Certificate Validation")
+						if valid_certificates == "ok":
+							valid_certificates_json = { 'valid_certificates' : True }
+						else:
+							valid_certificates_json = { 'valid_certificates' : False }
+						data_conf.update(valid_certificates_json)
+			if flag_http_auth == 1:
 				if data_conf['use_http_auth'] == True:
 					opt_http_auth_true = form_dialog.getDataRadioList("Select a option:", options_http_auth_true, "HTTP Authentication")
 					if opt_http_auth_true == "To disable":
@@ -176,18 +183,18 @@ class Configuration:
 						del(data_conf['http_auth_pass'])
 						data_conf['use_http_auth'] = False
 					if opt_http_auth_true == "Modify data":
-						bandera_http_auth_user = 0
-						bandera_http_auth_pass = 0
+						flag_http_auth_user = 0
+						flag_http_auth_pass = 0
 						opt_mod_http_auth = form_dialog.getDataCheckList("Select one or more options:", options_http_auth_data, "HTTP Authentication")
 						for opt_mod in opt_mod_http_auth:
 							if opt_mod == "Username":
-								bandera_http_auth_user = 1
+								flag_http_auth_user = 1
 							if opt_mod == "Password":
-								bandera_http_auth_pass = 1
-						if bandera_http_auth_user == 1:
+								flag_http_auth_pass = 1
+						if flag_http_auth_user == 1:
 							user_http_auth_mod = self.utils.encryptAES(form_dialog.getDataInputText("Enter the username for HTTP authentication:", self.utils.decryptAES(data_conf['http_auth_user']).decode('utf-8')))
 							data_conf['http_auth_user'] = user_http_auth_mod.decode('utf-8')
-						if bandera_http_auth_pass == 1:
+						if flag_http_auth_pass == 1:
 							pass_http_auth_mod = self.utils.encryptAES(form_dialog.getDataPassword("Enter the user's password for HTTP authentication:", "password"))
 							data_conf['http_auth_pass'] = pass_http_auth_mod.decode('utf-8')
 				else:
@@ -198,10 +205,10 @@ class Configuration:
 						http_auth_data = {'http_auth_user': user_http_auth.decode('utf-8'), 'http_auth_pass': pass_http_auth.decode('utf-8')}
 						data_conf.update(http_auth_data)
 						data_conf['use_http_auth'] = True
-			if bandera_index_name == 1:
+			if flag_index_name == 1:
 				write_index = form_dialog.getDataInputText("Enter the name of the index that will be created in ElasticSearch:", str(data_conf['writeback_index']))
 				data_conf['writeback_index'] = str(write_index)
-			if bandera_max_hits == 1:
+			if flag_max_hits == 1:
 				max_hits = form_dialog.getDataNumber("Enter the maximum number of hits for the search (maximum 10000):", str(data_conf['max_hits']))
 				data_conf['max_hits'] = int(max_hits)
 			with open(self.utils.getPathTalert('conf') + '/es_conf.yaml', "w") as file_update:
@@ -219,11 +226,14 @@ class Configuration:
 			form_dialog.mainMenu()	
 
 	"""
-	Method that allows creating the configuration file with extension .yaml based on what was entered.
+	Method that creates the YAML file with the data entered for the Telk-Alert configuration file.
 
 	Parameters:
-	self -- Instance object.
+	self -- An instantiated object of the Configuration class.
 	data_conf -- List containing all the data entered for the configuration file.
+	
+	Exceptions:
+	OSError -- This exception is raised when a system function returns a system-related error, including I/O failures such as “file not found” or “disk full” (not for illegal argument types or other incidental errors).
 	"""
 	def createFileConfiguration(self, data_conf):
 		d = {'es_version': str(data_conf[0]),
