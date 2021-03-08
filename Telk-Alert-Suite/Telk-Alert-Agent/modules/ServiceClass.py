@@ -26,7 +26,7 @@ class Service:
 	telegram = Telegram()
 
 	"""
-	Method that allows validating the status of the Telk-Alert service and sending an alert to Telegram.
+	Method that validates the status of the Telk-Alert service and sends a message to Telegram with the result.
 
 	Parameters:
 	self -- An instantiated object of the Services class.
@@ -40,7 +40,7 @@ class Service:
 		while True:
 			now = datetime.now()
 			if(now.hour == int(time_agent_one[0]) and now.minute == int(time_agent_one[1])) or (now.hour == int(time_agent_two[0]) and now.minute == int(time_agent_two[1])):
-				status_service = os.popen('(systemctl is-active --quiet telk_alert.service && echo "Running" || echo "Not running")')
+				status_service = os.popen('(systemctl is-active --quiet telk-alert.service && echo "Running" || echo "Not running")')
 				status_telk_alert = status_service.readlines()
 				for status in status_telk_alert:
 					status_s = status.rstrip('\n')

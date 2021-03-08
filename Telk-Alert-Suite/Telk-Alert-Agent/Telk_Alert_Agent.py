@@ -3,7 +3,7 @@
 from modules.ServiceClass import Service
 
 """
-Service type object
+Service type object.
 """
 service = Service()
 

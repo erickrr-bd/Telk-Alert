@@ -37,7 +37,7 @@ class Utils:
 	Method that allows obtaining the content of a file with extension .yaml
 
 	Parameters:
-	self -- Class instantiated object
+	self -- An instantiated object of the Utils class.
 	file_yaml -- Yaml file path
 
 	Exceptions:
@@ -71,7 +71,7 @@ class Utils:
 	Method that allows creating the path for a Telk-Alert-Agent directory.
 
 	Parameters:
-	self -- Instance object.
+	self -- An instantiated object of the Utils class.
 	path_dir -- Folder or directory that will be added to the source path of Telk-Alert-Agent.
 	"""
 	def getPathTagent(self, path_dir):

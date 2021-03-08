@@ -96,7 +96,6 @@ class Utils:
 	"""
 	def getPathTalert(self, path_dir):
 		path_origen = '/etc/Telk-Alert-Suite/Telk-Alert'
-		#path_origen = os.getcwd()
 		path_final = os.path.join(path_origen, path_dir)
 		return path_final
 
@@ -120,7 +119,7 @@ class Utils:
 			return pass_key
 		except FileNotFoundError as exceptions:
 			print("Key File not found. For more information see the application logs.")
-			self.logger.createLogTelkAlert(str(exceptions), 4)
+			self.logger.createLogTelkAlert("File Error: " + str(exceptions), 4)
 			sys.exit(1)
 
 	"""

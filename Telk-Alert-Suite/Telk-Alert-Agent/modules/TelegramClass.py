@@ -1,5 +1,5 @@
-import pycurl
 import time
+import pycurl
 from urllib.parse import urlencode
 
 """
@@ -8,10 +8,10 @@ Class that allows you to manage the sending of alerts through Telegram.
 class Telegram:
 
 	"""
-	Method that allows sending the alert to the Telegram channel.
+	Method that sends the alert with the status of the service to Telegram.
 
 	Parameters:
-	self -- Instance object.
+	self -- An instantiated object of the Telegram class.
 	telegram_chat_id -- Telegram channel identifier to which the letter will be sent.
 	telegram_bot_token -- Token of the Telegram bot that is the administrator of the Telegram channel to which the alerts will be sent.
 	message -- Message to be sent to the Telegram channel.
@@ -23,16 +23,16 @@ class Telegram:
 		data = { 'chat_id' : telegram_chat_id, 'text' : message }
 		pf = urlencode(data)
 		c.setopt(c.POSTFIELDS, pf)
-		c.perform()
+		c.perform_rs()
 		status_code = c.getinfo(pycurl.HTTP_CODE)
 		c.close()
 		return int(status_code)
 
 	"""
-	Method that allows generating the message that will be sent to the Telegram channel.
+	Method that generates the message that will be sent to Telegram.
 
 	Parameters:
-	self -- Instance object.
+	self -- An instantiated object of the Telegram class.
 	status_s -- Current status of the Telk-Alert service.
 	"""
 	def getTelegramMessage(self, status_s):

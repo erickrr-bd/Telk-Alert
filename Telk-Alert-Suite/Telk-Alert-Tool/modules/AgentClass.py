@@ -21,11 +21,11 @@ class Agent:
 	logger = Logger()
 	
 	"""
-	Method that allows requesting the data and creating the Telk-Alert-Agent configuration file.
+	Method that requests the data for the creation of the Telk-Alert-Agent configuration file.
 
 	Parameters:
-	self -- Instance object.
-	form_dialog -- A FormClass class object.
+	self -- An instantiated object of the Agent class.
+	form_dialog -- A FormDialogs object.
 	"""
 	def createAgentConfiguration(self, form_dialog):
 		now = datetime.now()
@@ -48,11 +48,15 @@ class Agent:
 		form_dialog.mainMenu()
 
 	"""
-	Method that allows requesting data and allows modifying one or more fields of the Telk-Alert-Agent configuration file.
+	Method that modifies one or more fields of the Telk-Alert-Agent configuration file.
 
 	Parameters:
-	self -- Instance object.
-	form_dialog -- A FormClass class object.
+	self -- An instantiated object of the Agent class.
+	form_dialog -- A FormDialogs object.
+
+	Exceptions:
+	KeyError -- A Python KeyError exception is what is raised when you try to access a key that isn’t in a dictionary (dict). 
+	OSError -- This exception is raised when a system function returns a system-related error, including I/O failures such as “file not found” or “disk full” (not for illegal argument types or other incidental errors).
 	"""
 	def modifyAgentConfiguration(self, form_dialog):
 
@@ -112,58 +116,58 @@ class Agent:
 			form_dialog.mainMenu()
 
 	"""
-	Method that allows starting the Telk-Alert-Agent service.
+	Method that starts the Telk-Alert-Agent service.
 
 	Parameters:
-	self -- Instance object.
+	self -- An instantiated object of the Agent class.
 	form_dialog -- A FormDialogs object.
 	"""
 	def startService(self, form_dialog):
 		result = os.system("systemctl start telk-alert-agent.service")
 		if int(result) == 0:
-			form_dialog.d.msgbox("\nService started", 7, 50, title = "Error message")
+			form_dialog.d.msgbox("\nService started", 7, 50, title = "Notification message")
 			self.logger.createLogTool("Service started", 2)
 		if int(result) == 1280:
 			form_dialog.d.msgbox("\nFailed to start telk-alert-agent.service: Not found", 7, 50, title = "Error message")
 			self.logger.createLogTool("Service Error: Failed to start telk-alert-agent.service: Not found", 4)
 
 	"""
-	Method that allows restarting the Telk-Alert-Agent service.
+	Method that restarts the Telk-Alert-Agent service.
 
 	Parameters:
-	self -- Instance object.
+	self -- An instantiated object of the Agent class.
 	form_dialog -- A FormDialogs object.
 	"""
 	def restartService(self, form_dialog):
 		result = os.system("systemctl restart telk-alert-agent.service")
 		if int(result) == 0:
-			form_dialog.d.msgbox("\nService restarted", 7, 50, title = "Error message")
+			form_dialog.d.msgbox("\nService restarted", 7, 50, title = "Notification message")
 			self.logger.createLogTool("Service restarted", 2)
 		if int(result) == 1280:
 			form_dialog.d.msgbox("\nFailed to restart telk-alert-agent.service: Not found", 7, 50, title = "Error message")
 			self.logger.createLogTool("Service Error: Failed to restart telk-alert-agent.service: Not found", 4)
 
 	"""
-	Method to stop the Telk-Alert-Agent service.
+	Method that stops the Telk-Alert-Agent service.
 
 	Parameters:
-	self -- Instance object.
+	self -- An instantiated object of the Agent class.
 	form_dialog -- A FormDialogs object.
 	"""
 	def stopService(self, form_dialog):
 		result = os.system("systemctl stop telk-alert-agent.service")
 		if int(result) == 0:
-			form_dialog.d.msgbox("\nService stopped", 7, 50, title = "Error message")
+			form_dialog.d.msgbox("\nService stopped", 7, 50, title = "Notification message")
 			self.logger.createLogTool("Service stopped", 2)
 		if int(result) == 1280:
 			form_dialog.d.msgbox("\nFailed to stop telk-alert-agent.service: Not found", 7, 50, title = "Error message")
 			self.logger.createLogTool("Service Error: Failed to stop telk-alert-agent.service: Not found", 4)
 
 	"""
-	Method that allows obtaining the status of the Telk-Alert-Agent service.
+	Method that obtains the status of the Telk-Alert-Agent service.
 
 	Parameters:
-	self -- Instance object.
+	self -- An instantiated object of the Agent class.
 	form_dialog -- A FormDialogs object.
 	"""
 	def getStatusService(self, form_dialog):
@@ -171,7 +175,7 @@ class Agent:
 			os.remove('/tmp/telk_alert_agent.status')
 		os.system('(systemctl is-active --quiet telk-alert-agent.service && echo "Telk-Alert Agent service is running!" || echo "Telk-Alert Agent service is not running!") >> /tmp/telk_alert_agent.status')
 		os.system('echo "Detailed service status:" >> /tmp/telk_alert_agent.status')
-		os.system('systemctl -l status telk_alert_agent.service >> /tmp/telk_alert_agent.status')
+		os.system('systemctl -l status telk-alert-agent.service >> /tmp/telk_alert_agent.status')
 		with io.open('/tmp/telk_alert_agent.status', 'r', encoding = 'utf-8') as file_status:
 			form_dialog.getScrollBox(file_status.read(), title = "Status Service")
 
@@ -179,9 +183,12 @@ class Agent:
 	Method that allows creating .yaml file that will store the Telk-Alert-Agent configuration.
 
 	Parameters:
-	self -- Instance object.
+	self -- An instantiated object of the Agent class.
 	data_agent_conf -- List containing all the data entered to create the configuration file.
-	form_dialog -- A FormClass class object.
+	form_dialog -- A FormDialogs object.
+
+	Exceptions:
+	OSError -- This exception is raised when a system function returns a system-related error, including I/O failures such as “file not found” or “disk full” (not for illegal argument types or other incidental errors).
 	"""
 	def createFileConfiguration(self, data_agent_conf, form_dialog):
 
@@ -194,6 +201,7 @@ class Agent:
 		try:
 			with open(self.utils.getPathTagent('conf') + '/agent_conf.yaml', 'w') as agent_conf_file:
 				yaml.dump(data_conf, agent_conf_file, default_flow_style = False)
+			self.utils.changeUidGid(self.utils.getPathTagent('conf') + '/agent_conf.yaml')
 		except OSError as exception:
 			self.logger.createLogTool("File Error: " + str(exception), 4)
 			form_dialog.d.msgbox("\nFile Error: " + str(exception), 7, 50, title = "Error message")
