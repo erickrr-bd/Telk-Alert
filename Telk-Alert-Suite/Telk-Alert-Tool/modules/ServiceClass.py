@@ -13,59 +13,59 @@ class Service:
 	logger = Logger()
 
 	"""
-	Method that allows starting the Telk-Alert service.
+	Method that starts the Telk-Alert service.
 
 	Parameters:
-	self -- Instance object.
-	form_dialog -- A FormDialogs object.
+	self -- An instantiated object of the Service class.
+	form_dialog -- A FormDialogs class object.
 	"""
 	def startService(self, form_dialog):
 		result = os.system("systemctl start telk-alert.service")
 		if int(result) == 0:
-			form_dialog.d.msgbox("\nService started", 7, 50, title = "Error message")
-			self.logger.createLogTool("Service started", 2)
+			form_dialog.d.msgbox("\nTelk-Alert service started", 7, 50, title = "Notification message")
+			self.logger.createLogTool("Telk-Alert service started", 2)
 		if int(result) == 1280:
 			form_dialog.d.msgbox("\nFailed to start telk-alert.service: Not found", 7, 50, title = "Error message")
 			self.logger.createLogTool("Service Error: Failed to start telk-alert.service: Not found", 4)
 
 	"""
-	Method that allows restarting the Telk-Alert service.
+	Method that restarts the Telk-Alert service.
 
 	Parameters:
-	self -- Instance object.
-	form_dialog -- A FormDialogs object.
+	self -- An instantiated object of the Service class.
+	form_dialog -- A FormDialogs class object.
 	"""
 	def restartService(self, form_dialog):
 		result = os.system("systemctl restart telk-alert.service")
 		if int(result) == 0:
-			form_dialog.d.msgbox("\nService restarted", 7, 50, title = "Error message")
-			self.logger.createLogTool("Service restarted", 2)
+			form_dialog.d.msgbox("\nTelk-Alert service restarted", 7, 50, title = "Notification message")
+			self.logger.createLogTool("Telk-Alert service restarted", 2)
 		if int(result) == 1280:
 			form_dialog.d.msgbox("\nFailed to restart telk-alert.service: Not found", 7, 50, title = "Error message")
 			self.logger.createLogTool("Service Error: Failed to restart telk-alert.service: Not found", 4)
 
 	"""
-	Method to stop the Telk-Alert service.
+	Method that stops the Telk-Alert service.
 
 	Parameters:
-	self -- Instance object.
-	form_dialog -- A FormDialogs object.
+	self -- An instantiated object of the Service class.
+	form_dialog -- A FormDialogs class object.
 	"""
 	def stopService(self, form_dialog):
 		result = os.system("systemctl stop telk-alert.service")
 		if int(result) == 0:
-			form_dialog.d.msgbox("\nService stopped", 7, 50, title = "Error message")
-			self.logger.createLogTool("Service stopped", 2)
+			form_dialog.d.msgbox("\nTelk-Alert service stopped", 7, 50, title = "Notification message")
+			self.logger.createLogTool("Telk-Alert service stopped", 2)
 		if int(result) == 1280:
 			form_dialog.d.msgbox("\nFailed to stop telk-alert.service: Not found", 7, 50, title = "Error message")
 			self.logger.createLogTool("Service Error: Failed to stop telk-alert.service: Not found", 4)
 
 	"""
-	Method that allows obtaining the status of the Telk-Alert service.
+	Method that obtains the status of the Telk-Alert service.
 
 	Parameters:
-	self -- Instance object.
-	form_dialog -- A FormDialogs object.
+	self -- An instantiated object of the Service class.
+	form_dialog -- A FormDialogs class object.
 	"""
 	def getStatusService(self, form_dialog):
 		if os.path.exists('/tmp/telk_alert.status'):

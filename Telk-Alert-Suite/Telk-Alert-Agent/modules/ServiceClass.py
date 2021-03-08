@@ -2,7 +2,6 @@ import os
 import time
 from datetime import datetime
 from modules.UtilsClass import Utils
-from modules.LoggerClass import Logger
 from modules.TelegramClass import Telegram
 
 """
@@ -14,11 +13,6 @@ class Service:
 	Utils type object.
 	"""
 	utils = Utils()
-
-	"""
-	Logger type object.
-	"""
-	logger = Logger()
 
 	"""
 	Telegram type object.
@@ -46,18 +40,7 @@ class Service:
 					status_s = status.rstrip('\n')
 				message = self.telegram.getTelegramMessage(status_s)
 				status_telegram = self.telegram.sendTelegramAgent(telegram_chat_id, telegram_bot_token, message)
-				if status_telegram == 200:
-					print("Telegram alert sent. Telk-Alert Service Status: " + str(status_s))
-					self.logger.createLogAgent("Telegram alert sent. Telk-Alert Service Status: " + str(status_s), 2)
-				if status_telegram == 400:
-					print("Telegram alert not sent. Bad request.")
-					self.logger.createLogAgent("Telegram alert not sent. Bad request.", 4)
-				if status_telegram == 401:
-					print("Telegram alert not sent. Unauthorized.")
-					self.logger.createLogAgent("Telegram alert not sent. Unauthorized.", 4)
-				if status_telegram == 404:
-					print("Telegram alert not sent. Not found.")
-					self.logger.createLogAgent("Telegram alert not sent. Not found.", 4)
+				self.telegram.getStatusByTelegramCode(status_telegram, status_s)
 			time.sleep(60)
 
 		

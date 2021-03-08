@@ -1,12 +1,12 @@
-import sys
 import os
 import re
+import sys
 from dialog import Dialog
 from modules.UtilsClass import Utils
-from modules.ConfigClass import Configuration 
 from modules.RulesClass import Rules
 from modules.AgentClass import Agent
 from modules.ServiceClass import Service
+from modules.ConfigClass import Configuration 
 
 """
 Class that allows managing the graphical interfaces of Telk-Alert-Tool.
@@ -66,7 +66,7 @@ class FormDialogs:
 	options_conf_true = [("Modify configuration", "Modify the configuration file", 0)]
 
 	"""
-	Method that allows generating the menu interface.
+	Method that generates the menu interface.
 
 	Parameters:
 	self -- An instantiated object of the FormDialogs class.
@@ -84,7 +84,7 @@ class FormDialogs:
 			sys.exit(0)
 
 	"""
-	Method that allows displaying a message to the user in a scroll box.
+	Method that generates the message interface with scroll box.
 
 	Parameters:
 	self -- An instantiated object of the FormDialogs class.
@@ -97,7 +97,7 @@ class FormDialogs:
 			self.mainMenu()
 
 	"""
-	Method that allows to generate an interface where you can only choose one option from among several.
+	Method that generates the interface with a list of options, where only one can be chosen.
 
 	Parameters:
 	self -- An instantiated object of the FormDialogs class.
@@ -124,7 +124,7 @@ class FormDialogs:
 				self.mainMenu()
 
 	"""
-	Method that allows generating an interface where you can only choose several options at the same time.
+	Method that generates the interface with a list of options, where you can choose one or more.
 
 	Parameters:
 	self -- An instantiated object of the FormDialogs class.
@@ -151,7 +151,7 @@ class FormDialogs:
 				self.mainMenu()
 
 	"""
-	Method that allows validating that an entered value corresponds to a decimal value.
+	Method that generates the interface for entering decimal or floating type data.
 
 	Parameters:
 	self -- An instantiated object of the FormDialogs class.
@@ -177,7 +177,7 @@ class FormDialogs:
 				self.mainMenu()
 
 	"""
-	Method that allows validating that an entered value corresponds to an IP address.
+	Method that generates the interface for the entry of data of type IP address.
 
 	Parameters:
 	self -- An instantiated object of the FormDialogs class.
@@ -200,7 +200,7 @@ class FormDialogs:
 				self.mainMenu()
 
 	"""
-	Method that allows to validate an entered value that corresponds to a port.
+	Method that generates the interface for entering data type communication port.
 
 	Parameters:
 	self -- An instantiated object of the FormDialogs class.
@@ -223,7 +223,7 @@ class FormDialogs:
 			self.mainMenu()
 	
 	"""
-	Method that allows to validate an entered value that corresponds to a name of a file or directory.
+	Method that generates the interface for entering directory or file name data.
 
 	Parameters:
 	self -- An instantiated object of the FormDialogs class.
@@ -246,7 +246,7 @@ class FormDialogs:
 				self.mainMenu()
 
 	"""
-	Method that allows the user to enter an email and validate it.
+	Method that generates the interface for entering data type email address.
 
 	Parameters:
 	self -- An instantiated object of the FormDialogs class.
@@ -269,7 +269,7 @@ class FormDialogs:
 				self.mainMenu()
 
 	"""
-	Method that allows creating an interface where the only options available are yes or no.
+	Method that generates the interface for entering questioning type data with two possible yes or no values.
 
 	Parameters:
 	self -- An instantiated object of the FormDialogs class.
@@ -284,7 +284,7 @@ class FormDialogs:
 		return tag_yesorno
 
 	"""
-	Method that allows creating an interface to enter a text string without restrictions.
+	Method that generates the interface for entering text type data.
 
 	Parameters:
 	self -- An instantiated object of the FormDialogs class.
@@ -306,7 +306,7 @@ class FormDialogs:
 				self.mainMenu()
 
 	"""
-	Method that allows creating an interface to enter a password.
+	Method that generates the interface for entering password type data.
 
 	Parameters:
 	self -- An instantiated object of the FormDialogs class.
@@ -328,7 +328,7 @@ class FormDialogs:
 				self.mainMenu()
 
 	"""
-	Method that allows creating an interface to enter an integer type number.
+	Method that generates the interface for entering integer data.
 
 	Parameters:
 	self -- An instantiated object of the FormDialogs class.
@@ -351,7 +351,7 @@ class FormDialogs:
 				self.mainMenu()
 
 	"""
-	Method that allows to obtain an hour with minutes.
+	Method that generates the interface for entering data of the time type.
 
 	Parameters:
 	self -- An instantiated object of the FormDialogs class.
@@ -373,7 +373,7 @@ class FormDialogs:
 			self.mainMenu()
 
 	"""
-	Method that allows creating the form where more than one value will be entered at the same time.
+	Method that generates the interface to enter several text type values ​​at the same time.
 
 	Parameters:
 	self -- An instantiated object of the FormDialogs class.
@@ -410,7 +410,7 @@ class FormDialogs:
 				self.mainMenu()
 
 	"""
-	Method that allows generating the form where the emails to which the alert will be sent will be entered.
+	Method that generates the interface for the entry of several values ​​of type email address at the same time.
 
 	Parameters:
 	self -- An instantiated object of the FormDialogs class.
@@ -448,7 +448,7 @@ class FormDialogs:
 				self.mainMenu()
 
 	"""
-	Method that allows generating a list with the total number of fields entered by the user.
+	Method that generates a list with the total of fields that will be entered of type text.
 
 	Parameters:
 	self -- An instantiated object of the FormDialogs class.
@@ -464,7 +464,7 @@ class FormDialogs:
 		return list_new_fields
 
 	"""
-	Method that allows generating a list with the total number of emails entered by the user.
+	Method that generates a list with the total of fields that will be entered of type email address.
 
 	Parameters:
 	self -- An instantiated object of the FormDialogs class.
@@ -480,7 +480,7 @@ class FormDialogs:
 		return list_new_emails
 
 	"""
-	Method that allows defining if the configuration file should be created or modified.
+	Method that defines the action to be performed on the Telk-Alert configuration file (creation or modification).
 
 	Parameters:
 	self -- An instantiated object of the FormDialogs class.
@@ -496,7 +496,7 @@ class FormDialogs:
 				self.create_conf.modifyConfiguration(FormDialogs())
 
 	"""
-	Method that allows managing whether the Telk-Alert-Agent configuration is created or modified.
+	Method that defines the action to be performed on the Telk-Alert-Agent configuration file (creation or modification).
 
 	Parameters:
 	self -- An instantiated object of the FormDialogs class.
@@ -512,7 +512,7 @@ class FormDialogs:
 				self.agent.modifyAgentConfiguration(FormDialogs())
 
 	"""
-	Method that allows creating the menu interface for the operations that can be performed with the alert rules.
+	Method that defines the menu on the actions to be carried out on the alert rules.
 
 	Parameters:
 	self -- An instantiated object of the FormDialogs class.
@@ -530,7 +530,7 @@ class FormDialogs:
 			self.switchMrules(int(option_mr))
 
 	"""
-	Method that allows creating the interface for the Telk-Alert-Agent options menu.
+	Method that defines the menu on the actions to be carried out on Telk-Alert-Agent.
 
 	Parameters:
 	self -- An instantiated object of the FormDialogs class.
@@ -543,7 +543,7 @@ class FormDialogs:
 		self.switchMagent(int(option_ma))
 
 	"""
-	Method that allows creating the menu interface of the Telk-Alert service.
+	Method that defines the menu on the actions to be carried out on the Telk-Alert service.
 
 	Parameters:
 	self -- An instantiated object of the FormDialogs class.
@@ -558,7 +558,7 @@ class FormDialogs:
 		self.switchMService(int(option_ms))
 
 	"""
-	Method that allows creating the menu interface of the Telk-Alert-Agent service.
+	Method that defines the menu on the actions to be carried out on the Telk-Alert-Agent service.
 
 	Parameters:
 	self -- An instantiated object of the FormDialogs class.
@@ -573,7 +573,7 @@ class FormDialogs:
 		self.switchMServiceAgent(int(option_msa))
 
 	"""
-	Method that allows interacting with the main menu options.
+	Method that launches an action based on the option chosen in the main menu.
 
 	Parameters:
 	self -- An instantiated object of the FormDialogs class.
@@ -592,7 +592,7 @@ class FormDialogs:
 			sys.exit(0)
 
 	"""
-	Method that allows interacting with the options of the alert rules menu.
+	Method that launches an action based on the option chosen in the alert rules menu.
 
 	Parameters:
 	self -- An instantiated object of the FormDialogs class.
@@ -609,7 +609,7 @@ class FormDialogs:
 			self.rules.showAllAlertRules(FormDialogs())
 
 	"""
-	Method that allows interacting with the options of the Telk-Alert-Agent service menu.
+	Method that launches an action based on the option chosen in the Telk-Alert-Agent menu.
 
 	Parameters:
 	self -- An instantiated object of the FormDialogs class.
@@ -622,7 +622,7 @@ class FormDialogs:
 			self.getMenuServiceAgent()
 
 	"""
-	Method that allows interacting with the options of the Telk-Alert-Agent service menu.
+	Method that launches an action based on the option chosen in the Telk-Alert-Agent service menu.
 
 	Parameters:
 	self -- An instantiated object of the FormDialogs class.
@@ -639,7 +639,7 @@ class FormDialogs:
 			self.agent.getStatusService(FormDialogs())
 
 	"""
-	Method that allows interacting with the options of the Telk-Alert service menu.
+	Method that launches an action based on the option chosen in the Telk-Alert service menu.
 
 	Parameters:
 	self -- An instantiated object of the FormDialogs class.
@@ -656,7 +656,7 @@ class FormDialogs:
 			self.service.getStatusService(FormDialogs())
 
 	"""
-	Method that allows creating the interface with the main menu options.
+	Method that defines the menu on the actions to be carried out in the main menu.
 
 	Parameters:
 	self -- An instantiated object of the FormDialogs class.

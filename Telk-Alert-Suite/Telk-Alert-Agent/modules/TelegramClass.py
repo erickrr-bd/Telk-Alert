@@ -1,11 +1,17 @@
 import time
 import pycurl
 from urllib.parse import urlencode
+from modules.LoggerClass import Logger
 
 """
 Class that allows you to manage the sending of alerts through Telegram.
 """
 class Telegram:
+	
+	"""
+	Logger type object.
+	"""
+	logger = Logger()
 
 	"""
 	Method that sends the alert with the status of the service to Telegram.
@@ -44,3 +50,25 @@ class Telegram:
 		message += "" + u'\U0001f4cb' + " " + "Note 1: The green circle indicates that the Telk-Alert service is working without problems." + "\n\n"
 		message += "" + u'\U0001f4cb' + " " + "Note 2: The red circle indicates that the Telk-Alert service is not working. Report to an administrator." + "\n\n"
 		return message
+
+	"""
+	Method that prints the status of the alert delivery based on the response HTTP code.
+
+	Parameters:
+	self -- An instantiated object of the Telegram class.
+	telegram_code -- HTTP code in response to the request made to Telegram.
+	status_s -- Status of the Telk-Alert service.
+	"""
+	def getStatusByTelegramCode(self, telegram_code, status_s):
+		if telegram_code == 200:
+			print("\nAlert sent to Telegram. Telk-Alert Service Status: " + str(status_s))
+			self.logger.createLogAgent("Telegram alert sent. Telk-Alert Service Status: " + str(status_s), 2)
+		if telegram_code == 400:
+			print("\nTelegram alert not sent. Bad request.")
+			self.logger.createLogAgent("Telegram alert not sent. Bad request.", 4)
+		if telegram_code == 401:
+			print("\nTelegram alert not sent. Unauthorized.")
+			self.logger.createLogAgent("Telegram alert not sent. Unauthorized.", 4)
+		if telegram_code == 404:
+			print("\nTelegram alert not sent. Not found.")
+			self.logger.createLogAgent("Telegram alert not sent. Not found.", 4)

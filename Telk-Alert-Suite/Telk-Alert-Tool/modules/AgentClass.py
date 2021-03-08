@@ -25,7 +25,7 @@ class Agent:
 
 	Parameters:
 	self -- An instantiated object of the Agent class.
-	form_dialog -- A FormDialogs object.
+	form_dialog -- A FormDialogs class object.
 	"""
 	def createAgentConfiguration(self, form_dialog):
 		now = datetime.now()
@@ -52,7 +52,7 @@ class Agent:
 
 	Parameters:
 	self -- An instantiated object of the Agent class.
-	form_dialog -- A FormDialogs object.
+	form_dialog -- A FormDialogs class object.
 
 	Exceptions:
 	KeyError -- A Python KeyError exception is what is raised when you try to access a key that isn’t in a dictionary (dict). 
@@ -120,13 +120,13 @@ class Agent:
 
 	Parameters:
 	self -- An instantiated object of the Agent class.
-	form_dialog -- A FormDialogs object.
+	form_dialog -- A FormDialogs class object.
 	"""
 	def startService(self, form_dialog):
 		result = os.system("systemctl start telk-alert-agent.service")
 		if int(result) == 0:
-			form_dialog.d.msgbox("\nService started", 7, 50, title = "Notification message")
-			self.logger.createLogTool("Service started", 2)
+			form_dialog.d.msgbox("\nTelk-Alert-Agent service started", 7, 50, title = "Notification message")
+			self.logger.createLogTool("Telk-Alert-Agent service started", 2)
 		if int(result) == 1280:
 			form_dialog.d.msgbox("\nFailed to start telk-alert-agent.service: Not found", 7, 50, title = "Error message")
 			self.logger.createLogTool("Service Error: Failed to start telk-alert-agent.service: Not found", 4)
@@ -136,13 +136,13 @@ class Agent:
 
 	Parameters:
 	self -- An instantiated object of the Agent class.
-	form_dialog -- A FormDialogs object.
+	form_dialog -- A FormDialogs class object.
 	"""
 	def restartService(self, form_dialog):
 		result = os.system("systemctl restart telk-alert-agent.service")
 		if int(result) == 0:
-			form_dialog.d.msgbox("\nService restarted", 7, 50, title = "Notification message")
-			self.logger.createLogTool("Service restarted", 2)
+			form_dialog.d.msgbox("\nTelk-Alert-Agent service restarted", 7, 50, title = "Notification message")
+			self.logger.createLogTool("Telk-Alert-Agent service restarted", 2)
 		if int(result) == 1280:
 			form_dialog.d.msgbox("\nFailed to restart telk-alert-agent.service: Not found", 7, 50, title = "Error message")
 			self.logger.createLogTool("Service Error: Failed to restart telk-alert-agent.service: Not found", 4)
@@ -152,13 +152,13 @@ class Agent:
 
 	Parameters:
 	self -- An instantiated object of the Agent class.
-	form_dialog -- A FormDialogs object.
+	form_dialog -- A FormDialogs class object.
 	"""
 	def stopService(self, form_dialog):
 		result = os.system("systemctl stop telk-alert-agent.service")
 		if int(result) == 0:
-			form_dialog.d.msgbox("\nService stopped", 7, 50, title = "Notification message")
-			self.logger.createLogTool("Service stopped", 2)
+			form_dialog.d.msgbox("\nTelk-Alert-Agent service stopped", 7, 50, title = "Notification message")
+			self.logger.createLogTool("Telk-Alert-Agent service stopped", 2)
 		if int(result) == 1280:
 			form_dialog.d.msgbox("\nFailed to stop telk-alert-agent.service: Not found", 7, 50, title = "Error message")
 			self.logger.createLogTool("Service Error: Failed to stop telk-alert-agent.service: Not found", 4)
@@ -168,7 +168,7 @@ class Agent:
 
 	Parameters:
 	self -- An instantiated object of the Agent class.
-	form_dialog -- A FormDialogs object.
+	form_dialog -- A FormDialogs class object.
 	"""
 	def getStatusService(self, form_dialog):
 		if os.path.exists('/tmp/telk_alert_agent.status'):
@@ -185,7 +185,7 @@ class Agent:
 	Parameters:
 	self -- An instantiated object of the Agent class.
 	data_agent_conf -- List containing all the data entered to create the configuration file.
-	form_dialog -- A FormDialogs object.
+	form_dialog -- A FormDialogs class object.
 
 	Exceptions:
 	OSError -- This exception is raised when a system function returns a system-related error, including I/O failures such as “file not found” or “disk full” (not for illegal argument types or other incidental errors).

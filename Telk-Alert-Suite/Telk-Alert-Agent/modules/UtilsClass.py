@@ -56,6 +56,21 @@ class Utils:
 			sys.exit(1)
 
 	"""
+	Method that creates a new route from the root path of Telk-Alert.
+
+	Parameters:
+	self -- An instantiated object of the Utils class.
+	path_dir -- Folder or directory that will be added to the source path of Telk-Alert.
+
+	Return:
+	path_final -- Final directory.
+	"""
+	def getPathTalert(self, path_dir):
+		path_root = "/etc/Telk-Alert-Suite/Telk-Alert"
+		path_final = os.path.join(path_root, path_dir)
+		return path_final
+
+	"""
 	Method that creates a new route from the root path of Telk-Alert-Agent.
 
 	Parameters:
