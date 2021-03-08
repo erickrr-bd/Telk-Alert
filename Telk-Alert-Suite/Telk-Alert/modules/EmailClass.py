@@ -3,8 +3,8 @@ import smtplib
 import email.message
 from datetime import datetime
 from elasticsearch_dsl import utils
-from modules.LoggerClass import Logger
 from modules.UtilsClass import Utils
+from modules.LoggerClass import Logger
 
 """
 Class that allows to manage the sending of alerts by email.
@@ -64,7 +64,7 @@ class Email:
 
 
 	"""
-	Method that allows creating the header of the alert to be sent to Email.
+	Method that generates the header of the message that will be sent by email.
 
 	Parameters:
 	self -- An instantiated object of the Email class.
@@ -88,12 +88,12 @@ class Email:
 			header = level + "At least " + str(rule_yaml['num_events']) + " event(s) ocurred between " + self.utils.convertMillisecondsToDate(self.utils.convertDateToMilliseconds(datetime.now()) - time_back) + " and " + self.utils.convertMillisecondsToDate(self.utils.convertDateToMilliseconds(datetime.now())) + "\n\n\n"
 			return header
 		except KeyError as exception:
-			self.logger.createLogTelkAlert("Key Error: " + str(exception), 4)
+			self.logger.createLogTelkAlert("\nKey Error: " + str(exception), 4)
 			print("Key Error: " + str(exception))
 			sys.exit(1)
 
 	"""
-	Method that allows generating the message that will be sent to the email address.
+	Method that generates the body of the message that will be sent by email.
 
 	Parameters:
 	self -- An instantiated object of the Email class.

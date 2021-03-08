@@ -109,7 +109,7 @@ class Utils:
 			sys.exit(1)
 
 	"""
-	Method that encrypts a text string.
+	Method that decrypts a text string.
 
 	Parameters:
 	self -- An instantiated object of the Utils class.

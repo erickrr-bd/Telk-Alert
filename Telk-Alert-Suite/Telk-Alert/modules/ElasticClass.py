@@ -4,12 +4,12 @@ import socket
 import requests
 import platform
 from datetime import datetime
-from elasticsearch import Elasticsearch, RequestsHttpConnection, exceptions
-from elasticsearch_dsl import Q, Search, A
-from modules.LoggerClass import Logger
-from modules.UtilsClass import Utils
-from modules.TelegramClass import Telegram
 from modules.EmailClass import Email
+from modules.UtilsClass import Utils
+from modules.LoggerClass import Logger
+from modules.TelegramClass import Telegram
+from elasticsearch_dsl import Q, Search, A
+from elasticsearch import Elasticsearch, RequestsHttpConnection, exceptions
 
 """
 Class that allows you to manage everything related to ElasticSearch.
@@ -118,19 +118,19 @@ class Elastic:
 				self.logger.createLogTelkAlert("Connection established to: " + telk_alert_conf['es_host'] + ':' + str(telk_alert_conf['es_port']), 2)
 				return conn_es
 		except KeyError as exception:
-			print("\nKey error: " + str(exception) + '. For more information see the application logs.')
-			self.logger.createLogTelkAlert("Key error: " + str(exception), 4)
+			print("\nKey Error: " + str(exception))
+			self.logger.createLogTelkAlert("Key Error: " + str(exception), 4)
 			sys.exit(1)
 		except exceptions.ConnectionError as exception:
-			print("Failed connection to: " + telk_alert_conf['es_host'] + ':' + str(telk_alert_conf['es_port']) + '. For more information see the application logs.')
+			print("\nFailed connection to: " + telk_alert_conf['es_host'] + ':' + str(telk_alert_conf['es_port']) + '. For more information see the application logs.')
 			self.logger.createLogTelkAlert(str(exception), 4)
 			sys.exit(1)
 		except exceptions.AuthenticationException as exception:
-			print("HTTP authentication failed. For more information see the application logs.")
+			print("\nHTTP authentication failed. For more information see the application logs.")
 			self.logger.createLogTelkAlert(str(exception), 4)
 			sys.exit(1)
 		except exceptions.AuthorizationException as exception:
-			print("Unauthorized access. For more information see the application logs.")
+			print("\nUnauthorized access. For more information see the application logs.")
 			self.logger.createLogTelkAlert(str(exception), 4)
 			sys.exit(1)
 		except requests.exceptions.InvalidURL as exception:
@@ -139,6 +139,7 @@ class Elastic:
 			sys.exit(1)
 	
 	"""
+	Method that performs the search in ElasticSearch and in case of finding events, it sends the alert.
 
 	Parameters:
 	self -- An instantiated object of the Elastic class.
@@ -206,7 +207,7 @@ class Elastic:
 			else:
 				self.logger.createLogTelkAlert("The index does not exist in ElasticSearch.", 4)
 		except KeyError as exception:
-			print("\nKey Error: " + str(exception) + '. For more information see the application logs.')
+			print("\nKey Error: " + str(exception))
 			self.logger.createLogTelkAlert("Key Error: " + str(exception), 4)
 			sys.exit(1)
 		except ValueError as exception:
@@ -227,6 +228,8 @@ class Elastic:
 	rule_yaml -- List containing all the data of the alert rule.
 	flag_telegram -- Flag that indicates if the alert should be sent to telegram.
 	time_back -- Backward time in milliseconds.
+	conn_es -- Object that contains the connection to ElasticSearch.
+	index_name -- Name of the index where the search is performed in ElasticSearch.
 
 	Exceptions:
 	KeyError -- A Python KeyError exception is what is raised when you try to access a key that isn’t in a dictionary (dict). 
@@ -247,7 +250,7 @@ class Elastic:
 					self.email.getStatusEmailAlert(response, rule_yaml['email_to'])
 					self.generateLogES(index_name, conn_es, self.createLogAlertEmail(rule_yaml['name_rule'], 1, response))
 		except KeyError as exception:
-			print("Key Error: " + str(exception) + '. For more information see the application logs.')
+			print("\nKey Error: " + str(exception))
 			self.logger.createLogTelkAlert("Key error: " + str(exception), 4)
 			sys.exit(1)
 
@@ -262,6 +265,8 @@ class Elastic:
 	flag_telegram -- Flag that indicates if the alert should be sent to telegram.
 	time_back -- Backward time in milliseconds.
 	total_events -- Total events found in the search.
+	conn_es -- Object that contains the connection to ElasticSearch.
+	index_name -- Name of the index where the search is performed in ElasticSearch.
 
 	Exceptions:
 	KeyError -- A Python KeyError exception is what is raised when you try to access a key that isn’t in a dictionary (dict). 
@@ -285,7 +290,7 @@ class Elastic:
 				self.email.getStatusEmailAlert(response, rule_yaml['email_to'])
 				self.generateLogES(index_name, conn_es, self.createLogAlertEmail(rule_yaml['name_rule'], total_events, response))
 		except KeyError as exception:
-			print("Key Error: " + str(exception) + '. For more information see the application logs.')
+			print("\nKey Error: " + str(exception))
 			self.logger.createLogTelkAlert("Key error: " + str(exception), 4)
 			sys.exit(1)
 
@@ -305,7 +310,8 @@ class Elastic:
 			'TELK.host.name' : self.host_name,
 			'TELK.host.ip' : self.host_ip,
 			'TELK.host.os.name' : self.host_os_name,
-			'TELK.action' : action
+			'TELK.action' : action,
+			'TELK.log' : 'action_performed'
 		}
 		return log_json
 
@@ -326,6 +332,7 @@ class Elastic:
 			'TELK.host.name' : self.host_name,
 			'TELK.host.ip' : self.host_ip,
 			'TELK.host.os.name' : self.host_os_name,
+			'TELK.log' : 'alert_rules',
 			'RULE.name' : name_rule,
 			'RULE.status' : status_rule
 		}
@@ -354,6 +361,7 @@ class Elastic:
 			'TELK.host.name' : self.host_name,
 			'TELK.host.ip' : self.host_ip,
 			'TELK.host.os.name' : self.host_os_name,
+			'TELK.log' : 'send_telegram',
 			'RULE.name' : name_rule,
 			'ALERT.events.total' : total_events,
 			'ALERT.telegram.code': telegram_code,
@@ -361,7 +369,18 @@ class Elastic:
 		}
 		return log_json
 
+	"""
+	Method that generates the JSON of alerts sent by email.
 
+	Parameters:
+	self -- An instantiated object of the Elastic class.
+	name_rule -- Name of the alert rule.
+	total_events -- Total events found in the search.
+	response -- Response obtained when sending the alert by email.
+
+	Return:
+	log_json -- JSON object that contains the data that will be stored in ElasticSearch.
+	"""
 	def createLogAlertEmail(self, name_rule, total_events, response):
 		if len(response) == 0:
 			response = "Success"
@@ -370,6 +389,7 @@ class Elastic:
 			'TELK.host.name' : self.host_name,
 			'TELK.host.ip' : self.host_ip,
 			'TELK.host.os.name' : self.host_os_name,
+			'TELK.log' : 'send_email',
 			'RULE.name' : name_rule,
 			'ALERT.events.total' : total_events,
 			'ALERT.email.res': str(response)
@@ -377,6 +397,8 @@ class Elastic:
 		return log_json
 
 	"""
+	Method that creates the Telk-Alert log in ElasticSearch.
+
 	Parameters:
 	self -- An instantiated object of the Elastic class.
 	index_name -- Name of the index that will be created in ElasticSearch and where the Telk-Alert logs will be stored.

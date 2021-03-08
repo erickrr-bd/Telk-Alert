@@ -3,11 +3,11 @@ import sys
 import yaml
 import time
 import binascii
-from datetime import datetime
 from hashlib import sha256
 from base64 import b64decode
-from Crypto.Util.Padding import unpad
+from datetime import datetime
 from Crypto.Cipher import AES
+from Crypto.Util.Padding import unpad
 from modules.LoggerClass import Logger
 
 """
@@ -35,7 +35,7 @@ class Utils:
 		self.passphrase = self.getPassphrase()
 
 	"""
-	Method that allows obtaining the content of a file with extension .yaml
+	Method that obtains the content of a file with the extension yaml.
 
 	Parameters:
 	self -- An instantiated object of the Utils class.
@@ -53,7 +53,7 @@ class Utils:
 				data_yaml = yaml.safe_load(file)
 			return data_yaml
 		except IOError as exception:
-			print("Yaml file not found. For more information see the application logs.")
+			print("\nYaml file not found. For more information see the application logs.")
 			self.logger.createLogTelkAlert("File Error: " + str(exception), 4)
 			sys.exit(1)
 
@@ -66,7 +66,7 @@ class Utils:
 	name_rule -- Name of the alert rule.
 
 	Return:
-	message -- 
+	message -- Final message in HTML format.
 
 	Exceptions:
 	IOError -- It is an error raised when an input/output operation fails.
@@ -81,11 +81,11 @@ class Utils:
 			template_email.close()
 			return message
 		except IOError as exception:
-			print("Email template not found. For more information see the application logs.")
+			print("\nEmail template not found. For more information see the application logs.")
 			self.logger.createLogTelkAlert("File Error: " + str(exception), 4)
 
 	"""
-	Method that allows creating the path for a Telk-Alert directory.
+	Method that creates a new route from the root path of Telk-Alert.
 
 	Parameters:
 	self -- An instantiated object of the Utils class.
@@ -95,12 +95,12 @@ class Utils:
 	path_final -- Final directory.
 	"""
 	def getPathTalert(self, path_dir):
-		path_origen = '/etc/Telk-Alert-Suite/Telk-Alert'
-		path_final = os.path.join(path_origen, path_dir)
+		path_root = '/etc/Telk-Alert-Suite/Telk-Alert'
+		path_final = os.path.join(path_root, path_dir)
 		return path_final
 
 	"""
-	Method that allows obtaining the passphrase of a file.
+	Method that obtains the passphrase used for the process of encrypting and decrypting a file.
 
 	Parameters:
 	self -- An instantiated object of the Utils class.
@@ -109,7 +109,7 @@ class Utils:
 	pass_key -- Passphrase in a character string.
 
 	Exceptions:
-	FileNotFoundError -- his is an exception in python and it comes when a file does not exist and we want to use it. 
+	FileNotFoundError -- This is an exception in python and it comes when a file does not exist and we want to use it. 
 	"""
 	def getPassphrase(self):
 		try:
@@ -118,7 +118,7 @@ class Utils:
 			file_key.close()
 			return pass_key
 		except FileNotFoundError as exceptions:
-			print("Key File not found. For more information see the application logs.")
+			print("\nKey File not found. For more information see the application logs.")
 			self.logger.createLogTelkAlert("File Error: " + str(exceptions), 4)
 			sys.exit(1)
 
@@ -140,7 +140,7 @@ class Utils:
 			milliseconds = int(datetime.strftime("%s")) * 1000
 			return milliseconds
 		except TypeError as exception:
-			print("Type Error:" + str(exception) + ". For more information see the application logs.")
+			print("\nType Error:" + str(exception) + ". For more information see the application logs.")
 			self.logger.createLogTelkAlert("Type Error: " + str(exception), 4)
 			sys.exit(1)
 
@@ -167,7 +167,7 @@ class Utils:
 			if unit_time == 'days':
 				return total_time * 86400000
 		except TypeError as exception:
-			print("Type Error:" + str(exception) + ". For more information see the application logs.")
+			print("\nType Error:" + str(exception) + ". For more information see the application logs.")
 			self.logger.createLogTelkAlert("Type Error: " + str(exception), 4)
 			sys.exit(1)
 
@@ -190,12 +190,12 @@ class Utils:
 			date = date.strftime('%Y-%m-%d %H:%M:%S')
 			return date
 		except TypeError as exception:
-			print("Type Error:" + str(exception) + ". For more information see the application logs.")
+			print("\nType Error:" + str(exception) + ". For more information see the application logs.")
 			self.logger.createLogTelkAlert("Type Error: " + str(exception), 4)
 			sys.exit(1)
 
 	"""
-	Method that allows deciphering a text.
+	Method that decrypts a text string.
 
 	Parameters:
 	self -- An instantiated object of the Utils class.

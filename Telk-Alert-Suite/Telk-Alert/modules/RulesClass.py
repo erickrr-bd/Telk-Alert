@@ -2,9 +2,8 @@ import os
 import sys
 import glob
 import threading
-#sys.path.append('./modules')
-from modules.LoggerClass import Logger
 from modules.UtilsClass import Utils
+from modules.LoggerClass import Logger
 from modules.ElasticClass import Elastic
 
 """
@@ -74,12 +73,12 @@ class Rules:
 				self.logger.createLogTelkAlert("Type Error: " + str(exception), 4)
 				sys.exit(1)
 		else:
-			print("ElasticSearch version not supported.")
+			print("\nElasticSearch version not supported.")
 			self.logger.createLogTelkAlert("ElasticSearch version not supported.", 4)
 			sys.exit(1)
 
 	"""
-	Method that allows to obtain all the alert rules saved in a directory.
+	Method that gets the names of all alert rules created in the directory.
 
 	Parameters:
 	self -- An instantiated object of the Rules class.

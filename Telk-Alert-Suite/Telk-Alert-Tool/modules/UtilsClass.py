@@ -9,8 +9,6 @@ from modules.LoggerClass import Logger
 from base64 import b64encode, b64decode
 from Crypto.Util.Padding import pad, unpad
 
-
-
 """
 Class that allows managing all the utilities that are used for the operation of the application.
 """
@@ -36,11 +34,14 @@ class Utils:
 		self.passphrase = self.getPassphrase()
 
 	"""
-	Method that allows obtaining the content of a file with extension .yaml
+	Method that obtains the content of a file with the extension yaml.
 
 	Parameters:
 	self -- An instantiated object of the Utils class.
-	file_yaml -- Yaml file path
+	file_yaml -- Yaml file path.
+
+	Return:
+	data_yaml -- Contents of the .yaml file stored in a list.
 
 	Exceptions:
 	IOError -- It is an error raised when an input/output operation fails.
@@ -55,7 +56,7 @@ class Utils:
 			sys.exit(1)
 
 	"""
-	Method that allows creating the path for a Telk-Alert directory.
+	Method that creates a new route from the root path of Telk-Alert.
 
 	Parameters:
 	self -- An instantiated object of the Utils class.
@@ -65,12 +66,12 @@ class Utils:
 	path_final -- Final directory.
 	"""
 	def getPathTalert(self, path_dir):
-		path_origen = "/etc/Telk-Alert-Suite/Telk-Alert"
-		path_final = os.path.join(path_origen, path_dir)
+		path_root = "/etc/Telk-Alert-Suite/Telk-Alert"
+		path_final = os.path.join(path_root, path_dir)
 		return path_final
 
 	"""
-	Method that allows creating the path for a Telk-Alert-Agent directory.
+	Method that creates a new route from the root path of Telk-Alert-Agent.
 
 	Parameters:
 	self -- An instantiated object of the Utils class.
@@ -82,7 +83,7 @@ class Utils:
 		return path_agent
 
 	"""
-	Method that allows obtaining the passphrase of a file.
+	Method that obtains the passphrase used for the process of encrypting and decrypting a file.
 
 	Parameters:
 	self -- An instantiated object of the Utils class.
@@ -128,7 +129,7 @@ class Utils:
 		os.chown(path, uid, gid)
 
 	"""
-	Method that allows obtaining the hash function of a file through the sha-256 algorithm.
+	Method that obtains the hash of a particular file.
 
 	Parameters:
 	self -- An instantiated object of the Utils class.
@@ -151,7 +152,7 @@ class Utils:
 			self.logger.createLogTool("Error: " + str(exception), 4)
 
 	"""
-	Method that allows to encrypt a text through the AES algorithm.
+	Method that encrypts a text string.
 
 	Parameters:
 	self -- An instantiated object of the Utils class.
@@ -168,7 +169,7 @@ class Utils:
 		return b64encode(IV + aes.encrypt(pad(text_bytes, AES.block_size)))
 
 	"""
-	Method that allows deciphering a text.
+	Method that decrypts a text string.
 
 	Parameters:
 	self -- An instantiated object of the Utils class.

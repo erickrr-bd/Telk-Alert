@@ -4,8 +4,8 @@ import pycurl
 from datetime import datetime
 from urllib.parse import urlencode
 from elasticsearch_dsl import utils
-from modules.LoggerClass import Logger
 from modules.UtilsClass import Utils
+from modules.LoggerClass import Logger
 
 """
 Class that allows you to manage the sending of alerts through Telegram.
@@ -23,7 +23,7 @@ class Telegram:
 	logger = Logger()
 
 	"""
-	Method that allows sending the alert to the Telegram channel.
+	Method that sends the alert to the telegram channel.
 
 	Parameters:
 	self -- Instance object.
@@ -49,7 +49,7 @@ class Telegram:
 		return int(status_code)
 
 	"""
-	Method that allows creating the header of the alert to be sent to Telegram.
+	Method that generates the header of the message that will be sent by telegram.
 
 	Parameters:
 	self -- An instantiated object of the Telegram class.
@@ -69,11 +69,11 @@ class Telegram:
 			return header
 		except KeyError as exception:
 			self.logger.createLogTelkAlert("Key Error: " + str(exception), 4)
-			print("Key Error: " + str(exception))
+			print("\nKey Error: " + str(exception))
 			sys.exit(1)
 
 	"""
-	Method that allows generating the message that will be sent to the Telegram channel.
+	Method that generates the body of the message that will be sent by telegram.
 
 	Parameters:
 	self -- An instantiated object of the Telegram class.
