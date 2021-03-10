@@ -54,7 +54,7 @@ class Configuration:
 			data_conf.append(pass_http_auth)
 		else:
 			data_conf.append(False)
-		write_index = form_dialog.getDataInputText("Enter the name of the index that will be created in ElasticSearch:", "telk_alert")
+		write_index = form_dialog.getDataInputText("Enter the name of the index that will be created in ElasticSearch:", "telkalert")
 		max_hits = form_dialog.getDataNumber("Enter the maximum number of hits for the search (maximum 10000):", "10000")
 		data_conf.append(write_index)
 		data_conf.append(max_hits)

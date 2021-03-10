@@ -164,7 +164,7 @@ class Elastic:
 						if rule_yaml['alert'][i] == "telegram":
 							flag_telegram = 1
 					for unit_time in rule_yaml['time_search']:
-						time_search = self.utils.convertTimeToMilliseconds(unit_time, rule_yaml['time_search'][unit_time])
+						time_search = self.utils.convertTimeToMilliseconds(unit_time, rule_yaml['time_search'][unit_time]) / 1000
 					for unit_time in rule_yaml['time_back']:
 						time_back = self.utils.convertTimeToMilliseconds(unit_time, rule_yaml['time_back'][unit_time])
 					query_string_rule = rule_yaml['filter_search'][0]['query_string']['query']
