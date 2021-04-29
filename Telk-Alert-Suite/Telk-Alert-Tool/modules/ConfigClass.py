@@ -41,6 +41,8 @@ class Configuration:
 			valid_certificates = form_dialog.getDataYesOrNo("\nDo you want the certificates for SSL/TLS communication to be validated?", "Certificate Validation")
 			if valid_certificates == "ok":
 				data_conf.append(True)
+				cert_file = form_dialog.getFileOrDirectory('/etc/Telk-Alert-Suite/Telk-Alert', "Select the CA certificate:")
+				data_conf.append(cert_file)
 			else:
 				data_conf.append(False)
 		else:
@@ -91,7 +93,8 @@ class Configuration:
 
 		options_ssl_false = [("Enable", "Enable SSL/TLS communication", 0)]
 
-		options_valid_cert_true = [("To disable", "Disable certificate validation", 0)]
+		options_valid_cert_true = [("To disable", "Disable certificate validation", 0),
+									("Modify", "Change certificate file", 0)]
 
 		options_valid_cert_false = [("Enable", "Enable certificate validation", 0)]
 
@@ -111,9 +114,6 @@ class Configuration:
 		flag_http_auth = 0
 		flag_index_name = 0
 		flag_max_hits = 0
-		with open(self.utils.getPathTalert('conf') + '/es_conf.yaml', "rU") as f:
-			data_conf = yaml.safe_load(f)
-		hash_origen = self.utils.getSha256File(self.utils.getPathTalert('conf') + '/es_conf.yaml')
 		opt_conf_prop = form_dialog.getDataCheckList("Select one or more options", options_conf_prop, "Update configuration file")
 		for opt_prop in opt_conf_prop:
 			if opt_prop == "Version":
@@ -135,6 +135,9 @@ class Configuration:
 			if opt_prop == "Hits":
 				flag_max_hits = 1
 		try:
+			with open(self.utils.getPathTalert('conf') + '/es_conf.yaml', "rU") as f:
+				data_conf = yaml.safe_load(f)
+			hash_origen = self.utils.getSha256File(self.utils.getPathTalert('conf') + '/es_conf.yaml')
 			if flag_version == 1:
 				version_es = form_dialog.getDataNumberDecimal("Enter the ElasticSearch version:", str(data_conf['es_version']))
 				data_conf['es_version'] = str(version_es)
@@ -155,23 +158,32 @@ class Configuration:
 					opt_ssl_true = form_dialog.getDataRadioList("Select a option:", options_ssl_true, "Connection via SSL/TLS")
 					if opt_ssl_true == "To disable":
 						del data_conf['valid_certificates']
+						del data_conf['path_cert']
 						data_conf['use_ssl'] = False
 					if opt_ssl_true == "Modify":
 						if data_conf['valid_certificates'] == True:
 							opt_valid_cert_true = form_dialog.getDataRadioList("Select a option:", options_valid_cert_true, "Certificate Validation")
 							if opt_valid_cert_true == "To disable":
+								del data_conf['path_cert']
 								data_conf['valid_certificates'] = False
+							if opt_valid_cert_true == "Modify":
+								cert_file = form_dialog.getFileOrDirectory(data_conf['path_cert'], "Select the CA certificate:")
+								data_conf['path_cert'] = str(cert_file)
 						else:
 							opt_valid_cert_false = form_dialog.getDataRadioList("Select a option:", options_valid_cert_false, "Certificate Validation")
 							if opt_valid_cert_false == "Enable":
 								data_conf['valid_certificates'] = True
+								cert_file = form_dialog.getFileOrDirectory('/etc/Telk-Alert-Suite/Telk-Alert', "Select the CA certificate:")
+								cert_file_json = { 'path_cert' : str(cert_file) }
+								data_conf.update(cert_file_json)
 				else:
 					opt_ssl_false = form_dialog.getDataRadioList("Select a option:", options_ssl_false, "Connection via SSL/TLS")
 					if opt_ssl_false == "Enable":
 						data_conf['use_ssl'] = True
 						valid_certificates = form_dialog.getDataYesOrNo("\nDo you want the certificates for SSL/TLS communication to be validated?", "Certificate Validation")
 						if valid_certificates == "ok":
-							valid_certificates_json = { 'valid_certificates' : True }
+							cert_file = form_dialog.getFileOrDirectory('/etc/Telk-Alert-Suite/Telk-Alert', "Select the CA certificate:")
+							valid_certificates_json = { 'valid_certificates' : True, 'path_cert' : str(cert_file) }
 						else:
 							valid_certificates_json = { 'valid_certificates' : False }
 						data_conf.update(valid_certificates_json)
@@ -240,23 +252,31 @@ class Configuration:
 			'es_host': str(data_conf[1]),
 			'es_port': int(data_conf[2]),
 			'rules_folder': str(data_conf[3]),
-			'use_ssl': data_conf[4],
-			'valid_certificates' : data_conf[5],
-			'use_http_auth': data_conf[6]}
+			'use_ssl': data_conf[4]}
 
-		if data_conf[6] == True:
-			http_auth_data = {'http_auth_user' : data_conf[7].decode("utf-8"), 'http_auth_pass' : data_conf[8].decode("utf-8")}
-			data_aux = {'writeback_index' : str(data_conf[9]), 'max_hits' : int(data_conf[10])}
-			d.update(http_auth_data)
+		if data_conf[4] == True:
+			if data_conf[5] == True:
+				valid_certificates_json = { 'valid_certificates' : data_conf[5] , 'path_cert' : str(data_conf[6]) }
+				last_index = 6
+			else:
+				valid_certificates_json = { 'valid_certificates' : data_conf[5] }
+				last_index = 5
+			d.update(valid_certificates_json)
 		else:
-			data_aux = {'writeback_index' : str(data_conf[7]), 'max_hits' : int(data_conf[8])}
-		d.update(data_aux)
+			last_index = 4
+		if data_conf[last_index + 1] == True:
+			http_auth_json = { 'use_http_auth' : data_conf[last_index + 1], 'http_auth_user' : data_conf[last_index + 2].decode("utf-8"), 'http_auth_pass' : data_conf[last_index + 3].decode("utf-8") }
+			data_aux_json = { 'writeback_index' : str(data_conf[last_index + 4]), 'max_hits' : int(data_conf[last_index + 5]) }
+			d.update(http_auth_json)
+		else:
+			data_aux_json = { 'use_http_auth' : data_conf[last_index + 1], 'writeback_index' : str(data_conf[last_index + 2]), 'max_hits' : int(data_conf[last_index + 3]) }
+		d.update(data_aux_json)
 		try:
 			if(not os.path.isdir(self.utils.getPathTalert(str(data_conf[3])))):
-			 os.mkdir(self.utils.getPathTalert(str(data_conf[3])))
+				os.mkdir(self.utils.getPathTalert(str(data_conf[3])))
+				self.utils.changeUidGid(self.utils.getPathTalert(str(data_conf[3])))
 			with open(self.utils.getPathTalert('conf') + '/es_conf.yaml', 'w') as yaml_file:
 				yaml.dump(d, yaml_file, default_flow_style = False)
 			self.utils.changeUidGid(self.utils.getPathTalert('conf') + '/es_conf.yaml')
-			self.utils.changeUidGid(self.utils.getPathTalert(str(data_conf[3])))
 		except OSError as exception:
-			self.logger.createLogTool("Error" + str(exception), 4)
+			self.logger.createLogTool("Error: " + str(exception), 4)
