@@ -8,6 +8,10 @@ from modules.LoggerClass import Logger
 Class that allows managing alert rules.
 """
 class Rules:
+	"""
+	Property that contains the name of the folder where the alert rules are saved.
+	"""
+	folder_rules = None
 
 	"""
 	Utils type object.
@@ -46,9 +50,13 @@ class Rules:
 						 ["multiple", "An alert for each event found", 0]]
 
 	"""
-	Property that contains the name of the folder where the alert rules are saved.
+	Constructor for the Rules class.
+
+	Parameters:
+	self -- An instantiated object of the Rules class.
 	"""
-	folder_rules = ""
+	def __init__(self):
+		self.folder_rules = self.utils.readFileYaml(self.utils.getPathTalert('conf') + '/es_conf.yaml')['rules_folder']
 
 	"""
 	Method that requests the data for the creation of an alert rule.
@@ -62,7 +70,6 @@ class Rules:
 
 		options_filter_alert = [("query_string", "Perform the search using the Query String of ElasticSearch", 1)]
 
-		self.folder_rules = self.utils.readFileYaml(self.utils.getPathTalert('conf') + '/es_conf.yaml')['rules_folder']
 		data_rule = []
 		name_rule = form_dialog.getDataNameFolderOrFile("Enter the name of the alert rule:", "rule1")
 		data_rule.append(name_rule)
@@ -76,8 +83,8 @@ class Rules:
 			num_events = form_dialog.getDataNumber("Enter the number of events found in the rule to send the alert to:", "1")
 			unit_time_search = form_dialog.getDataRadioList("Select a option:", self.options_unit_time, "Search Time Unit")
 			num_time_search = form_dialog.getDataNumber("Enter the total amount in " + str(unit_time_search) + " in which you want the search to be repeated:", "2")
-			unit_time_back = form_dialog.getDataRadioList("Select a option:", self.options_unit_time, "Search Time Unit")
-			num_time_back = form_dialog.getDataNumber("Enter the total amount in " + str(unit_time_search) + " of time back in which you want to perform the search:", "2")
+			unit_time_back = form_dialog.getDataRadioList("Select a option:", self.options_unit_time, "Time Back Unit")
+			num_time_back = form_dialog.getDataNumber("Enter the total amount in " + str(unit_time_back) + " of time back in which you want to perform the search:", "2")
 			data_rule.append(num_events)
 			data_rule.append(unit_time_search)
 			data_rule.append(num_time_search)
@@ -132,9 +139,10 @@ class Rules:
 			data_rule.append(list_email_to)
 		self.createRuleYaml(data_rule, flag_telegram, flag_email)
 		if(not os.path.exists(self.utils.getPathTalert(self.folder_rules) + '/' + name_rule + '.yaml')):
-			form_dialog.d.msgbox("\nError creating alert rule", 7, 50, title = "Error message")
+			form_dialog.d.msgbox("\nError creating alert rule. For more details, see the logs.", 7, 50, title = "Error message")
 		else:
-			form_dialog.d.msgbox("\nAlert rule created", 7, 50, title = "Notification message")
+			self.logger.createLogTool("Alert rule created: " + name_rule, 2)
+			form_dialog.d.msgbox("\nAlert rule created: " + name_rule, 7, 50, title = "Notification message")	
 		form_dialog.mainMenu()
 
 	"""
@@ -196,8 +204,6 @@ class Rules:
 		options_email_to = [("Add New Email(s)", "Add one or more new emails", 0),
 						   ("Modify Email(s)", "Modify Existing Emails", 0),
 						   ("Remove Email(s)", "Remove Existing Emails", 0)]
-
-		self.folder_rules = self.utils.readFileYaml(self.utils.getPathTalert('conf') + '/es_conf.yaml')['rules_folder']
 		flag_name = 0
 		flag_level = 0
 		flag_index = 0
@@ -233,10 +239,10 @@ class Rules:
 				flag_type_alert = 1
 			if field_update == "Sending Alert":
 				flag_sending_alert = 1
-		with open(self.utils.getPathTalert(self.folder_rules) + '/' + name_alert_rule, "rU") as file_rule:
-			data_rule = yaml.safe_load(file_rule)
-		hash_origen = self.utils.getSha256File(self.utils.getPathTalert(self.folder_rules) + '/' + name_alert_rule)
 		try:
+			with open(self.utils.getPathTalert(self.folder_rules) + '/' + name_alert_rule, "rU") as file_rule:
+				data_rule = yaml.safe_load(file_rule)
+			hash_origen = self.utils.getSha256File(self.utils.getPathTalert(self.folder_rules) + '/' + name_alert_rule)
 			name_rule_actual = data_rule['name_rule']
 			if flag_name == 1:
 				name_rule = form_dialog.getDataNameFolderOrFile("Enter the name of the alert rule:", str(data_rule['name_rule']))
@@ -477,14 +483,18 @@ class Rules:
 			if hash_origen == hash_modify:
 				form_dialog.d.msgbox("\nAlert rule not modified", 7, 50, title = "Error message")
 			else:
-				form_dialog.d.msgbox("\nModified alert rule", 7, 50, title = "Notification message")
-				self.logger.createLogTool("The following alert rule was modified: " + name_alert_rule, 3)
+				self.logger.createLogTool("Modified alert rule: " + name_alert_rule, 3)
+				form_dialog.d.msgbox("\nModified alert rule: " + name_alert_rule, 7, 50, title = "Notification message")
 			if flag_name == 1:
 				os.rename(self.utils.getPathTalert(self.folder_rules) + '/' + name_alert_rule, self.utils.getPathTalert(self.folder_rules) + '/' + name_rule + '.yaml')	
 			form_dialog.mainMenu()
 		except KeyError as exception:
-			self.logger.createLogTool("Key Error: " + str(exception), 4)
-			form_dialog.d.msgbox("\nKey Error: " + str(exception), 7, 50, title = "Error message")
+			self.logger.createLogTool("Key not found in configuration file: " + str(exception), 4)
+			form_dialog.d.msgbox("\nKey not found in configuration file: " + str(exception), 7, 50, title = "Error message")
+			form_dialog.mainMenu()
+		except OSError as exception:
+			self.logger.createLogTool(str(exception), 4)
+			form_dialog.d.msgbox("\nError opening the alert rule. For more details, see the logs.", 7, 50, title = "Error message")
 			form_dialog.mainMenu()
 
 	"""
@@ -495,7 +505,6 @@ class Rules:
 	form_dialog -- A FormDialogs class object.
 	"""
 	def getDeleteRules(self, form_dialog):
-		self.folder_rules = self.utils.readFileYaml(self.utils.getPathTalert('conf') + '/es_conf.yaml')['rules_folder']
 		list_rules_delete = self.getAllAlertRules(self.utils.getPathTalert(self.folder_rules))
 		if len(list_rules_delete) == 0:
 			form_dialog.d.msgbox("\nThere are no alert rules in the directory", 7, 50, title = "Error message")
@@ -517,10 +526,9 @@ class Rules:
 	form_dialog -- A FormDialogs class object.
 	"""
 	def showAllAlertRules(self, form_dialog):
-		self.folder_rules = self.utils.readFileYaml(self.utils.getPathTalert('conf') + '/es_conf.yaml')['rules_folder']
 		list_all_rules = self.getAllAlertRules(self.utils.getPathTalert(self.folder_rules))
 		if len(list_all_rules) == 0:
-			form_dialog.getScrollBox("Zero alert rules", "Alert Rules")
+			form_dialog.getScrollBox("Zero alert rules in " + str(self.folder_rules), "Alert Rules")
 		else:
 			message = "\nAlert rules in " + str(self.folder_rules) + ":\n\n"
 			for rule in list_all_rules:
@@ -541,8 +549,6 @@ class Rules:
 	or “disk full” (not for illegal argument types or other incidental errors).
 	"""
 	def createRuleYaml(self, data_rule, flag_telegram, flag_email):
-		self.folder_rules = self.utils.readFileYaml(self.utils.getPathTalert('conf') + '/es_conf.yaml')['rules_folder']
-
 		d_rule = {'name_rule' : str(data_rule[0]),
 		'alert_level' : str(data_rule[1]),
 		'type_alert' : str(data_rule[3]),
@@ -597,7 +603,7 @@ class Rules:
 				yaml.dump(d_rule, rule_file, default_flow_style = False)
 			self.utils.changeUidGid(self.utils.getPathTalert(self.folder_rules) + '/' + str(data_rule[0]) + '.yaml')
 		except OSError as exception:
-			self.logger.createLogTool('Error: ' + str(exception), 4)
+			self.logger.createLogTool(str(exception), 4)
 
 	"""
 	Method that shows on screen all the alert rules created so far to select one, which will be modified.
@@ -607,7 +613,6 @@ class Rules:
 	form_dialog -- A FormDialogs class object.
 	"""
 	def getUpdateAlertRules(self, form_dialog):
-		self.folder_rules = self.utils.readFileYaml(self.utils.getPathTalert('conf') + '/es_conf.yaml')['rules_folder']
 		list_alert_rules = self.getAllAlertRules(self.utils.getPathTalert(self.folder_rules))
 		if len(list_alert_rules) == 0:
 			form_dialog.d.msgbox("\nThere are no alert rules in the directory", 5, 50, title = "Error message")

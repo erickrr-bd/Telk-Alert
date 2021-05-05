@@ -6,6 +6,7 @@ import platform
 from datetime import datetime
 from modules.EmailClass import Email
 from modules.UtilsClass import Utils
+from ssl import create_default_context
 from modules.LoggerClass import Logger
 from modules.TelegramClass import Telegram
 from elasticsearch_dsl import Q, Search, A
@@ -99,7 +100,16 @@ class Elastic:
 											connection_class = RequestsHttpConnection,
 											use_ssl = True,
 											verify_certs = False,
-											ssl_show_warn=False)
+											ssl_show_warn = False)
+				else:
+					context = create_default_context(cafile = telk_alert_conf['path_cert'])
+					conn_es = Elasticsearch([telk_alert_conf['es_host']], 
+											port = telk_alert_conf['es_port'],
+											connection_class = RequestsHttpConnection,
+											http_auth = (self.utils.decryptAES(telk_alert_conf['http_auth_user']).decode('utf-8'), self.utils.decryptAES(telk_alert_conf['http_auth_pass']).decode('utf-8')),
+											use_ssl = True,
+											verify_certs = True,
+											ssl_context = context)
 			if telk_alert_conf['use_ssl'] == True and telk_alert_conf['use_http_auth'] == True:
 				if not telk_alert_conf['valid_certificates'] == True:
 					conn_es = Elasticsearch([telk_alert_conf['es_host']], 
@@ -108,7 +118,16 @@ class Elastic:
 											http_auth = (self.utils.decryptAES(telk_alert_conf['http_auth_user']).decode('utf-8'), self.utils.decryptAES(telk_alert_conf['http_auth_pass']).decode('utf-8')),
 											use_ssl = True,
 											verify_certs = False,
-											ssl_show_warn=False)
+											ssl_show_warn = False)
+				else:
+					context = create_default_context(cafile = telk_alert_conf['path_cert'])
+					conn_es = Elasticsearch([telk_alert_conf['es_host']], 
+											port = telk_alert_conf['es_port'],
+											connection_class = RequestsHttpConnection,
+											http_auth = (self.utils.decryptAES(telk_alert_conf['http_auth_user']).decode('utf-8'), self.utils.decryptAES(telk_alert_conf['http_auth_pass']).decode('utf-8')),
+											use_ssl = True,
+											verify_certs = True,
+											ssl_context = context)
 			print("\nCONNECTION DATA\n")
 			print("Cluster name: " + conn_es.info()['cluster_name'])
 			print("ElasticSearch Version: " + conn_es.info()['version']['number'])

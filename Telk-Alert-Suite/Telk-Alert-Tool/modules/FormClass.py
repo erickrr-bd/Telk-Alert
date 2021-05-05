@@ -12,14 +12,20 @@ from modules.ConfigClass import Configuration
 Class that allows managing the graphical interfaces of Telk-Alert-Tool.
 """
 class FormDialogs:
-
 	"""
-	Object of type Dialog.
+	Dialog type object.
 	"""
 	d = Dialog(dialog = "dialog")
 
-	def __init__(self):
-		self.d.set_background_title("TELK-ALERT CONFIG TOOL")
+	"""
+	Utils type object.
+	"""
+	utils = Utils()
+
+	"""
+	Agent type object.
+	"""
+	agent = Agent()
 
 	"""
 	Property that contains the options for the graphical interface buttons.
@@ -28,30 +34,6 @@ class FormDialogs:
 					d.CANCEL: "Cancel",
 					d.HELP: "Help",
 					d.EXTRA: "Extra"}
-	"""
-	Utils type object.
-	"""
-	utils = Utils()
-
-	"""
-	Configuration type object.
-	"""
-	create_conf = Configuration()
-
-	"""
-	Rules type object.
-	"""
-	rules = Rules()
-
-	"""
-	Agent type object.
-	"""
-	agent = Agent()
-
-	"""
-	Service type object.
-	"""
-	service = Service()
 
 	"""
 	Property that contains the options when the configuration file is not created.
@@ -62,6 +44,15 @@ class FormDialogs:
 	Property that contains the options when the configuration file is created.
 	"""
 	options_conf_true = [("Modify configuration", "Modify the configuration file", 0)]
+
+	"""
+	Constructor for the FormDialogs class.
+
+	Parameters:
+	self -- An instantiated object of the FormDialogs class.
+	"""
+	def __init__(self):
+		self.d.set_background_title("TELK-ALERT CONFIG TOOL")
 
 	"""
 	Method that generates the menu interface.
@@ -506,14 +497,15 @@ class FormDialogs:
 	self -- An instantiated object of the FormDialogs class.
 	"""
 	def getDataConf(self):
+		configuration = Configuration()
 		if not os.path.exists(self.utils.getPathTalert("conf") + "/es_conf.yaml"):
 			opt_conf_false = self.getDataRadioList("Select a option", self.options_conf_false, "Configuration options")
 			if opt_conf_false == "Create configuration":
-				self.create_conf.createConfiguration(FormDialogs())
+				configuration.createConfiguration(FormDialogs())
 		else:
 			opt_conf_true = self.getDataRadioList("Select a option", self.options_conf_true, "Configuration options")
 			if opt_conf_true == "Modify configuration":
-				self.create_conf.modifyConfiguration(FormDialogs())
+				configuration.modifyConfiguration(FormDialogs())
 
 	"""
 	Method that defines the action to be performed on the Telk-Alert-Agent configuration file (creation or modification).
@@ -619,14 +611,15 @@ class FormDialogs:
 	option -- Chosen option.
 	"""
 	def switchMrules(self, option):
+		rules = Rules()
 		if option == 1:
-			self.rules.createNewRule(FormDialogs())
+			rules.createNewRule(FormDialogs())
 		if option == 2:
-			self.rules.getUpdateAlertRules(FormDialogs())
+			rules.getUpdateAlertRules(FormDialogs())
 		if option == 3:
-			self.rules.getDeleteRules(FormDialogs())
+			rules.getDeleteRules(FormDialogs())
 		if option == 4:
-			self.rules.showAllAlertRules(FormDialogs())
+			rules.showAllAlertRules(FormDialogs())
 
 	"""
 	Method that launches an action based on the option chosen in the Telk-Alert-Agent menu.
@@ -666,14 +659,15 @@ class FormDialogs:
 	option -- Chosen option.
 	"""
 	def switchMService(self, option):
+		service = Service()
 		if option == 1:
-			self.service.startService(FormDialogs())
+			service.startService(FormDialogs())
 		if option == 2:
-			self.service.restartService(FormDialogs())
+			service.restartService(FormDialogs())
 		if option == 3:
-			self.service.stopService(FormDialogs())
+			service.stopService(FormDialogs())
 		if option == 4:
-			self.service.getStatusService(FormDialogs())
+			service.getStatusService(FormDialogs())
 
 	"""
 	Method that defines the menu on the actions to be carried out in the main menu.

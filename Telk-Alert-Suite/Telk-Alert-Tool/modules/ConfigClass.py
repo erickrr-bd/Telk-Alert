@@ -63,9 +63,9 @@ class Configuration:
 		self.createFileConfiguration(data_conf)
 		if os.path.exists(self.utils.getPathTalert("conf") + "/es_conf.yaml"):
 			form_dialog.d.msgbox("\nConfiguration file created", 7, 50, title = "Notification message")
-			self.logger.createLogTool("Configuration file created", 3)
+			self.logger.createLogTool("Configuration file created", 2)
 		else:
-			form_dialog.d.msgbox("\nError creating configuration file", 7, 50, title = "Error message")
+			form_dialog.d.msgbox("\nError creating configuration file. For more details, see the logs.", 7, 50, title = "Error message")
 		form_dialog.mainMenu()
 
 	"""
@@ -158,13 +158,15 @@ class Configuration:
 					opt_ssl_true = form_dialog.getDataRadioList("Select a option:", options_ssl_true, "Connection via SSL/TLS")
 					if opt_ssl_true == "To disable":
 						del data_conf['valid_certificates']
-						del data_conf['path_cert']
+						if 'path_cert' in data_conf:
+							del data_conf['path_cert']
 						data_conf['use_ssl'] = False
 					if opt_ssl_true == "Modify":
 						if data_conf['valid_certificates'] == True:
 							opt_valid_cert_true = form_dialog.getDataRadioList("Select a option:", options_valid_cert_true, "Certificate Validation")
 							if opt_valid_cert_true == "To disable":
-								del data_conf['path_cert']
+								if 'path_cert' in data_conf:
+									del data_conf['path_cert']
 								data_conf['valid_certificates'] = False
 							if opt_valid_cert_true == "Modify":
 								cert_file = form_dialog.getFileOrDirectory(data_conf['path_cert'], "Select the CA certificate:")
@@ -233,9 +235,13 @@ class Configuration:
 				self.logger.createLogTool("Modified configuration file", 3)
 			form_dialog.mainMenu()	
 		except KeyError as exception:
-			self.logger.createLogTool("Key Error: " + str(exception), 4)
-			form_dialog.d.msgbox("\nKey Error: " + str(exception), 7, 50, title = "Error message")
-			form_dialog.mainMenu()	
+			self.logger.createLogTool("Key not found in configuration file: " + str(exception), 4)
+			form_dialog.d.msgbox("\nKey not found in configuration file: " + str(exception), 7, 50, title = "Error message")
+			form_dialog.mainMenu()
+		except OSError as exception:
+			self.logger.createLogTool(str(exception), 4)
+			form_dialog.d.msgbox("\nError opening the configuration file. For more details, see the logs.", 7, 50, title = "Error message")
+			form_dialog.mainMenu()
 
 	"""
 	Method that creates the YAML file with the data entered for the Telk-Alert configuration file.
@@ -279,4 +285,4 @@ class Configuration:
 				yaml.dump(d, yaml_file, default_flow_style = False)
 			self.utils.changeUidGid(self.utils.getPathTalert('conf') + '/es_conf.yaml')
 		except OSError as exception:
-			self.logger.createLogTool("Error: " + str(exception), 4)
+			self.logger.createLogTool(str(exception), 4)
