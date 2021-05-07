@@ -9,7 +9,6 @@ from modules.LoggerClass import Logger
 Class that allows managing everything related to Telk-Alert-Agent.
 """
 class Agent:
-
 	"""
 	Utils type object.
 	"""
@@ -59,7 +58,6 @@ class Agent:
 	OSError -- This exception is raised when a system function returns a system-related error, including I/O failures such as “file not found” or “disk full” (not for illegal argument types or other incidental errors).
 	"""
 	def modifyAgentConfiguration(self, form_dialog):
-
 		options_agent_modify = [("First Time", "First time the service is validated", 0),
 							   ("Second Time", "Second time the service is validated", 0),
 							   ("Bot Token", "Telegram bot token", 0),
@@ -101,20 +99,20 @@ class Agent:
 				yaml.safe_dump(data_agent_conf, file_agent_conf, default_flow_style = False)
 			hash_modify = self.utils.getSha256File(self.utils.getPathTagent('conf') + '/agent_conf.yaml')
 			if hash_origen == hash_modify:
-				self.logger.createLogTool("Configuration file not modified", 3)
-				form_dialog.d.msgbox("\nConfiguration file not modified", 7, 50, title = "Warning message")
+				form_dialog.d.msgbox("\nConfiguration file not modified", 7, 50, title = "Notification message")
 			else:
 				self.logger.createLogTool("Modified configuration file", 2)
 				form_dialog.d.msgbox("\nModified configuration file", 7, 50, title = "Notification message")
-		except OSError as exception:
-			self.logger.createLogTool("File Error: " + str(exception), 4)
-			form_dialog.d.msgbox("\nFile Error: " + str(exception), 7, 50, title = "Error message")
 			form_dialog.mainMenu()
 		except KeyError as exception:
-			self.logger.createLogTool("Key Error: " + str(exception), 4)
-			form_dialog.d.msgbox("\nKey Error: " + str(exception), 7, 50, title = "Error message")
+			self.logger.createLogTool("Key not found in configuration file: " + str(exception), 4)
+			form_dialog.d.msgbox("\nKey not found in configuration file: " + str(exception), 7, 50, title = "Error message")
 			form_dialog.mainMenu()
-
+		except OSError as exception:
+			self.logger.createLogTool(str(exception), 4)
+			form_dialog.d.msgbox("\nError opening or modifying the configuration file. For more details, see the logs.", 7, 50, title = "Error message")
+			form_dialog.mainMenu()
+		
 	"""
 	Method that starts the Telk-Alert-Agent service.
 
@@ -125,11 +123,11 @@ class Agent:
 	def startService(self, form_dialog):
 		result = os.system("systemctl start telk-alert-agent.service")
 		if int(result) == 0:
-			form_dialog.d.msgbox("\nTelk-Alert-Agent service started", 7, 50, title = "Notification message")
 			self.logger.createLogTool("Telk-Alert-Agent service started", 2)
+			form_dialog.d.msgbox("\nTelk-Alert-Agent service started", 7, 50, title = "Notification message")
 		if int(result) == 1280:
-			form_dialog.d.msgbox("\nFailed to start telk-alert-agent.service: Not found", 7, 50, title = "Error message")
-			self.logger.createLogTool("Service Error: Failed to start telk-alert-agent.service: Not found", 4)
+			self.logger.createLogTool("Failed to start telk-alert-agent.service. Service not found.", 4)
+			form_dialog.d.msgbox("\nFailed to start telk-alert-agent.service. Service not found.", 7, 50, title = "Error message")
 
 	"""
 	Method that restarts the Telk-Alert-Agent service.
@@ -141,11 +139,11 @@ class Agent:
 	def restartService(self, form_dialog):
 		result = os.system("systemctl restart telk-alert-agent.service")
 		if int(result) == 0:
-			form_dialog.d.msgbox("\nTelk-Alert-Agent service restarted", 7, 50, title = "Notification message")
 			self.logger.createLogTool("Telk-Alert-Agent service restarted", 2)
+			form_dialog.d.msgbox("\nTelk-Alert-Agent service restarted", 7, 50, title = "Notification message")	
 		if int(result) == 1280:
-			form_dialog.d.msgbox("\nFailed to restart telk-alert-agent.service: Not found", 7, 50, title = "Error message")
-			self.logger.createLogTool("Service Error: Failed to restart telk-alert-agent.service: Not found", 4)
+			self.logger.createLogTool("Failed to restart telk-alert-agent.service. Service not found.", 4)
+			form_dialog.d.msgbox("\nFailed to restart telk-alert-agent.service. Service not found.", 7, 50, title = "Error message")
 
 	"""
 	Method that stops the Telk-Alert-Agent service.
@@ -160,8 +158,8 @@ class Agent:
 			form_dialog.d.msgbox("\nTelk-Alert-Agent service stopped", 7, 50, title = "Notification message")
 			self.logger.createLogTool("Telk-Alert-Agent service stopped", 2)
 		if int(result) == 1280:
-			form_dialog.d.msgbox("\nFailed to stop telk-alert-agent.service: Not found", 7, 50, title = "Error message")
-			self.logger.createLogTool("Service Error: Failed to stop telk-alert-agent.service: Not found", 4)
+			self.logger.createLogTool("Failed to stop telk-alert-agent.service. Service not found.", 4)
+			form_dialog.d.msgbox("\nFailed to stop telk-alert-agent.service. Service not found.", 7, 50, title = "Error message")
 
 	"""
 	Method that obtains the status of the Telk-Alert-Agent service.
@@ -180,7 +178,7 @@ class Agent:
 			form_dialog.getScrollBox(file_status.read(), title = "Status Service")
 
 	"""
-	Method that allows creating .yaml file that will store the Telk-Alert-Agent configuration.
+	Method that creates the YAML file of the Telk-Alert-Agent configuration.
 
 	Parameters:
 	self -- An instantiated object of the Agent class.
@@ -203,6 +201,6 @@ class Agent:
 				yaml.dump(data_conf, agent_conf_file, default_flow_style = False)
 			self.utils.changeUidGid(self.utils.getPathTagent('conf') + '/agent_conf.yaml')
 		except OSError as exception:
-			self.logger.createLogTool("File Error: " + str(exception), 4)
-			form_dialog.d.msgbox("\nFile Error: " + str(exception), 7, 50, title = "Error message")
+			self.logger.createLogTool(str(exception), 4)
+			form_dialog.d.msgbox("\nError creating configuration file. For more details, see the logs.", 7, 50, title = "Error message")
 			form_dialog.mainMenu()

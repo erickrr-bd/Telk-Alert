@@ -6,7 +6,6 @@ from modules.LoggerClass import Logger
 Class that allows you to manage everything related to the Telk-Alert service.
 """
 class Service:
-
 	"""
 	Logger type object.
 	"""
@@ -22,12 +21,12 @@ class Service:
 	def startService(self, form_dialog):
 		result = os.system("systemctl start telk-alert.service")
 		if int(result) == 0:
-			form_dialog.d.msgbox("\nTelk-Alert service started", 7, 50, title = "Notification message")
 			self.logger.createLogTool("Telk-Alert service started", 2)
+			form_dialog.d.msgbox("\nTelk-Alert service started", 7, 50, title = "Notification message")
 		if int(result) == 1280:
-			form_dialog.d.msgbox("\nFailed to start telk-alert.service: Not found", 7, 50, title = "Error message")
-			self.logger.createLogTool("Service Error: Failed to start telk-alert.service: Not found", 4)
-
+			self.logger.createLogTool("Failed to start telk-alert.service. Service not found.", 4)
+			form_dialog.d.msgbox("\nFailed to start telk-alert.service. Service not found.", 7, 50, title = "Error message")
+			
 	"""
 	Method that restarts the Telk-Alert service.
 
@@ -38,11 +37,11 @@ class Service:
 	def restartService(self, form_dialog):
 		result = os.system("systemctl restart telk-alert.service")
 		if int(result) == 0:
-			form_dialog.d.msgbox("\nTelk-Alert service restarted", 7, 50, title = "Notification message")
 			self.logger.createLogTool("Telk-Alert service restarted", 2)
+			form_dialog.d.msgbox("\nTelk-Alert service restarted", 7, 50, title = "Notification message")
 		if int(result) == 1280:
-			form_dialog.d.msgbox("\nFailed to restart telk-alert.service: Not found", 7, 50, title = "Error message")
-			self.logger.createLogTool("Service Error: Failed to restart telk-alert.service: Not found", 4)
+			self.logger.createLogTool("Failed to restart telk-alert.service. Service not found.", 4)
+			form_dialog.d.msgbox("\nFailed to restart telk-alert.service. Service not found", 7, 50, title = "Error message")
 
 	"""
 	Method that stops the Telk-Alert service.
@@ -54,11 +53,11 @@ class Service:
 	def stopService(self, form_dialog):
 		result = os.system("systemctl stop telk-alert.service")
 		if int(result) == 0:
-			form_dialog.d.msgbox("\nTelk-Alert service stopped", 7, 50, title = "Notification message")
 			self.logger.createLogTool("Telk-Alert service stopped", 2)
+			form_dialog.d.msgbox("\nTelk-Alert service stopped", 7, 50, title = "Notification message")	
 		if int(result) == 1280:
-			form_dialog.d.msgbox("\nFailed to stop telk-alert.service: Not found", 7, 50, title = "Error message")
-			self.logger.createLogTool("Service Error: Failed to stop telk-alert.service: Not found", 4)
+			self.logger.createLogTool("Failed to stop telk-alert.service: Service not found", 4)
+			form_dialog.d.msgbox("\nFailed to stop telk-alert.service. Service not found.", 7, 50, title = "Error message")
 
 	"""
 	Method that obtains the status of the Telk-Alert service.

@@ -153,7 +153,9 @@ class Rules:
 	form_dialog -- A FormDialogs class object.
 
 	Exceptions:
-	KeyError -- A Python KeyError exception is what is raised when you try to access a key that isn’t in a dictionary (dict). 
+	KeyError -- A Python KeyError exception is what is raised when you try to access a key that isn’t in a dictionary (dict).
+	OSError -- This exception is raised when a system function returns a system-related error, including I/O failures such as “file not found” 
+	or “disk full” (not for illegal argument types or other incidental errors). 
 	"""
 	def modifyAlertRule(self, form_dialog, name_alert_rule):
 		options_fields_update = [("Name", "Alert rule name", 0),
@@ -481,7 +483,7 @@ class Rules:
 				yaml.safe_dump(data_rule, file_rule_update, default_flow_style = False)
 			hash_modify = self.utils.getSha256File(self.utils.getPathTalert(self.folder_rules) + '/' + name_alert_rule)
 			if hash_origen == hash_modify:
-				form_dialog.d.msgbox("\nAlert rule not modified", 7, 50, title = "Error message")
+				form_dialog.d.msgbox("\nAlert rule not modified: " + name_alert_rule, 7, 50, title = "Notification message")
 			else:
 				self.logger.createLogTool("Modified alert rule: " + name_alert_rule, 3)
 				form_dialog.d.msgbox("\nModified alert rule: " + name_alert_rule, 7, 50, title = "Notification message")
@@ -489,8 +491,8 @@ class Rules:
 				os.rename(self.utils.getPathTalert(self.folder_rules) + '/' + name_alert_rule, self.utils.getPathTalert(self.folder_rules) + '/' + name_rule + '.yaml')	
 			form_dialog.mainMenu()
 		except KeyError as exception:
-			self.logger.createLogTool("Key not found in configuration file: " + str(exception), 4)
-			form_dialog.d.msgbox("\nKey not found in configuration file: " + str(exception), 7, 50, title = "Error message")
+			self.logger.createLogTool("Key not found in alert rule: " + str(exception), 4)
+			form_dialog.d.msgbox("\nKey not found in alert rule: " + str(exception), 7, 50, title = "Error message")
 			form_dialog.mainMenu()
 		except OSError as exception:
 			self.logger.createLogTool(str(exception), 4)
@@ -505,18 +507,24 @@ class Rules:
 	form_dialog -- A FormDialogs class object.
 	"""
 	def getDeleteRules(self, form_dialog):
-		list_rules_delete = self.getAllAlertRules(self.utils.getPathTalert(self.folder_rules))
-		if len(list_rules_delete) == 0:
-			form_dialog.d.msgbox("\nThere are no alert rules in the directory", 7, 50, title = "Error message")
-		else:
-			options_rules_delete = []
-			for rule in list_rules_delete:
-				options_rules_delete.append((rule, "", 0))
-			opt_rules_delete = form_dialog.getDataCheckList("Select one or more options:", options_rules_delete, "Delete Alert Rules")
-			for opt_rule in opt_rules_delete:
-				os.remove(self.utils.getPathTalert(self.folder_rules) + '/' + opt_rule)
-			form_dialog.d.msgbox("\nAlert rule(s) removed", 7, 50, title = "Notification message")
-		form_dialog.mainMenu()
+		try:
+			list_rules_delete = self.getAllAlertRules(self.utils.getPathTalert(self.folder_rules))
+			if len(list_rules_delete) == 0:
+				form_dialog.d.msgbox("\nThere are no alert rules in the directory", 7, 50, title = "Notification message")
+			else:
+				options_rules_delete = []
+				for rule in list_rules_delete:
+					options_rules_delete.append((rule, "", 0))
+				opt_rules_delete = form_dialog.getDataCheckList("Select one or more options:", options_rules_delete, "Delete Alert Rules")
+				for opt_rule in opt_rules_delete:
+					os.remove(self.utils.getPathTalert(self.folder_rules) + '/' + opt_rule)
+				self.logger.createLogTool("Alert rule(s) removed: " + ",".join(opt_rules_delete), 2)
+				form_dialog.d.msgbox("\nAlert rule(s) removed: " + ",".join(opt_rules_delete), 7, 50, title = "Notification message")
+			form_dialog.mainMenu()
+		except OSError as exception:
+			self.logger.createLogTool(str(exception), 4)
+			form_dialog.d.msgbox("\nFailed to delete alert rule(s). For more details, see the logs.", 7, 50, title = "Error message")
+			form_dialog.mainMenu()
 
 	"""
 	Method that shows all the alert rules created so far on the screen.
@@ -532,7 +540,7 @@ class Rules:
 		else:
 			message = "\nAlert rules in " + str(self.folder_rules) + ":\n\n"
 			for rule in list_all_rules:
-				message += "-" + rule + "\n"
+				message += "- " + rule + "\n"
 			form_dialog.getScrollBox(message, "Alert Rules")
 
 	"""
@@ -615,7 +623,7 @@ class Rules:
 	def getUpdateAlertRules(self, form_dialog):
 		list_alert_rules = self.getAllAlertRules(self.utils.getPathTalert(self.folder_rules))
 		if len(list_alert_rules) == 0:
-			form_dialog.d.msgbox("\nThere are no alert rules in the directory", 5, 50, title = "Error message")
+			form_dialog.d.msgbox("\nThere are no alert rules in the directory", 7, 50, title = "Notification message")
 		else:
 			options_alert_rules = []
 			for alert_rule in list_alert_rules:
