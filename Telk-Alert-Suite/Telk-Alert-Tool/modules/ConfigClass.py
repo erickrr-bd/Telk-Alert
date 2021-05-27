@@ -1,22 +1,24 @@
 import os
 import yaml
 from modules.UtilsClass import Utils
-from modules.LoggerClass import Logger
 
 """
 Class that allows managing everything related to the Telk-Alert configuration.
 """
 class Configuration:
+	"""
+	Property that stores an object of type Utils.
+	"""
+	utils = None
 
 	"""
-	Utils type object.
-	"""
-	utils = Utils()
+	Constructor for the Configuration class.
 
+	Parameters:
+	self -- An instantiated object of the Configuration class.
 	"""
-	Logger type object.
-	"""
-	logger = Logger()
+	def __init__(self):
+		self.utils = Utils()
 
 	"""
 	Method that requests the data for the creation of the Telk-Alert configuration file.
@@ -50,8 +52,8 @@ class Configuration:
 		http_auth = form_dialog.getDataYesOrNo("\nIs the use of HTTP authentication required to connect to ElasticSearch?", "HTTP Authentication")
 		if http_auth == "ok":
 			data_conf.append(True)
-			user_http_auth = self.utils.encryptAES(form_dialog.getDataInputText("Enter the username for HTTP authentication:", "user_http"))
-			pass_http_auth = self.utils.encryptAES(form_dialog.getDataPassword("Enter the user's password for HTTP authentication:", "password"))
+			user_http_auth = self.utils.encryptAES(form_dialog.getDataInputText("Enter the username for HTTP authentication:", "user_http"), form_dialog)
+			pass_http_auth = self.utils.encryptAES(form_dialog.getDataPassword("Enter the user's password for HTTP authentication:", "password"), form_dialog)
 			data_conf.append(user_http_auth)
 			data_conf.append(pass_http_auth)
 		else:
@@ -63,7 +65,7 @@ class Configuration:
 		self.createFileConfiguration(data_conf)
 		if os.path.exists(self.utils.getPathTalert("conf") + "/es_conf.yaml"):
 			form_dialog.d.msgbox("\nConfiguration file created", 7, 50, title = "Notification message")
-			self.logger.createLogTool("Configuration file created", 2)
+			self.utils.createLogTool("Configuration file created", 2)
 		else:
 			form_dialog.d.msgbox("\nError creating configuration file. For more details, see the logs.", 7, 50, title = "Error message")
 		form_dialog.mainMenu()
@@ -137,7 +139,7 @@ class Configuration:
 		try:
 			with open(self.utils.getPathTalert('conf') + '/es_conf.yaml', "rU") as f:
 				data_conf = yaml.safe_load(f)
-			hash_origen = self.utils.getSha256File(self.utils.getPathTalert('conf') + '/es_conf.yaml')
+			hash_origen = self.utils.getSha256File(self.utils.getPathTalert('conf') + '/es_conf.yaml', form_dialog)
 			if flag_version == 1:
 				version_es = form_dialog.getDataNumberDecimal("Enter the ElasticSearch version:", str(data_conf['es_version']))
 				data_conf['es_version'] = str(version_es)
@@ -206,16 +208,16 @@ class Configuration:
 							if opt_mod == "Password":
 								flag_http_auth_pass = 1
 						if flag_http_auth_user == 1:
-							user_http_auth_mod = self.utils.encryptAES(form_dialog.getDataInputText("Enter the username for HTTP authentication:", self.utils.decryptAES(data_conf['http_auth_user']).decode('utf-8')))
+							user_http_auth_mod = self.utils.encryptAES(form_dialog.getDataInputText("Enter the username for HTTP authentication:", self.utils.decryptAES(data_conf['http_auth_user'], form_dialog).decode('utf-8')), form_dialog)
 							data_conf['http_auth_user'] = user_http_auth_mod.decode('utf-8')
 						if flag_http_auth_pass == 1:
-							pass_http_auth_mod = self.utils.encryptAES(form_dialog.getDataPassword("Enter the user's password for HTTP authentication:", "password"))
+							pass_http_auth_mod = self.utils.encryptAES(form_dialog.getDataPassword("Enter the user's password for HTTP authentication:", "password"), form_dialog)
 							data_conf['http_auth_pass'] = pass_http_auth_mod.decode('utf-8')
 				else:
 					opt_http_auth_false = form_dialog.getDataRadioList("Select a option:", options_http_auth_false, "HTTP Authentication")
 					if opt_http_auth_false == "Enable":
-						user_http_auth = self.utils.encryptAES(form_dialog.getDataInputText("Enter the username for HTTP authentication:", "user_http"))
-						pass_http_auth = self.utils.encryptAES(form_dialog.getDataPassword("Enter the user's password for HTTP authentication:", "password"))
+						user_http_auth = self.utils.encryptAES(form_dialog.getDataInputText("Enter the username for HTTP authentication:", "user_http"), form_dialog)
+						pass_http_auth = self.utils.encryptAES(form_dialog.getDataPassword("Enter the user's password for HTTP authentication:", "password"), form_dialog)
 						http_auth_data = {'http_auth_user': user_http_auth.decode('utf-8'), 'http_auth_pass': pass_http_auth.decode('utf-8')}
 						data_conf.update(http_auth_data)
 						data_conf['use_http_auth'] = True
@@ -227,19 +229,19 @@ class Configuration:
 				data_conf['max_hits'] = int(max_hits)
 			with open(self.utils.getPathTalert('conf') + '/es_conf.yaml', "w") as file_update:
 				yaml.safe_dump(data_conf, file_update, default_flow_style = False)
-			hash_modify = self.utils.getSha256File(self.utils.getPathTalert('conf') + '/es_conf.yaml')
+			hash_modify = self.utils.getSha256File(self.utils.getPathTalert('conf') + '/es_conf.yaml', form_dialog)
 			if hash_origen == hash_modify:
 				form_dialog.d.msgbox("\nConfiguration file not modified", 7, 50, title = "Notification message")
 			else:
 				form_dialog.d.msgbox("\nModified configuration file", 7, 50, title = "Notification message")
-				self.logger.createLogTool("Modified configuration file", 3)
+				self.utils.createLogTool("Modified configuration file", 3)
 			form_dialog.mainMenu()	
 		except KeyError as exception:
-			self.logger.createLogTool("Key not found in configuration file: " + str(exception), 4)
+			self.utils.createLogTool("Key not found in configuration file: " + str(exception), 4)
 			form_dialog.d.msgbox("\nKey not found in configuration file: " + str(exception), 7, 50, title = "Error message")
 			form_dialog.mainMenu()
 		except OSError as exception:
-			self.logger.createLogTool(str(exception), 4)
+			self.utils.createLogTool(str(exception), 4)
 			form_dialog.d.msgbox("\nError opening the configuration file. For more details, see the logs.", 7, 50, title = "Error message")
 			form_dialog.mainMenu()
 
@@ -285,4 +287,4 @@ class Configuration:
 				yaml.dump(d, yaml_file, default_flow_style = False)
 			self.utils.changeUidGid(self.utils.getPathTalert('conf') + '/es_conf.yaml')
 		except OSError as exception:
-			self.logger.createLogTool(str(exception), 4)
+			self.utils.createLogTool(str(exception), 4)

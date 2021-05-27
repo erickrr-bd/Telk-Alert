@@ -15,25 +15,17 @@ class FormDialogs:
 	"""
 	Dialog type object.
 	"""
-	d = Dialog(dialog = "dialog")
+	d = None
 
 	"""
-	Utils type object.
+	Property that stores an object of type Utils.
 	"""
-	utils = Utils()
+	utils = None
 
 	"""
-	Agent type object.
+	Property that stores an object of type Agent.
 	"""
-	agent = Agent()
-
-	"""
-	Property that contains the options for the graphical interface buttons.
-	"""
-	button_names = {d.OK: "OK",
-					d.CANCEL: "Cancel",
-					d.HELP: "Help",
-					d.EXTRA: "Extra"}
+	agent = None
 
 	"""
 	Property that contains the options when the configuration file is not created.
@@ -52,7 +44,10 @@ class FormDialogs:
 	self -- An instantiated object of the FormDialogs class.
 	"""
 	def __init__(self):
-		self.d.set_background_title("TELK-ALERT CONFIG TOOL")
+		self.d = Dialog(dialog = "dialog")
+		self.d.set_background_title("TELK-ALERT-TOOL")
+		self.utils = Utils()
+		self.agent = Agent()
 
 	"""
 	Method that generates the menu interface.
@@ -230,8 +225,8 @@ class FormDialogs:
 					self.d.msgbox("\nInvalid port", 7, 50, title = "Error message")
 				else:
 					return tag_port
-		if code_port == self.d.CANCEL:
-			self.mainMenu()
+			if code_port == self.d.CANCEL:
+				self.mainMenu()
 	
 	"""
 	Method that generates the interface for entering directory or file name data.
@@ -585,6 +580,16 @@ class FormDialogs:
 		self.switchMServiceAgent(int(option_msa))
 
 	"""
+	Method that displays a message on the screen with information about the application.
+
+	Parameters:
+	self -- An instantiated object of the FormDialogs class.
+	"""
+	def getAbout(self):
+		message = "\nCopyright@2021 Tekium. All rights reserved.\nTelk-Alert v3.0\nAuthor: Erick Rodriguez erickrr.tbd93@gmail.com\n" + "License: GPLv3\n\nTelk-Alert is a tool that allows the carrying out of searches\nconfigured in ElasticSearch and the sending of alerts with the\nresults of said search to a Telegram channel, one or more email\naddresses or both."
+		self.getScrollBox(message, "About")
+
+	"""
 	Method that launches an action based on the option chosen in the main menu.
 
 	Parameters:
@@ -601,6 +606,8 @@ class FormDialogs:
 		if option == 4:
 			self.getMenuAgent()
 		if option == 5:
+			self.getAbout()
+		if option == 6:
 			sys.exit(0)
 
 	"""
@@ -680,7 +687,8 @@ class FormDialogs:
 					  ("2", "Alert Rules"),
 					  ("3", "Telk-Alert Service"),
 					  ("4", "Telk-Alert Agent"),
-					  ("5", "Exit")]
+					  ("5", "About"),
+					  ("6", "Exit")]
 
 		option_mm = self.getMenu(options_mm, "Main Menu")
 		self.switchMmenu(int(option_mm))

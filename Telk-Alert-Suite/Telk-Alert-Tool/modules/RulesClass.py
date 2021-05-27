@@ -2,7 +2,6 @@ import os
 import yaml
 import glob
 from modules.UtilsClass import Utils
-from modules.LoggerClass import Logger
 
 """
 Class that allows managing alert rules.
@@ -14,15 +13,10 @@ class Rules:
 	folder_rules = None
 
 	"""
-	Utils type object.
+	Property that stores an object of type Utils.
 	"""
-	utils = Utils()
-
-	"""
-	Logger type object.
-	"""
-	logger = Logger()
-
+	utils = None
+	
 	"""
 	Property that contains the options for the alert rule level.
 	"""
@@ -56,6 +50,7 @@ class Rules:
 	self -- An instantiated object of the Rules class.
 	"""
 	def __init__(self):
+		self.utils = Utils()
 		self.folder_rules = self.utils.readFileYaml(self.utils.getPathTalert('conf') + '/es_conf.yaml')['rules_folder']
 
 	"""
@@ -124,13 +119,13 @@ class Rules:
 			if opt_alert == "email":
 				flag_email = 1
 		if flag_telegram == 1:
-			telegram_bot_token = self.utils.encryptAES(form_dialog.getDataInputText("Enter the Telegram bot token:", "751988420:AAHrzn7RXWxVQQNha0tQUzyouE5lUcPde1g"))
-			telegram_chat_id = self.utils.encryptAES(form_dialog.getDataInputText("Enter the Telegram channel identifier:", "-1002365478941"))
+			telegram_bot_token = self.utils.encryptAES(form_dialog.getDataInputText("Enter the Telegram bot token:", "751988420:AAHrzn7RXWxVQQNha0tQUzyouE5lUcPde1g"), form_dialog)
+			telegram_chat_id = self.utils.encryptAES(form_dialog.getDataInputText("Enter the Telegram channel identifier:", "-1002365478941"), form_dialog)
 			data_rule.append(telegram_bot_token)
 			data_rule.append(telegram_chat_id)
 		if flag_email == 1:
 			email_from = form_dialog.getDataEmail("Enter the email address from which the alerts will be sent (gmail or outlook):", "usuario@gmail.com")
-			email_from_password = self.utils.encryptAES(form_dialog.getDataPassword("Enter the password of the email address from which the alerts will be sent:", "password"))
+			email_from_password = self.utils.encryptAES(form_dialog.getDataPassword("Enter the password of the email address from which the alerts will be sent:", "password"), form_dialog)
 			number_email_to = form_dialog.getDataNumber("Enter the total number of email addresses to which the alert will be sent:", "3")
 			list_email_to_add = form_dialog.getEmailAdd(number_email_to)
 			list_email_to = form_dialog.getEmailsTo(list_email_to_add, "Destination Email Addresses:", "Enter email addresses:")
@@ -141,7 +136,7 @@ class Rules:
 		if(not os.path.exists(self.utils.getPathTalert(self.folder_rules) + '/' + name_rule + '.yaml')):
 			form_dialog.d.msgbox("\nError creating alert rule. For more details, see the logs.", 7, 50, title = "Error message")
 		else:
-			self.logger.createLogTool("Alert rule created: " + name_rule, 2)
+			self.utils.createLogTool("Alert rule created: " + name_rule, 2)
 			form_dialog.d.msgbox("\nAlert rule created: " + name_rule, 7, 50, title = "Notification message")	
 		form_dialog.mainMenu()
 
@@ -244,7 +239,7 @@ class Rules:
 		try:
 			with open(self.utils.getPathTalert(self.folder_rules) + '/' + name_alert_rule, "rU") as file_rule:
 				data_rule = yaml.safe_load(file_rule)
-			hash_origen = self.utils.getSha256File(self.utils.getPathTalert(self.folder_rules) + '/' + name_alert_rule)
+			hash_origen = self.utils.getSha256File(self.utils.getPathTalert(self.folder_rules) + '/' + name_alert_rule, form_dialog)
 			name_rule_actual = data_rule['name_rule']
 			if flag_name == 1:
 				name_rule = form_dialog.getDataNameFolderOrFile("Enter the name of the alert rule:", str(data_rule['name_rule']))
@@ -390,17 +385,17 @@ class Rules:
 								if opt_telegram == "Chat ID":
 									flag_chat_id = 1
 							if flag_bot_token == 1:
-								telegram_bot_token = self.utils.encryptAES(form_dialog.getDataInputText("Enter the Telegram bot token:", self.utils.decryptAES(data_rule['telegram_bot_token']).decode('utf-8')))
+								telegram_bot_token = self.utils.encryptAES(form_dialog.getDataInputText("Enter the Telegram bot token:", self.utils.decryptAES(data_rule['telegram_bot_token'], form_dialog).decode('utf-8')), form_dialog)
 								data_rule['telegram_bot_token'] = telegram_bot_token.decode('utf-8')
 							if flag_chat_id == 1:
-								telegram_chat_id = self.utils.encryptAES(form_dialog.getDataInputText("Enter the Telegram channel identifier:", self.utils.decryptAES(data_rule['telegram_chat_id']).decode('utf-8')))
+								telegram_chat_id = self.utils.encryptAES(form_dialog.getDataInputText("Enter the Telegram channel identifier:", self.utils.decryptAES(data_rule['telegram_chat_id'], form_dialog).decode('utf-8')), form_dialog)
 								data_rule['telegram_chat_id'] = telegram_chat_id.decode('utf-8')
 					else:
 						opt_telegram_false = form_dialog.getDataRadioList("Select a option:", options_telegram_false, "Sending By Telegram")
 						if opt_telegram_false == "Enable":
 							del data_rule['alert']
-							telegram_bot_token = self.utils.encryptAES(form_dialog.getDataInputText("Enter the Telegram bot token:", "751988420:AAHrzn7RXWxVQQNha0tQUzyouE5lUcPde1g"))
-							telegram_chat_id = self.utils.encryptAES(form_dialog.getDataInputText("Enter the Telegram channel identifier:", "-1002365478941"))
+							telegram_bot_token = self.utils.encryptAES(form_dialog.getDataInputText("Enter the Telegram bot token:", "751988420:AAHrzn7RXWxVQQNha0tQUzyouE5lUcPde1g"), form_dialog)
+							telegram_chat_id = self.utils.encryptAES(form_dialog.getDataInputText("Enter the Telegram channel identifier:", "-1002365478941"), form_dialog)
 							telegram_json = { 'telegram_bot_token' : telegram_bot_token.decode('utf-8'), 'telegram_chat_id' : telegram_chat_id.decode('utf-8') }
 							if flag_email == 1:
 								alert_json = { 'alert' : ['telegram', 'email'] }
@@ -438,7 +433,7 @@ class Rules:
 								email_from = form_dialog.getDataEmail("Enter the email address from which the alerts will be sent (gmail or outlook):", str(data_rule['email_from']))
 								data_rule['email_from'] = str(email_from)
 							if flag_email_from_pass == 1:
-								email_from_password = self.utils.encryptAES(form_dialog.getDataPassword("Enter the password of the email address from which the alerts will be sent:", "password"))
+								email_from_password = self.utils.encryptAES(form_dialog.getDataPassword("Enter the password of the email address from which the alerts will be sent:", "password"), form_dialog)
 								data_rule['email_from_password'] = email_from_password.decode('utf-8')
 							if flag_email_to == 1:
 								list_emails_to_actual = data_rule['email_to']
@@ -468,7 +463,7 @@ class Rules:
 						if opt_email_false == "Enable":
 							del data_rule['alert']
 							email_from = form_dialog.getDataEmail("Enter the email address from which the alerts will be sent (gmail or outlook):", "usuario@gmail.com")
-							email_from_password = self.utils.encryptAES(form_dialog.getDataPassword("Enter the password of the email address from which the alerts will be sent:", "password"))
+							email_from_password = self.utils.encryptAES(form_dialog.getDataPassword("Enter the password of the email address from which the alerts will be sent:", "password"), form_dialog)
 							number_email_to = form_dialog.getDataNumber("Enter the total number of email addresses to which the alert will be sent:", "3")
 							list_email_to_add = form_dialog.getEmailAdd(number_email_to)
 							list_email_to = form_dialog.getEmailsTo(list_email_to_add, "Destination Email Addresses:", "Enter email addresses:")
@@ -481,21 +476,21 @@ class Rules:
 							data_rule.update(alert_json)
 			with open(self.utils.getPathTalert(self.folder_rules) + '/' + name_alert_rule, "w") as file_rule_update:
 				yaml.safe_dump(data_rule, file_rule_update, default_flow_style = False)
-			hash_modify = self.utils.getSha256File(self.utils.getPathTalert(self.folder_rules) + '/' + name_alert_rule)
+			hash_modify = self.utils.getSha256File(self.utils.getPathTalert(self.folder_rules) + '/' + name_alert_rule, form_dialog)
 			if hash_origen == hash_modify:
 				form_dialog.d.msgbox("\nAlert rule not modified: " + name_alert_rule, 7, 50, title = "Notification message")
 			else:
-				self.logger.createLogTool("Modified alert rule: " + name_alert_rule, 3)
+				self.utils.createLogTool("Modified alert rule: " + name_alert_rule, 3)
 				form_dialog.d.msgbox("\nModified alert rule: " + name_alert_rule, 7, 50, title = "Notification message")
 			if flag_name == 1:
 				os.rename(self.utils.getPathTalert(self.folder_rules) + '/' + name_alert_rule, self.utils.getPathTalert(self.folder_rules) + '/' + name_rule + '.yaml')	
 			form_dialog.mainMenu()
 		except KeyError as exception:
-			self.logger.createLogTool("Key not found in alert rule: " + str(exception), 4)
+			self.utils.createLogTool("Key not found in alert rule: " + str(exception), 4)
 			form_dialog.d.msgbox("\nKey not found in alert rule: " + str(exception), 7, 50, title = "Error message")
 			form_dialog.mainMenu()
 		except OSError as exception:
-			self.logger.createLogTool(str(exception), 4)
+			self.utils.createLogTool(str(exception), 4)
 			form_dialog.d.msgbox("\nError opening the alert rule. For more details, see the logs.", 7, 50, title = "Error message")
 			form_dialog.mainMenu()
 
@@ -518,11 +513,11 @@ class Rules:
 				opt_rules_delete = form_dialog.getDataCheckList("Select one or more options:", options_rules_delete, "Delete Alert Rules")
 				for opt_rule in opt_rules_delete:
 					os.remove(self.utils.getPathTalert(self.folder_rules) + '/' + opt_rule)
-				self.logger.createLogTool("Alert rule(s) removed: " + ",".join(opt_rules_delete), 2)
+				self.utils.createLogTool("Alert rule(s) removed: " + ",".join(opt_rules_delete), 2)
 				form_dialog.d.msgbox("\nAlert rule(s) removed: " + ",".join(opt_rules_delete), 7, 50, title = "Notification message")
 			form_dialog.mainMenu()
 		except OSError as exception:
-			self.logger.createLogTool(str(exception), 4)
+			self.utils.createLogTool(str(exception), 4)
 			form_dialog.d.msgbox("\nFailed to delete alert rule(s). For more details, see the logs.", 7, 50, title = "Error message")
 			form_dialog.mainMenu()
 
@@ -611,7 +606,7 @@ class Rules:
 				yaml.dump(d_rule, rule_file, default_flow_style = False)
 			self.utils.changeUidGid(self.utils.getPathTalert(self.folder_rules) + '/' + str(data_rule[0]) + '.yaml')
 		except OSError as exception:
-			self.logger.createLogTool(str(exception), 4)
+			self.utils.createLogTool(str(exception), 4)
 
 	"""
 	Method that shows on screen all the alert rules created so far to select one, which will be modified.
