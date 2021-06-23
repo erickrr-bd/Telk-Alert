@@ -12,16 +12,15 @@ from modules.LoggerClass import Logger
 Class that allows to manage the utilities of the application.
 """
 class Utils:
-
 	"""
 	Property that saves the passphrase that will be used for the decryption process.
 	"""
-	passphrase = ""
+	passphrase = None
 
 	"""
-	Logger type object.
+	Property that stores an object of type Logger.
 	"""
-	logger = Logger()
+	logger = None
 
 	"""
 	Constructor for the Utils class.
@@ -30,6 +29,7 @@ class Utils:
 	self -- An instantiated object of the Utils class.
 	"""
 	def __init__(self):
+		self.logger = Logger()
 		self.passphrase = self.getPassphrase()
 
 	"""
@@ -40,7 +40,7 @@ class Utils:
 	file_yaml -- Yaml file path.
 
 	Return:
-	data_yaml -- Contents of the .yaml file stored in a list.
+	data_yaml -- Contents of the YAML file stored in a list.
 
 	Exceptions:
 	IOError -- It is an error raised when an input/output operation fails.
@@ -51,8 +51,8 @@ class Utils:
 				data_yaml = yaml.safe_load(file)
 			return data_yaml
 		except IOError as exception:
-			print("\nYaml file not found. For more information see the application logs.")
-			self.logger.createLogAgent("File Error: " + str(exception), 4)
+			self.logger.createLogAgent(str(exception), 4)
+			print("\nError reading YAML file. For more information see the application logs.")
 			sys.exit(1)
 
 	"""
@@ -95,7 +95,7 @@ class Utils:
 	pass_key -- Passphrase in a character string.
 
 	Exceptions:
-	FileNotFoundError -- his is an exception in python and it comes when a file does not exist and we want to use it. 
+	FileNotFoundError -- This is an exception in python and it comes when a file does not exist and we want to use it. 
 	"""
 	def getPassphrase(self):
 		try:
@@ -103,9 +103,9 @@ class Utils:
 			pass_key = file_key.read()
 			file_key.close()
 			return pass_key
-		except FileNotFoundError as exceptions:
+		except FileNotFoundError as exception:
+			self.logger.createLogAgent(str(exception), 4)
 			print("\nKey File not found. For more information see the application logs.")
-			self.logger.createLogAgent("File Error: " + str(exceptions), 4)
 			sys.exit(1)
 
 	"""
@@ -129,6 +129,6 @@ class Utils:
 			aes = AES.new(key, AES.MODE_CBC, IV)
 			return unpad(aes.decrypt(text_encrypt[AES.block_size:]), AES.block_size)
 		except binascii.Error as exception:
+			self.logger.createLogAgent(str(exception), 4)
 			print("\nDecryption failed. For more information see the application logs.")
-			self.logger.createLogAgent("Decrypt Error: " + str(exception), 4)
 			sys.exit(1)

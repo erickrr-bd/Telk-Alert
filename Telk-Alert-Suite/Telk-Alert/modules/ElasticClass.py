@@ -16,41 +16,40 @@ from elasticsearch import Elasticsearch, RequestsHttpConnection, exceptions
 Class that allows you to manage everything related to ElasticSearch.
 """
 class Elastic:
-
 	"""
 	Property that stores the IP where Telk-Alert is working.
 	"""
-	host_ip = ""
+	host_ip = None
 
 	"""
 	Property that stores the name of the host where Telk-Alert is working.
 	"""
-	host_name = ""
+	host_name = None
 
 	"""
 	Property where the operating system of the host where Telk-Alert is working is stored.
 	"""
-	host_os_name = ""
+	host_os_name = None
 
 	"""
-	Utils type object.
+	Property that stores an object of type Utils.
 	"""
-	utils = Utils()
+	utils = None
 
 	"""
-	Logger type object.
+	Property that stores an object of type Logger.
 	"""
-	logger = Logger()
+	logger = None
 
 	"""
-	Telegram type object.
+	Property that stores an object of type Telegram.
 	"""
-	telegram = Telegram()
+	telegram = None
 
 	"""
-	Telegram type object.
+	Property that stores an object of type Email.
 	"""
-	email = Email()
+	email = None
 
 	"""
 	Constructor for the Elastic class.
@@ -59,6 +58,10 @@ class Elastic:
 	self -- An instantiated object of the Elastic class.
 	"""
 	def __init__(self):
+		self.utils = Utils()
+		self.logger = Logger()
+		self.telegram = Telegram()
+		self.email = Email()
 		self.host_name = socket.gethostname()
 		self.host_ip = socket.gethostbyname(self.host_name)
 		self.host_os_name = platform.linux_distribution()
@@ -131,30 +134,30 @@ class Elastic:
 			print("\nCONNECTION DATA\n")
 			print("Cluster name: " + conn_es.info()['cluster_name'])
 			print("ElasticSearch Version: " + conn_es.info()['version']['number'])
-			if conn_es.ping():
+			if conn_es != None:
+				self.logger.createLogTelkAlert("Connection established to: " + telk_alert_conf['es_host'] + ':' + str(telk_alert_conf['es_port']), 2)
 				self.generateLogES(telk_alert_conf['writeback_index'], conn_es, self.createLogAction("Connection established to: " + telk_alert_conf['es_host'] + ':' + str(telk_alert_conf['es_port'])))
 				print("Connection established to: " + telk_alert_conf['es_host'] + ':' + str(telk_alert_conf['es_port']) + '\n')
-				self.logger.createLogTelkAlert("Connection established to: " + telk_alert_conf['es_host'] + ':' + str(telk_alert_conf['es_port']), 2)
 				return conn_es
 		except KeyError as exception:
-			print("\nKey Error: " + str(exception))
 			self.logger.createLogTelkAlert("Key Error: " + str(exception), 4)
+			print("\nKey Error: " + str(exception))
 			sys.exit(1)
 		except exceptions.ConnectionError as exception:
-			print("\nFailed connection to: " + telk_alert_conf['es_host'] + ':' + str(telk_alert_conf['es_port']) + '. For more information see the application logs.')
 			self.logger.createLogTelkAlert(str(exception), 4)
+			print("\nFailed connection to: " + telk_alert_conf['es_host'] + ':' + str(telk_alert_conf['es_port']) + '. For more information see the application logs.')
 			sys.exit(1)
 		except exceptions.AuthenticationException as exception:
-			print("\nHTTP authentication failed. For more information see the application logs.")
 			self.logger.createLogTelkAlert(str(exception), 4)
+			print("\nHTTP authentication failed. For more information see the application logs.")
 			sys.exit(1)
 		except exceptions.AuthorizationException as exception:
-			print("\nUnauthorized access. For more information see the application logs.")
 			self.logger.createLogTelkAlert(str(exception), 4)
+			print("\nUnauthorized access. For more information see the application logs.")
 			sys.exit(1)
 		except requests.exceptions.InvalidURL as exception:
-			print(str(exception))
 			self.logger.createLogTelkAlert(str(exception), 4)
+			print(str(exception))
 			sys.exit(1)
 	
 	"""
@@ -204,15 +207,15 @@ class Elastic:
 						for hit in result_search:
 								total_events += 1
 						if total_events >= rule_yaml['num_events']:
-							print(str(total_events) + " events found in the rule: " + rule_yaml['name_rule'])
 							self.logger.createLogTelkAlert(str(total_events) + " events found in the rule: " + rule_yaml['name_rule'], 2)
 							self.generateLogES(telk_alert_conf['writeback_index'], conn_es, self.createLogAction(str(total_events) + " events found in the rule: " + rule_yaml['name_rule']))
+							print(str(total_events) + " events found in the rule: " + rule_yaml['name_rule'])
 							if rule_yaml['restrict_by_host'] == True:
 								for tag in result_search.aggregations.events.buckets:
 									if int(tag.doc_count) >= rule_yaml['number_events_host']:
-										print(str(tag.doc_count) + " events found in the host " + tag.key +  " in the rule: " + rule_yaml['name_rule'])
 										self.logger.createLogTelkAlert(str(tag.doc_count) + " events found in the host " + tag.key + " in the rule: " + rule_yaml['name_rule'], 2)
 										self.generateLogES(telk_alert_conf['writeback_index'], conn_es, self.createLogAction(str(tag.doc_count) + " events found in the host " + tag.key +" in the rule: " + rule_yaml['name_rule']))
+										print(str(tag.doc_count) + " events found in the host " + tag.key +  " in the rule: " + rule_yaml['name_rule'])
 										if rule_yaml['type_alert_send'] == "multiple":
 											self.sendMultipleAlerts(result_search, rule_yaml, flag_telegram, flag_email, time_back, conn_es, telk_alert_conf['writeback_index'])
 										if rule_yaml['type_alert_send'] == "only":
@@ -225,17 +228,19 @@ class Elastic:
 						time.sleep(time_search)
 			else:
 				self.logger.createLogTelkAlert("The index does not exist in ElasticSearch.", 4)
+				print("\nThe index does not exist in ElasticSearch")
+				sys.exit(1)
 		except KeyError as exception:
-			print("\nKey Error: " + str(exception))
 			self.logger.createLogTelkAlert("Key Error: " + str(exception), 4)
+			print("\nKey Error: " + str(exception))
 			sys.exit(1)
 		except ValueError as exception:
-			print("\nValue Error: " + str(exception))
 			self.logger.createLogTelkAlert("Value Error: " + str(exception), 4)
+			print("\nValue Error: " + str(exception))
 			sys.exit(1)
 		except TypeError as exception:
-			print("\nType Error:" + str(exception) + ". For more information see the application logs.")
 			self.logger.createLogTelkAlert("Type Error: " + str(exception), 4)
+			print("\nType Error:" + str(exception) + ". For more information see the application logs.")
 			sys.exit(1)
 
 	"""
@@ -269,8 +274,8 @@ class Elastic:
 					self.email.getStatusEmailAlert(response, rule_yaml['email_to'])
 					self.generateLogES(index_name, conn_es, self.createLogAlertEmail(rule_yaml['name_rule'], 1, response))
 		except KeyError as exception:
-			print("\nKey Error: " + str(exception))
 			self.logger.createLogTelkAlert("Key error: " + str(exception), 4)
+			print("\nKey Error: " + str(exception))
 			sys.exit(1)
 
 
@@ -309,8 +314,8 @@ class Elastic:
 				self.email.getStatusEmailAlert(response, rule_yaml['email_to'])
 				self.generateLogES(index_name, conn_es, self.createLogAlertEmail(rule_yaml['name_rule'], total_events, response))
 		except KeyError as exception:
-			print("\nKey Error: " + str(exception))
 			self.logger.createLogTelkAlert("Key error: " + str(exception), 4)
+			print("\nKey Error: " + str(exception))
 			sys.exit(1)
 
 	"""

@@ -158,8 +158,8 @@ class Agent:
 	def stopService(self, form_dialog):
 		result = os.system("systemctl stop telk-alert-agent.service")
 		if int(result) == 0:
-			form_dialog.d.msgbox("\nTelk-Alert-Agent service stopped", 7, 50, title = "Notification message")
 			self.utils.createLogTool("Telk-Alert-Agent service stopped", 2)
+			form_dialog.d.msgbox("\nTelk-Alert-Agent service stopped", 7, 50, title = "Notification message")
 		if int(result) == 1280:
 			self.utils.createLogTool("Failed to stop telk-alert-agent.service. Service not found.", 4)
 			form_dialog.d.msgbox("\nFailed to stop telk-alert-agent.service. Service not found.", 7, 50, title = "Error message")

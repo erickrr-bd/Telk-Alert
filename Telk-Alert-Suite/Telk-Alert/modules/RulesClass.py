@@ -10,21 +10,31 @@ from modules.ElasticClass import Elastic
 Class that allows managing alert rules.
 """
 class Rules:
+	"""
+	Property that stores an object of type Utils.
+	"""
+	utils = None
 
 	"""
-	Utils type object.
+	Property that stores an object of type Logger.
 	"""
-	utils = Utils()
+	logger = None
 
 	"""
-	Logger type object.
+	Property that stores an object of type Elastic.
 	"""
-	logger = Logger()
+	elastic = None
 
 	"""
-	Elastic type object.
+	Constructor for the Rules class.
+
+	Parameters:
+	self -- An instantiated object of the Rules class.
 	"""
-	elastic = Elastic()
+	def __init__(self):
+		self.logger = Logger()
+		self.utils = Utils()
+		self.elastic = Elastic()
 
 	"""
 	A method that reads all the alert rules created and creates the threads to perform ElasticSearch searches.
@@ -49,32 +59,32 @@ class Rules:
 				path_rules_folder = self.utils.getPathTalert(telk_alert_conf['rules_folder'])
 				list_alert_rules = self.getAllAlertRules(path_rules_folder)
 				print("ALERT RULES DATA\n")
-				print(str(len(list_alert_rules)) + " alert rule(s) found in " + path_rules_folder + '\n')
-				self.elastic.generateLogES(telk_alert_conf['writeback_index'], conn_es, self.elastic.createLogAction(str(len(list_alert_rules)) + " alert rule(s) found in " + path_rules_folder))
 				self.logger.createLogTelkAlert(str(len(list_alert_rules)) + " alert rule(s) found in " + path_rules_folder, 2)
+				self.elastic.generateLogES(telk_alert_conf['writeback_index'], conn_es, self.elastic.createLogAction(str(len(list_alert_rules)) + " alert rule(s) found in " + path_rules_folder))
+				print(str(len(list_alert_rules)) + " alert rule(s) found in " + path_rules_folder + '\n')	
 				if len(list_alert_rules) != 0:
 					for alert_rule in list_alert_rules:
 						rule_yaml = self.utils.readFileYaml(path_rules_folder + '/' + alert_rule)
-						print("Rule " + alert_rule + ' loaded and executed\n')
-						self.elastic.generateLogES(telk_alert_conf['writeback_index'], conn_es, self.elastic.createLogRules(alert_rule, 'loaded and executed'))
 						self.logger.createLogTelkAlert("Rule " + alert_rule + ' loaded and executed', 2)
+						self.elastic.generateLogES(telk_alert_conf['writeback_index'], conn_es, self.elastic.createLogRules(alert_rule, 'loaded and executed'))
+						print("Rule " + alert_rule + ' loaded and executed\n')
 						thread_rule = threading.Thread(target = self.elastic.searchRuleElastic, args = (conn_es, rule_yaml, telk_alert_conf,)).start()
 				else:
-					print("No alert rule found in directory.")
-					self.elastic.generateLogES(telk_alert_conf['writeback_index'], conn_es, self.elastic.createLogAction("No alert rule found in directory"))
-					self.logger.createLogTelkAlert("No alert rule found in directory.", 3)
+					self.logger.createLogTelkAlert("No alert rule(s) found in " + telk_alert_conf['rules_folder'], 3)
+					self.elastic.generateLogES(telk_alert_conf['writeback_index'], conn_es, self.elastic.createLogAction("No alert rule(s) found in " + telk_alert_conf['rules_folder']))
+					print("No alert rule(s) found in " + telk_alert_conf['rules_folder'])	
 					sys.exit(1)
 			except KeyError as exception:
-				print("\nKey Error: " + str(exception))
 				self.logger.createLogTelkAlert("Key Error: " + str(exception), 4)
+				print("\nKey Error: " + str(exception))
 				sys.exit(1)
 			except TypeError as exception:
+				self.logger.createLogTelkAlert(str(exception), 4)
 				print("\nType Error: " + str(exception))
-				self.logger.createLogTelkAlert("Type Error: " + str(exception), 4)
 				sys.exit(1)
 		else:
-			print("\nElasticSearch version not supported.")
-			self.logger.createLogTelkAlert("ElasticSearch version not supported.", 4)
+			self.logger.createLogTelkAlert("ElasticSearch version not supported by Telk-Alert", 4)
+			print("\nElasticSearch version not supported by Telk-Alert.")
 			sys.exit(1)
 
 	"""

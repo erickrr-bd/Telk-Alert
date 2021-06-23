@@ -8,16 +8,25 @@ from modules.TelegramClass import Telegram
 Class that allows to manage the operation of Telk-Alert-Agent.
 """
 class Service:
+	"""
+	Property that stores an object of type Utils.
+	"""
+	utils = None
 
 	"""
-	Utils type object.
+	Property that stores an object of type Telegram.
 	"""
-	utils = Utils()
+	telegram = None
 
 	"""
-	Telegram type object.
+	Constructor for the Service class.
+
+	Parameters:
+	self -- An instantiated object of the Service class.
 	"""
-	telegram = Telegram()
+	def __init__(self):
+		self.utils = Utils()
+		self.telegram = Telegram()
 
 	"""
 	Method that validates the status of the Telk-Alert service and sends a message to Telegram with the result.

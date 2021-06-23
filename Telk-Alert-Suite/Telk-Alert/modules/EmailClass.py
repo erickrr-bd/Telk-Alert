@@ -10,16 +10,25 @@ from modules.LoggerClass import Logger
 Class that allows to manage the sending of alerts by email.
 """
 class Email:
+	"""
+	Property that stores an object of type Utils.
+	"""
+	utils = None
 
 	"""
-	Utils type object.
+	Property that stores an object of type Logger.
 	"""
-	utils = Utils()
+	logger = None
 
 	"""
-	Logger type object.
+	Constructor for the Email class.
+
+	Parameters:
+	self -- An instantiated object of the Email class.
 	"""
-	logger = Logger()
+	def __init__(self):
+		self.logger = Logger()
+		self.utils = Utils()
 
 	"""
 	Method that sends the alert to the destination emails.
@@ -56,12 +65,11 @@ class Email:
 			response = s.sendmail(message_email['From'], email_to, message_email.as_string())
 			return response
 		except smtplib.SMTPAuthenticationError as exception:
+			self.logger.createLogTelkAlert(str(exception), 4)
 			print("\nAuthentication failed in SMTP. For more information see the application logs.")
-			self.logger.createLogTelkAlert("SMTP Error: " + str(exception), 4)
 		except IndexError as exception:
-			print("\nIndex Error: " + str(exception))
 			self.logger.createLogTelkAlert("Index Error: " + str(exception), 4)
-
+			print("\nIndex Error: " + str(exception))
 
 	"""
 	Method that generates the header of the message that will be sent by email.
@@ -146,8 +154,9 @@ class Email:
 	"""
 	def getStatusEmailAlert(self, response, email_to):
 		if len(response) == 0:
-			print("\nAlert sent correctly by email: " + " ".join(email_to))
-			self.logger.createLogTelkAlert("Alert sent correctly by email: " + " ".join(email_to), 2)
+			self.logger.createLogTelkAlert("Alert sent to email(s): " + " ".join(email_to), 2)
+			print("\nAlert sent to email(s): " + " ".join(email_to))
 		else:
-			print("\n" + str(response))
 			self.logger.createLogTelkAlert(str(response), 3)
+			print("\n" + str(response))
+			

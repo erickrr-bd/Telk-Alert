@@ -234,7 +234,7 @@ class Configuration:
 				form_dialog.d.msgbox("\nConfiguration file not modified", 7, 50, title = "Notification message")
 			else:
 				form_dialog.d.msgbox("\nModified configuration file", 7, 50, title = "Notification message")
-				self.utils.createLogTool("Modified configuration file", 3)
+				self.utils.createLogTool("Modified configuration file", 2)
 			form_dialog.mainMenu()	
 		except KeyError as exception:
 			self.utils.createLogTool("Key not found in configuration file: " + str(exception), 4)

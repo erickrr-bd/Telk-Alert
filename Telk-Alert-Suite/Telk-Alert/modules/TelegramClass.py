@@ -11,16 +11,25 @@ from modules.LoggerClass import Logger
 Class that allows you to manage the sending of alerts through Telegram.
 """
 class Telegram:
-
 	"""
-	Utils type object.
+	Property that stores an object of type Utils.
 	"""
 	utils = Utils()
 
 	"""
-	Logger type object.
+	Property that stores an object of type Logger.
 	"""
 	logger = Logger()
+
+	"""
+	Constructor for the Telegram class.
+
+	Parameters:
+	self -- An instantiated object of the Telegram class.
+	"""
+	def __init__(self):
+		self.logger = Logger()
+		self.utils = Utils()
 
 	"""
 	Method that sends the alert to the telegram channel.
@@ -32,7 +41,7 @@ class Telegram:
 	message -- Message to be sent to the Telegram channel.
 
 	Return:
-	HTTP code of the request to Telegram.
+	HTTP code.
 	"""
 	def sendTelegramAlert(self, telegram_chat_id, telegram_bot_token, message):
 		if len(message) > 4096:
@@ -126,14 +135,15 @@ class Telegram:
 	"""
 	def getStatusByTelegramCode(self, telegram_code, name_rule):
 		if telegram_code == 200:
-			print("\nAlert sent to Telegram. Name rule: " + name_rule)
-			self.logger.createLogTelkAlert("Telegram alert sent. Name rule: " + name_rule, 2)
+			self.logger.createLogTelkAlert("Alert sent. Name rule: " + name_rule, 2)
+			print("\nAlert sent. Name rule: " + name_rule)
 		if telegram_code == 400:
-			print("Telegram alert not sent. Bad request. Name rule: " + name_rule)
-			self.logger.createLogTelkAlert("Telegram alert not sent. Bad request. Name rule: " + name_rule, 4)
+			self.logger.createLogTelkAlert("Alert not sent. Bad request. Name rule: " + name_rule, 4)
+			print("Alert not sent. Bad request. Name rule: " + name_rule)
 		if telegram_code == 401:
-			print("Telegram alert not sent. Unauthorized. Name rule: " + name_rule)
-			self.logger.createLogTelkAlert("Telegram alert not sent. Unauthorized. Name rule: " + name_rule, 4)
+			self.logger.createLogTelkAlert("Alert not sent. Unauthorized. Name rule: " + name_rule, 4)
+			print("Alert not sent. Unauthorized. Name rule: " + name_rule)
 		if telegram_code == 404:
-			print("Telegram alert not sent. Not found. Name rule: " + name_rule)
-			self.logger.createLogTelkAlert("Telegram alert not sent. Not found. Name rule: " + name_rule, 4)
+			self.logger.createLogTelkAlert("Alert not sent. Not found. Name rule: " + name_rule, 4)
+			print("Alert not sent. Not found. Name rule: " + name_rule)
+			
