@@ -134,7 +134,7 @@ class Elastic:
 			print("\nCONNECTION DATA\n")
 			print("Cluster name: " + conn_es.info()['cluster_name'])
 			print("ElasticSearch Version: " + conn_es.info()['version']['number'])
-			if conn_es != None:
+			if not conn_es == None:
 				self.logger.createLogTelkAlert("Connection established to: " + telk_alert_conf['es_host'] + ':' + str(telk_alert_conf['es_port']), 2)
 				self.generateLogES(telk_alert_conf['writeback_index'], conn_es, self.createLogAction("Connection established to: " + telk_alert_conf['es_host'] + ':' + str(telk_alert_conf['es_port'])))
 				print("Connection established to: " + telk_alert_conf['es_host'] + ':' + str(telk_alert_conf['es_port']) + '\n')
