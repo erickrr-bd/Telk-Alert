@@ -7,32 +7,32 @@ from modules.UtilsClass import Utils
 from modules.RulesClass import Rules
 from modules.AgentClass import Agent
 from modules.ServiceClass import Service
-from modules.ConfigClass import Configuration 
+from modules.ConfigurationClass import Configuration 
 
 """
 Class that allows managing the graphical interfaces of Telk-Alert-Tool.
 """
 class FormDialog:
 	"""
-	Dialog type object.
+	Property that stores an object of class Dialog.
 	"""
 	d = None
 
 	"""
-	Property that stores an object of type Utils.
+	Property that stores an object of the Utils class.
 	"""
 	utils = None
 
 	"""
-	Property that stores an object of type Agent.
+	Property that stores an object of the Agent class.
 	"""
 	agent = None
 
 	"""
-	Constructor for the FormDialogs class.
+	Constructor for the FormDialog class.
 
 	Parameters:
-	self -- An instantiated object of the FormDialogs class.
+	self -- An instantiated object of the FormDialog class.
 	"""
 	def __init__(self):
 		self.d = Dialog(dialog = "dialog")
@@ -63,7 +63,7 @@ class FormDialog:
 	Method that generates an interface with scroll box.
 
 	Parameters:
-	self -- An instantiated object of the FormDialogs class.
+	self -- An instantiated object of the FormDialog class.
 	text -- Text displayed on the interface.
 	title -- Title displayed on the interface.
 	"""
@@ -74,7 +74,7 @@ class FormDialog:
 	Method that generates an interface to select a file.
 
 	Parameters:
-	self -- An instantiated object of the FormDialogs class.
+	self -- An instantiated object of the FormDialog class.
 	initial_path -- Initial path in the interface.
 	title -- Title displayed on the interface.
 	extension_file -- Allowed file extension.
@@ -124,7 +124,7 @@ class FormDialog:
 	Method that generates an interface with several available options, and where you can choose one or more of them.
 
 	Parameters:
-	self -- An instantiated object of the FormDialogs class.
+	self -- An instantiated object of the FormDialog class.
 	text -- Text displayed on the interface.
 	options -- List of options that make up the interface.
 	title -- Title displayed on the interface.
@@ -170,7 +170,7 @@ class FormDialog:
 	Method that generates an interface to enter an IP address.
 
 	Parameters:
-	self -- An instantiated object of the FormDialogs class.
+	self -- An instantiated object of the FormDialog class.
 	text -- Text displayed on the interface.
 	initial_value -- Default value shown on the interface.
 
@@ -239,7 +239,7 @@ class FormDialog:
 	Method that generates the interface for entering data type email address.
 
 	Parameters:
-	self -- An instantiated object of the FormDialogs class.
+	self -- An instantiated object of the FormDialog class.
 	text -- Text that will be shown to the user.
 	initial_value -- Default value that will be shown to the user in the interface.
 
@@ -277,7 +277,7 @@ class FormDialog:
 	Method that generates an interface to enter text.
 
 	Parameters:
-	self -- An instantiated object of the FormDialogs class.
+	self -- An instantiated object of the FormDialog class.
 	text -- Text displayed on the interface.
 	initial_value -- Default value shown on the interface.
 
@@ -299,7 +299,7 @@ class FormDialog:
 	Method that generates an interface to enter a password.
 
 	Parameters:
-	self -- An instantiated object of the FormDialogs class.
+	self -- An instantiated object of the FormDialog class.
 	text -- Text displayed on the interface.
 	initial_value -- Default value shown on the interface.
 
@@ -321,7 +321,7 @@ class FormDialog:
 	Method that generates the interface for entering integer data.
 
 	Parameters:
-	self -- An instantiated object of the FormDialogs class.
+	self -- An instantiated object of the FormDialog class.
 	text -- Text that will be shown to the user.
 	initial_value -- Default value that will be shown to the user in the interface.
 
@@ -344,7 +344,7 @@ class FormDialog:
 	Method that generates the interface for entering data of the time type.
 
 	Parameters:
-	self -- An instantiated object of the FormDialogs class.
+	self -- An instantiated object of the FormDialog class.
 	text -- Text that will be shown to the user.
 	hour -- Hour entered.
 	minutes -- Minutes entered.
@@ -366,7 +366,7 @@ class FormDialog:
 	Method that generates the interface to enter several text type values ​​at the same time.
 
 	Parameters:
-	self -- An instantiated object of the FormDialogs class.
+	self -- An instantiated object of the FormDialog class.
 	list_fields -- List of all the fields that will be entered through the form.
 	title -- Title that will be given to the interface and that will be shown to the user.
 	text -- Text that will be shown to the user.
@@ -403,7 +403,7 @@ class FormDialog:
 	Method that generates the interface for the entry of several values ​​of type email address at the same time.
 
 	Parameters:
-	self -- An instantiated object of the FormDialogs class.
+	self -- An instantiated object of the FormDialog class.
 	list_emails -- List of total emails that will be entered.
 	title -- Title that will be given to the interface and that will be shown to the user.
 	text -- Text that will be shown to the user.
@@ -441,7 +441,7 @@ class FormDialog:
 	Method that generates a list with the total of fields that will be entered of type text.
 
 	Parameters:
-	self -- An instantiated object of the FormDialogs class.
+	self -- An instantiated object of the FormDialog class.
 	total_fields -- Total of fields entered by the user.
 	
 	Return:
@@ -457,7 +457,7 @@ class FormDialog:
 	Method that generates a list with the total of fields that will be entered of type email address.
 
 	Parameters:
-	self -- An instantiated object of the FormDialogs class.
+	self -- An instantiated object of the FormDialog class.
 	total_emails -- Total number of emails entered by the user.
 
 	Return:
@@ -494,7 +494,7 @@ class FormDialog:
 	Method that defines the action to be performed on the Telk-Alert-Agent configuration file (creation or modification).
 
 	Parameters:
-	self -- An instantiated object of the FormDialogs class.
+	self -- An instantiated object of the FormDialog class.
 	"""
 	def getAgentConfiguration(self):
 		if not os.path.exists(self.utils.getPathTagent('conf') + '/agent_conf.yaml'):
@@ -510,7 +510,7 @@ class FormDialog:
 	Method that defines the menu on the actions to be carried out on the alert rules.
 
 	Parameters:
-	self -- An instantiated object of the FormDialogs class.
+	self -- An instantiated object of the FormDialog class.
 	"""
 	def getMenuRules(self):
 		options_mr = [("1", "Create new alert rule"),
@@ -528,7 +528,7 @@ class FormDialog:
 	Method that defines the menu on the actions to be carried out on Telk-Alert-Agent.
 
 	Parameters:
-	self -- An instantiated object of the FormDialogs class.
+	self -- An instantiated object of the FormDialog class.
 	"""
 	def getMenuAgent(self):
 		options_ma = [("1", "Configuration"),
@@ -541,7 +541,7 @@ class FormDialog:
 	Method that defines the menu on the actions to be carried out on the Telk-Alert-Agent service.
 
 	Parameters:
-	self -- An instantiated object of the FormDialogs class.
+	self -- An instantiated object of the FormDialog class.
 	"""
 	def getMenuServiceAgent(self):
 		options_msa = [("1", "Start Service"),
@@ -567,7 +567,7 @@ class FormDialog:
 	Method that launches an action based on the option chosen in the main menu.
 
 	Parameters:
-	self -- An instantiated object of the FormDialogs class.
+	self -- An instantiated object of the FormDialog class.
 	option -- Chosen option.
 	"""
 	def switchMmenu(self, option):
@@ -588,7 +588,7 @@ class FormDialog:
 	Method that launches an action based on the option chosen in the alert rules menu.
 
 	Parameters:
-	self -- An instantiated object of the FormDialogs class.
+	self -- An instantiated object of the FormDialog class.
 	option -- Chosen option.
 	"""
 	def switchMrules(self, option):
@@ -606,7 +606,7 @@ class FormDialog:
 	Method that launches an action based on the option chosen in the Telk-Alert-Agent menu.
 
 	Parameters:
-	self -- An instantiated object of the FormDialogs class.
+	self -- An instantiated object of the FormDialog class.
 	option -- Chosen option.
 	"""
 	def switchMagent(self, option):
@@ -619,7 +619,7 @@ class FormDialog:
 	Method that launches an action based on the option chosen in the Telk-Alert-Agent service menu.
 
 	Parameters:
-	self -- An instantiated object of the FormDialogs class.
+	self -- An instantiated object of the FormDialog class.
 	option -- Chosen option.
 	"""
 	def switchMServiceAgent(self, option):
@@ -636,7 +636,7 @@ class FormDialog:
 	Method that launches an action based on the option chosen in the Telk-Alert service menu.
 
 	Parameters:
-	self -- An instantiated object of the FormDialogs class.
+	self -- An instantiated object of the FormDialog class.
 	option -- Chosen option.
 	"""
 	def switchMService(self, option):

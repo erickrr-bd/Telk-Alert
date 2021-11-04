@@ -16,6 +16,8 @@ class Rules:
 	Property that stores an object of type Utils.
 	"""
 	utils = None
+
+	form_dialog = None
 	
 	"""
 	Property that contains the options for the alert rule level.
@@ -49,8 +51,9 @@ class Rules:
 	Parameters:
 	self -- An instantiated object of the Rules class.
 	"""
-	def __init__(self):
-		self.utils = Utils()
+	def __init__(self, form_dialog):
+		self.form_dialog = form_dialog
+		self.utils = Utils(form_dialog)
 		self.folder_rules = self.utils.readFileYaml(self.utils.getPathTalert('conf') + '/es_conf.yaml')['rules_folder']
 
 	"""
