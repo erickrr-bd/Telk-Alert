@@ -11,26 +11,29 @@ class Configuration:
 	"""
 	utils = None
 
+	form_dialog = None
+
 	"""
 	Constructor for the Configuration class.
 
 	Parameters:
 	self -- An instantiated object of the Configuration class.
 	"""
-	def __init__(self):
-		self.utils = Utils()
+	def __init__(self, form_dialog):
+		self.form_dialog = form_dialog
+		self.utils = Utils(form_dialog)
+		self.conf_file = self.utils.getPathTelkAlert('conf') + "/telk_alert_conf.yaml"
 
 	"""
 	Method that requests the data for the creation of the Telk-Alert configuration file.
 
 	Parameters:
 	self -- An instantiated object of the Configuration class.
-	form_dialog -- A FormDialogs class object.
 	"""
-	def createConfiguration(self, form_dialog):
+	def createConfiguration(self):
 		data_conf = []
-		version_es = form_dialog.getDataNumberDecimal("Enter the ElasticSearch version:", "7.10")
-		host_es = form_dialog.getDataIP("Enter the ElasticSearch IP address:", "localhost")
+		version_es = self.form_dialog.getDataNumberDecimal("Enter the ElasticSearch version:", "7.15")
+		host_es = self.form_dialog.getDataIP("Enter the ElasticSearch IP address:", "localhost")
 		port_es = form_dialog.getDataPort("Enter the ElasticSearch listening port:", "9200")
 		folder_rules = form_dialog.getDataNameFolderOrFile("Enter the name of the folder where the alert rules will be hosted:", "alert_rules")
 		use_ssl = form_dialog.getDataYesOrNo("\nDo you want Telk-Alert to connect to ElasticSearch using the SSL/TLS protocol?", "Connection Via SSL/TLS")

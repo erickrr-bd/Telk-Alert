@@ -1,7 +1,7 @@
-import os
-import re
+from os import path
 from sys import exit
 from dialog import Dialog
+from re import compile as re_compile
 from modules.UtilsClass import Utils
 from modules.RulesClass import Rules
 from modules.AgentClass import Agent
@@ -28,16 +28,6 @@ class FormDialog:
 	agent = None
 
 	"""
-	Property that contains the options when the configuration file is not created.
-	"""
-	options_conf_false = [("Create configuration", "Create the configuration file", 0)]
-
-	"""
-	Property that contains the options when the configuration file is created.
-	"""
-	options_conf_true = [("Modify configuration", "Modify the configuration file", 0)]
-
-	"""
 	Constructor for the FormDialogs class.
 
 	Parameters:
@@ -46,14 +36,14 @@ class FormDialog:
 	def __init__(self):
 		self.d = Dialog(dialog = "dialog")
 		self.d.set_background_title("TELK-ALERT-TOOL")
-		self.utils = Utils()
-		self.agent = Agent()
+		self.utils = Utils(self)
+		#self.agent = Agent()
 
 	"""
 	Method that generates the menu interface.
 
 	Parameters:
-	self -- An instantiated object of the FormDialogs class.
+	self -- An instantiated object of the FormDialog class.
 	text -- Text displayed on the interface.
 	options -- List of options that make up the menu.
 	title -- Title displayed on the interface.
@@ -104,30 +94,26 @@ class FormDialog:
 				self.mainMenu()
 
 	"""
-	Method that generates the interface with a list of options, where only one can be chosen.
+	Method that generates an interface with several available options, and where only one of them can be chosen.
 
 	Parameters:
-	self -- An instantiated object of the FormDialogs class.
-	text -- Text that will be shown to the user.
+	self -- An instantiated object of the FormDialog class.
+	text -- Text displayed on the interface.
 	options -- List of options that make up the interface.
-	title -- Title that will be given to the interface and that will be shown to the user.
+	title -- Title displayed on the interface.
 
 	Return:
-	tag_rl -- The option chosen by the user.
+	tag_radiolist -- Chosen option.
 	"""
 	def getDataRadioList(self, text, options, title):
 		while True:
-			code_rl, tag_rl = self.d.radiolist(
-					  text,
-					  width = 65,
-					  choices = options,
-					  title = title)
-			if code_rl == self.d.OK:
-				if len(tag_rl) == 0:
-					self.d.msgbox("\nSelect at least one option", 7, 50, title = "Error Message")
+			code_radiolist, tag_radiolist = self.d.radiolist(text = text, width = 65, choices = options, title = title)
+			if code_radiolist == self.d.OK:
+				if len(tag_radiolist) == 0:
+					self.d.msgbox(text = "\nSelect at least one option.", height = 7, width = 50, title = "Error Message")
 				else:
-					return tag_rl
-			if code_rl == self.d.CANCEL:
+					return tag_radiolist
+			elif code_radiolist == self.d.CANCEL:
 				self.mainMenu()
 
 	"""
@@ -161,49 +147,46 @@ class FormDialog:
 	Method that generates the interface for entering decimal or floating type data.
 
 	Parameters:
-	self -- An instantiated object of the FormDialogs class.
-	text -- Text that will be shown to the user.
-	initial_value -- Default value that will be shown to the user in the interface.
+	self -- An instantiated object of the FormDialog class.
+	text -- Text displayed on the interface.
+	initial_value -- Default value shown on the interface.
 
 	Return:
-	tag_nd -- Decimal value entered.
+	tag_inputbox -- Decimal or float value entered.
 	"""
 	def getDataNumberDecimal(self, text, initial_value):
-		decimal_reg_exp = re.compile(r'^[1-9](\.[0-9]+)?$')
+		decimal_reg_exp = re_compile(r'^[1-9](\.[0-9]+)?$')
 		while True:
-			code_nd, tag_nd = self.d.inputbox(text, 10, 50, initial_value)
-			if code_nd == self.d.OK:
-				if(not self.utils.validateRegularExpression(decimal_reg_exp, tag_nd)):
-					self.d.msgbox("\nInvalid value", 7, 50, title = "Error message")
+			code_inputbox, tag_inputbox = self.d.inputbox(text = text, height = 10, width = 50, init = initial_value)
+			if code_inputbox == self.d.OK:
+				if(not self.utils.validateRegularExpression(decimal_reg_exp, tag_inputbox)):
+					self.d.msgbox(text = "\nInvalid data entered. Required value (decimal or float).", height = 8, width = 50, title = "Error Message")
 				else:
-					if(float(tag_nd) <= 7.0):
-						self.d.msgbox("\nElasticSearch version not supported", 7, 50, title = "Error message")
-					else:
-						return tag_nd
-			if code_nd == self.d.CANCEL:
+					return tag_inputbox
+			elif code_inputbox == self.d.CANCEL:
 				self.mainMenu()
 
 	"""
-	Method that generates the interface for the entry of data of type IP address.
+	Method that generates an interface to enter an IP address.
 
 	Parameters:
 	self -- An instantiated object of the FormDialogs class.
-	text -- Text that will be shown to the user.
-	initial_value -- Default value that will be shown to the user in the interface.
+	text -- Text displayed on the interface.
+	initial_value -- Default value shown on the interface.
 
 	Return:
-	tag_ip -- IP address entered.
+	tag_inputbox -- IP address entered.
 	"""
 	def getDataIP(self, text, initial_value):
-		ip_reg_exp = re.compile(r'^(?:(?:[1-9]?[0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}(?:[1-9]?[0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$|^localhost$')
+		ip_reg_exp = re_compile(r'^(?:(?:[1-9]?[0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}(?:[1-9]?[0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$|^localhost$')
 		while True:
-			code_ip, tag_ip = self.d.inputbox(text, 10, 50, initial_value)
-			if code_ip == self.d.OK:
-				if(not self.utils.validateRegularExpression(ip_reg_exp, tag_ip)):
-					self.d.msgbox("\nInvalid IP address", 7, 50, title = "Error message")
+			code_inputbox, tag_inputbox = self.d.inputbox(text = text, height = 10, width = 50, init = initial_value)
+			if code_inputbox == self.d.OK:
+				if(not self.utils.validateRegularExpression(ip_reg_exp, tag_inputbox)):
+					self.d.msgbox(text = "\nInvalid data entered. Required value (IP address).", height = 8, width = 50, title = "Error Message")
 				else:
-					return tag_ip
-			if code_ip == self.d.CANCEL:
+					return tag_inputbox
+			elif code_inputbox == self.d.CANCEL:
 				self.mainMenu()
 
 	"""
@@ -487,21 +470,25 @@ class FormDialog:
 		return list_new_emails
 
 	"""
-	Method that defines the action to be performed on the Telk-Alert configuration file (creation or modification).
+	Method that defines the actions to be carried out around the Telk-Alert configuration.
 
 	Parameters:
-	self -- An instantiated object of the FormDialogs class.
+	self -- An instantiated object of the FormDialog class.
 	"""
-	def getDataConf(self):
-		configuration = Configuration()
-		if not os.path.exists(self.utils.getPathTalert("conf") + "/es_conf.yaml"):
-			opt_conf_false = self.getDataRadioList("Select a option", self.options_conf_false, "Configuration options")
-			if opt_conf_false == "Create configuration":
-				configuration.createConfiguration(FormDialogs())
+	def defineConfiguration(self):
+		options_conf_false = [("Create", "Create the configuration file", 0)]
+
+		options_conf_true = [("Modify", "Modify the configuration file", 0)]
+		
+		configuration = Configuration(self)
+		if not path.exists(configuration.conf_file):
+			opt_conf_false = self.getDataRadioList("Select a option:", options_conf_false, "Configuration Options")
+			if opt_conf_false == "Create":
+				configuration.createConfiguration()
 		else:
-			opt_conf_true = self.getDataRadioList("Select a option", self.options_conf_true, "Configuration options")
-			if opt_conf_true == "Modify configuration":
-				configuration.modifyConfiguration(FormDialogs())
+			opt_conf_true = self.getDataRadioList("Select a option:", options_conf_true, "Configuration Options")
+			if opt_conf_true == "Modify":
+				configuration.modifyConfiguration()
 
 	"""
 	Method that defines the action to be performed on the Telk-Alert-Agent configuration file (creation or modification).
@@ -599,7 +586,7 @@ class FormDialog:
 	"""
 	def switchMmenu(self, option):
 		if option == 1:
-			self.getDataConf()
+			self.defineConfiguration()
 		if option == 2:
 			self.getMenuRules()
 		if option == 3:

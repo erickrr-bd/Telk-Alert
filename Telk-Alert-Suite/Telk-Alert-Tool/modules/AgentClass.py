@@ -19,8 +19,8 @@ class Agent:
 	Parameters:
 	self -- An instantiated object of the Agent class.
 	"""
-	def __init__(self):
-		self.utils = Utils()
+	def __init__(self, form_dialog):
+		self.utils = Utils(form_dialog)
 	
 	"""
 	Method that requests the data for the creation of the Telk-Alert-Agent configuration file.
