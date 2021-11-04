@@ -14,7 +14,7 @@ Class that allows managing all the utilities that are used for the operation of 
 """
 class Utils:
 	"""
-	Property that saves the passphrase that will be used for the decryption process.
+	Property that stores the passphrase for the process of encrypting/decrypting information.
 	"""
 	passphrase = None
 
@@ -50,6 +50,7 @@ class Utils:
 		try:
 			with open(path_file_yaml, mode) as file_yaml:
 				safe_dump(data, file_yaml, default_flow_style = False)
+			self.ownerChange(path_file_yaml)
 		except IOError as exception:
 			self.createTelkAlertToolLog(exception, 3)
 			self.form_dialog.d.msgbox(text = "\nError creating YAML file. For more information, see the logs.", height = 8, width = 50, title = "Error Message")
@@ -300,12 +301,12 @@ class Utils:
 	"""
 	def createTelkAlertToolLog(self, message, type_log):
 		name_log = "/var/log/Telk-Alert/telk-alert-tool-log-" + str(date.today()) + ".log"
-		logger = logging.getLogger("Telk_Alert_Tool_Log")
-		logger.setLevel(logging.INFO)
-		fh = logging.FileHandler(name_log)
+		logger = getLogger("Telk_Alert_Tool_Log")
+		logger.setLevel(INFO)
+		fh = FileHandler(name_log)
 		if (logger.hasHandlers()):
    	 		logger.handlers.clear()
-		formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+		formatter = Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 		fh.setFormatter(formatter)
 		logger.addHandler(fh)
 		if type_log == 1:

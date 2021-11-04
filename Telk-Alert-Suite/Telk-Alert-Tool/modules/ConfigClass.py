@@ -1,5 +1,4 @@
-import os
-import yaml
+from os import path
 from modules.UtilsClass import Utils
 
 """
@@ -7,17 +6,26 @@ Class that allows managing everything related to the Telk-Alert configuration.
 """
 class Configuration:
 	"""
-	Property that stores an object of type Utils.
+	Property that stores an object of the Utils class.
 	"""
 	utils = None
 
+	"""
+	Property that stores an object of the FormDialog class.
+	"""
 	form_dialog = None
+
+	"""
+	Property that stores the path of the Telk-Alert configuration file.
+	"""
+	conf_file = None
 
 	"""
 	Constructor for the Configuration class.
 
 	Parameters:
 	self -- An instantiated object of the Configuration class.
+	form_dialog -- FormDialog class object.
 	"""
 	def __init__(self, form_dialog):
 		self.form_dialog = form_dialog
@@ -33,45 +41,43 @@ class Configuration:
 	def createConfiguration(self):
 		data_conf = []
 		version_es = self.form_dialog.getDataNumberDecimal("Enter the ElasticSearch version:", "7.15")
-		host_es = self.form_dialog.getDataIP("Enter the ElasticSearch IP address:", "localhost")
-		port_es = form_dialog.getDataPort("Enter the ElasticSearch listening port:", "9200")
-		folder_rules = form_dialog.getDataNameFolderOrFile("Enter the name of the folder where the alert rules will be hosted:", "alert_rules")
-		use_ssl = form_dialog.getDataYesOrNo("\nDo you want Telk-Alert to connect to ElasticSearch using the SSL/TLS protocol?", "Connection Via SSL/TLS")
 		data_conf.append(version_es)
+		host_es = self.form_dialog.getDataIP("Enter the ElasticSearch IP address:", "localhost")
 		data_conf.append(host_es)
+		port_es = self.form_dialog.getDataPort("Enter the ElasticSearch listening port:", "9200")
 		data_conf.append(port_es)
+		folder_rules = self.form_dialog.getDataNameFolderOrFile("Enter the name of the folder where the alert rules will be hosted:", "alert_rules")
 		data_conf.append(folder_rules)
+		use_ssl = self.form_dialog.getDataYesOrNo("\nDo you want Telk-Alert to connect to ElasticSearch using the SSL/TLS protocol?", "Connection Via SSL/TLS")
 		if use_ssl == "ok":
 			data_conf.append(True)
-			valid_certificates = form_dialog.getDataYesOrNo("\nDo you want the certificates for SSL/TLS communication to be validated?", "Certificate Validation")
-			if valid_certificates == "ok":
+			valid_certificate = self.form_dialog.getDataYesOrNo("\nDo you want the certificates for SSL/TLS communication to be validated?", "Certificate Validation")
+			if valid_certificate == "ok":
 				data_conf.append(True)
-				cert_file = form_dialog.getFileOrDirectory('/etc/Telk-Alert-Suite/Telk-Alert', "Select the CA certificate:")
+				cert_file = self.form_dialog.getFile("/etc/Telk-Alert-Suite/Telk-Alert", "Select the CA certificate:", ".pem")
 				data_conf.append(cert_file)
 			else:
 				data_conf.append(False)
 		else:
 			data_conf.append(False)
-		http_auth = form_dialog.getDataYesOrNo("\nIs the use of HTTP authentication required to connect to ElasticSearch?", "HTTP Authentication")
+		http_auth = self.form_dialog.getDataYesOrNo("\nIs the use of HTTP authentication required to connect to ElasticSearch?", "HTTP Authentication")
 		if http_auth == "ok":
 			data_conf.append(True)
-			user_http_auth = self.utils.encryptAES(form_dialog.getDataInputText("Enter the username for HTTP authentication:", "user_http"), form_dialog)
-			pass_http_auth = self.utils.encryptAES(form_dialog.getDataPassword("Enter the user's password for HTTP authentication:", "password"), form_dialog)
-			data_conf.append(user_http_auth)
-			data_conf.append(pass_http_auth)
+			user_http_auth = self.utils.encryptAES(self.form_dialog.getDataInputText("Enter the username for HTTP authentication:", "user_http"))
+			data_conf.append(user_http_auth.decode('utf-8'))
+			pass_http_auth = self.utils.encryptAES(self.form_dialog.getDataPassword("Enter the user's password for HTTP authentication:", "password"))
+			data_conf.append(pass_http_auth.decode('utf-8'))
 		else:
 			data_conf.append(False)
-		write_index = form_dialog.getDataInputText("Enter the name of the index that will be created in ElasticSearch:", "telkalert")
-		max_hits = form_dialog.getDataNumber("Enter the maximum number of hits for the search (maximum 10000):", "10000")
+		write_index = self.form_dialog.getDataInputText("Enter the name of the index that will be created in ElasticSearch:", "telk-alert")
 		data_conf.append(write_index)
-		data_conf.append(max_hits)
 		self.createFileConfiguration(data_conf)
-		if os.path.exists(self.utils.getPathTalert("conf") + "/es_conf.yaml"):
-			form_dialog.d.msgbox("\nConfiguration file created", 7, 50, title = "Notification message")
-			self.utils.createLogTool("Configuration file created", 2)
+		if path.exists(self.conf_file):
+			self.form_dialog.d.msgbox(text = "\nConfiguration file created.", height = 7, width = 50, title = "Notification Message")
+			self.utils.createTelkAlertToolLog("Configuration file created", 1)
 		else:
-			form_dialog.d.msgbox("\nError creating configuration file. For more details, see the logs.", 7, 50, title = "Error message")
-		form_dialog.mainMenu()
+			self.form_dialog.d.msgbox(text = "\nError creating configuration file. For more information, see the logs.", height = 8, width = 50, title = "Error Message")
+		self.form_dialog.mainMenu()
 
 	"""
 	Method that modifies one or more fields of the Telk-Alert configuration file.
@@ -253,41 +259,30 @@ class Configuration:
 
 	Parameters:
 	self -- An instantiated object of the Configuration class.
-	data_conf -- List containing all the data entered for the configuration file.
-	
-	Exceptions:
-	OSError -- This exception is raised when a system function returns a system-related error, including I/O failures such as “file not found” or “disk full” (not for illegal argument types or other incidental errors).
+	data_conf -- Object that contains the data to create the configuration file.
 	"""
 	def createFileConfiguration(self, data_conf):
-		d = {'es_version': str(data_conf[0]),
-			'es_host': str(data_conf[1]),
-			'es_port': int(data_conf[2]),
-			'rules_folder': str(data_conf[3]),
-			'use_ssl': data_conf[4]}
+		data_json = {'es_version': data_conf[0],
+					'es_host': data_conf[1],
+					'es_port': int(data_conf[2]),
+					'rules_folder': data_conf[3],
+					'use_ssl': data_conf[4]}
 
 		if data_conf[4] == True:
 			if data_conf[5] == True:
-				valid_certificates_json = { 'valid_certificates' : data_conf[5] , 'path_cert' : str(data_conf[6]) }
+				valid_certificate_json = { 'valid_certificate' : data_conf[5] , 'path_certificate' : data_conf[6] }
 				last_index = 6
 			else:
-				valid_certificates_json = { 'valid_certificates' : data_conf[5] }
+				valid_certificate_json = { 'valid_certificate' : data_conf[5] }
 				last_index = 5
-			d.update(valid_certificates_json)
+			data_json.update(valid_certificate_json)
 		else:
 			last_index = 4
 		if data_conf[last_index + 1] == True:
-			http_auth_json = { 'use_http_auth' : data_conf[last_index + 1], 'http_auth_user' : data_conf[last_index + 2].decode("utf-8"), 'http_auth_pass' : data_conf[last_index + 3].decode("utf-8") }
-			data_aux_json = { 'writeback_index' : str(data_conf[last_index + 4]), 'max_hits' : int(data_conf[last_index + 5]) }
-			d.update(http_auth_json)
+			http_auth_json = { 'use_http_auth' : data_conf[last_index + 1], 'http_auth_user' : data_conf[last_index + 2], 'http_auth_pass' : data_conf[last_index + 3], 'writeback_index' : data_conf[last_index + 4] }
 		else:
-			data_aux_json = { 'use_http_auth' : data_conf[last_index + 1], 'writeback_index' : str(data_conf[last_index + 2]), 'max_hits' : int(data_conf[last_index + 3]) }
-		d.update(data_aux_json)
-		try:
-			if(not os.path.isdir(self.utils.getPathTalert(str(data_conf[3])))):
-				os.mkdir(self.utils.getPathTalert(str(data_conf[3])))
-				self.utils.changeUidGid(self.utils.getPathTalert(str(data_conf[3])))
-			with open(self.utils.getPathTalert('conf') + '/es_conf.yaml', 'w') as yaml_file:
-				yaml.dump(d, yaml_file, default_flow_style = False)
-			self.utils.changeUidGid(self.utils.getPathTalert('conf') + '/es_conf.yaml')
-		except OSError as exception:
-			self.utils.createLogTool(str(exception), 4)
+			http_auth_json = { 'use_http_auth' : data_conf[last_index + 1], 'writeback_index' : data_conf[last_index + 2] }
+		data_json.update(http_auth_json)
+		
+		self.utils.createYamlFile(data_json, self.conf_file, 'w')
+		self.utils.createNewFolder(self.utils.getPathTelkAlert(data_conf[3]))
