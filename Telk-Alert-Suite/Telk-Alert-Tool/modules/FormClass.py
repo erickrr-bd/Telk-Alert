@@ -1,6 +1,6 @@
 import os
 import re
-import sys
+from sys import exit
 from dialog import Dialog
 from modules.UtilsClass import Utils
 from modules.RulesClass import Rules
@@ -11,7 +11,7 @@ from modules.ConfigClass import Configuration
 """
 Class that allows managing the graphical interfaces of Telk-Alert-Tool.
 """
-class FormDialogs:
+class FormDialog:
 	"""
 	Dialog type object.
 	"""
@@ -54,18 +54,19 @@ class FormDialogs:
 
 	Parameters:
 	self -- An instantiated object of the FormDialogs class.
+	text -- Text displayed on the interface.
 	options -- List of options that make up the menu.
-	title -- Title that will be given to the interface and that will be shown to the user.
+	title -- Title displayed on the interface.
 
 	Return:
-	tag_mm -- The option chosen by the user.
+	tag_menu -- Chosen option.
 	"""
-	def getMenu(self, options, title):
-		code_mm, tag_mm = self.d.menu("Choose an option", choices=options,title=title)
-		if code_mm == self.d.OK:
-			return tag_mm
-		if code_mm == self.d.CANCEL:
-			sys.exit(0)
+	def getMenu(self, text, options, title):
+		code_menu, tag_menu = self.d.menu(text = text, choices = options, title = title)
+		if code_menu == self.d.OK:
+			return tag_menu
+		if code_menu == self.d.CANCEL:
+			exit(0)
 
 	"""
 	Method that generates the message interface with scroll box.
@@ -586,7 +587,7 @@ class FormDialogs:
 	self -- An instantiated object of the FormDialogs class.
 	"""
 	def getAbout(self):
-		message = "\nCopyright@2021 Tekium. All rights reserved.\nTelk-Alert v3.0\nAuthor: Erick Rodriguez erickrr.tbd93@gmail.com\n" + "License: GPLv3\n\nTelk-Alert is a tool that allows the carrying out of searches\nconfigured in ElasticSearch and the sending of alerts with the\nresults of said search to a Telegram channel, one or more email\naddresses or both."
+		message = "\nCopyright@2021 Tekium. All rights reserved.\nTelk-Alert v3.0\nAuthor: Erick Rodríguez\nEmail: erickrr.tbd93@gmail.com, erodriguez@tekium.mx\n" + "License: GPLv3\n\nTelk-Alert is a tool that allows the carrying out of searches\nconfigured in ElasticSearch and the sending of alerts with the\nresults of said search to a Telegram channel, one or more email\naddresses or both."
 		self.getScrollBox(message, "About")
 
 	"""
@@ -680,7 +681,7 @@ class FormDialogs:
 	Method that defines the menu on the actions to be carried out in the main menu.
 
 	Parameters:
-	self -- An instantiated object of the FormDialogs class.
+	self -- An instantiated object of the FormDialog class.
 	"""
 	def mainMenu(self):
 		options_mm = [("1", "Telk-Alert Configuration"),
@@ -690,7 +691,7 @@ class FormDialogs:
 					  ("5", "About"),
 					  ("6", "Exit")]
 
-		option_mm = self.getMenu(options_mm, "Main Menu")
+		option_mm = self.getMenu("Select a option:", options_mm, "Main Menu")
 		self.switchMmenu(int(option_mm))
 
 		

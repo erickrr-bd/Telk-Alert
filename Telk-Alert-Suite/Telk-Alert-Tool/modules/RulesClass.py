@@ -179,7 +179,8 @@ class Rules:
 		options_rest_host_true = [("To Disable", "Disable restriction by host", 0),
 								 ("Modify Data", "Modify existing data", 0)]
 
-		options_rest_host_modify = [("Number of Events", "Number of events per host", 0)]
+		options_rest_host_modify = [("Number of Events", "Number of events per host", 0),
+									("Field", "Host name field", 0)]
 
 		options_telegram_true = [("To Disable", "Disable sending by Telegram", 0),
 								("Modify Data", "Modify existing data", 0)]
@@ -325,19 +326,24 @@ class Rules:
 					opt_rest_host_false = form_dialog.getDataRadioList("Select a option:", options_rest_host_false, "Restriction By Host")
 					if opt_rest_host_false == "Enable":
 						number_events_hostname = form_dialog.getDataNumber("Enter the total number of events per hostname to which the alert will be sent:", "3")
+						field_hostname = form_dialog.getDataInputText("Enter the name of the field that contains the hostname:", "host.hostname")
 						data_rule['restrict_by_host'] = True
-						restriction_host_json = { 'number_events_host' : int(number_events_hostname) }
+						restriction_host_json = { 'number_events_host' : int(number_events_hostname), 'field_hostname' : str(field_hostname) }
 						data_rule.update(restriction_host_json)
 				else:
 					opt_rest_host_true = form_dialog.getDataRadioList("Select a option:", options_rest_host_true, "Restriction By Host")
 					if opt_rest_host_true == "To Disable":
 						del data_rule['number_events_host']
+						del data_rule['field_hostname']
 						data_rule['restrict_by_host'] = False
 					if opt_rest_host_true == "Modify Data":
 						opt_rest_host_modify = form_dialog.getDataRadioList("Select a option:", options_rest_host_modify, "Restriction By Host")
 						if opt_rest_host_modify == "Number of Events":
 							number_events_hostname = form_dialog.getDataNumber("Enter the total number of events per hostname to which the alert will be sent:", str(data_rule['number_events_host']))
 							data_rule['number_events_host'] = int(number_events_hostname)
+						if opt_rest_host_modify == "Field":
+							field_hostname = form_dialog.getDataInputText("Enter the name of the field that contains the hostname:", data_rule['field_hostname'])
+							data_rule['field_hostname'] = field_hostname
 			if flag_type_alert == 1:
 				for opt_type_send in self.options_type_alert_send:
 					if opt_type_send[0] == data_rule['type_alert_send']:

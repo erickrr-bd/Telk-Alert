@@ -195,17 +195,17 @@ class Elastic:
 					query = Q("query_string", query = query_string_rule)
 					while True:
 						if rule_yaml['use_restriction_fields'] == True:
-							search_aux = search_rule.query(query).query('range', ** { '@timestamp' : { 'gte' : self.utils.convertDateToMilliseconds(datetime.now()) - time_back, 'lte' : self.utils.convertDateToMilliseconds(datetime.now()) } }).source(rule_yaml['fields'])
+							search_aux = search_rule.query(query).query('range', ** { '@timestamp' : { 'gte' : "now-2m", 'lte' : "now" } }).source(rule_yaml['fields'])
 						else:
-							search_aux = search_rule.query(query).query('range', ** { '@timestamp' : { 'gte' : self.utils.convertDateToMilliseconds(datetime.now()) - time_back, 'lte' : self.utils.convertDateToMilliseconds(datetime.now()) } }).source(fields = None)
+							search_aux = search_rule.query(query).query('range', ** { '@timestamp' : { 'gte' : "now-2m", 'lte' : "now" } }).source(fields = None)
 						if rule_yaml['restrict_by_host'] == True:
 							a = A('terms', field = rule_yaml['field_hostname'])
-							search_aux = search_rule.query(query).query('range', ** { '@timestamp' : { 'gte' : self.utils.convertDateToMilliseconds(datetime.now()) - time_back, 'lte' : self.utils.convertDateToMilliseconds(datetime.now()) } }).source(fields = None)
+							search_aux = search_rule.query(query).query('range', ** { '@timestamp' : { 'gte' : "now-2m", 'lte' : "now" } }).source(fields = None)
 							search_aux.aggs.bucket('events', a)
 						result_search = search_aux.execute()
 						total_events = 0
 						for hit in result_search:
-								total_events += 1
+							total_events += 1
 						if total_events >= rule_yaml['num_events']:
 							self.logger.createLogTelkAlert(str(total_events) + " events found in the rule: " + rule_yaml['name_rule'], 2)
 							self.generateLogES(telk_alert_conf['writeback_index'], conn_es, self.createLogAction(str(total_events) + " events found in the rule: " + rule_yaml['name_rule']))

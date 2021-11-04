@@ -2,11 +2,9 @@
 
 clear
 echo -e "\e[96m@2021 Tekium. All rights reserved.\e[0m"
-echo ''
-echo -e '\e[96mInstaller for Telk-Alert v3.0\e[0m'
-echo ''
-echo -e '\e[96mAuthor: Erick Rodríguez erickrr.tbd93@gmail.com\e[0m'
-echo ''
+echo -e '\e[96mInstaller for Telk-Alert v3.1\e[0m'
+echo -e '\e[96mAuthor: Erick Rodríguez\e[0m'
+echo -e '\e[96mEmail: erodriguez@tekium.mx, erickrr.tbd93@gmail.com\e[0m'
 echo -e '\e[96mLicense: GPLv3\e[0m'
 echo ''
 echo -e '\e[1;33m--------------------------------------------------------------------------------\e[0m'
