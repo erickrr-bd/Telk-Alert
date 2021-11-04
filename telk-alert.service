@@ -1,5 +1,5 @@
 [Unit]
-Description=Tekium Telk-Alert v3.0 Service
+Description=Tekium Telk-Alert v3.1 Service
 After=networking.target
 StartLimitIntervalSec=0
 

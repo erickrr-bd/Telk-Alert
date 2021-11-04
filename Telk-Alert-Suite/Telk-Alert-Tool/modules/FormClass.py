@@ -1,5 +1,6 @@
 from os import path
 from sys import exit
+from pathlib import Path
 from dialog import Dialog
 from re import compile as re_compile
 from modules.UtilsClass import Utils
@@ -59,17 +60,15 @@ class FormDialog:
 			exit(0)
 
 	"""
-	Method that generates the message interface with scroll box.
+	Method that generates an interface with scroll box.
 
 	Parameters:
 	self -- An instantiated object of the FormDialogs class.
-	text -- Text that will be shown to the user.
-	title -- Title that will be given to the interface and that will be shown to the user.
+	text -- Text displayed on the interface.
+	title -- Title displayed on the interface.
 	"""
 	def getScrollBox(self, text, title):
-		code_sb = self.d.scrollbox(text, 15, 70, title = title)
-		if code_sb == self.d.OK:
-			self.mainMenu()
+		code_scrollbox = self.d.scrollbox(text = text, height = 15, width = 70, title = title)
 
 	"""
 	Method that generates an interface to select a file.
@@ -122,30 +121,26 @@ class FormDialog:
 				self.mainMenu()
 
 	"""
-	Method that generates the interface with a list of options, where you can choose one or more.
+	Method that generates an interface with several available options, and where you can choose one or more of them.
 
 	Parameters:
 	self -- An instantiated object of the FormDialogs class.
-	text -- Text that will be shown to the user.
+	text -- Text displayed on the interface.
 	options -- List of options that make up the interface.
-	title -- Title that will be given to the interface and that will be shown to the user.
+	title -- Title displayed on the interface.
 
 	Return:
-	tag_cl -- List with the chosen options.
+	tag_checklist -- List with the chosen options.
 	"""
 	def getDataCheckList(self, text, options, title):
 		while True:
-			code_cl, tag_cl = self.d.checklist(
-					 text,
-					 width = 75,
-					 choices = options,
-					 title = title)
-			if code_cl == self.d.OK:
-				if len(tag_cl) == 0:
-					self.d.msgbox("\nSelect at least one option", 7, 50, title = "Error message")
+			code_checklist, tag_checklist = self.d.checklist(text = text, width = 75, choices = options, title = title)
+			if code_checklist == self.d.OK:
+				if len(tag_checklist) == 0:
+					self.d.msgbox(text = "\nSelect at least one option.", height = 7, width = 50, title = "Error Message")
 				else:
-					return tag_cl
-			if code_cl == self.d.CANCEL:
+					return tag_checklist
+			elif code_checklist == self.d.CANCEL:
 				self.mainMenu()
 
 	"""
@@ -493,7 +488,7 @@ class FormDialog:
 		else:
 			opt_conf_true = self.getDataRadioList("Select a option:", options_conf_true, "Configuration Options")
 			if opt_conf_true == "Modify":
-				configuration.modifyConfiguration()
+				configuration.updateConfiguration()
 
 	"""
 	Method that defines the action to be performed on the Telk-Alert-Agent configuration file (creation or modification).
@@ -543,21 +538,6 @@ class FormDialog:
 		self.switchMagent(int(option_ma))
 
 	"""
-	Method that defines the menu on the actions to be carried out on the Telk-Alert service.
-
-	Parameters:
-	self -- An instantiated object of the FormDialogs class.
-	"""
-	def getMenuService(self):
-		options_ms = [("1", "Start Service"),
-					  ("2", "Restart Service"),
-					  ("3", "Stop Service"),
-					  ("4", "Service Status")]
-
-		option_ms = self.getMenu(options_ms, "Telk-Alert Service")
-		self.switchMService(int(option_ms))
-
-	"""
 	Method that defines the menu on the actions to be carried out on the Telk-Alert-Agent service.
 
 	Parameters:
@@ -576,11 +556,12 @@ class FormDialog:
 	Method that displays a message on the screen with information about the application.
 
 	Parameters:
-	self -- An instantiated object of the FormDialogs class.
+	self -- An instantiated object of the FormDialog class.
 	"""
 	def getAbout(self):
-		message = "\nCopyright@2021 Tekium. All rights reserved.\nTelk-Alert v3.0\nAuthor: Erick Rodríguez\nEmail: erickrr.tbd93@gmail.com, erodriguez@tekium.mx\n" + "License: GPLv3\n\nTelk-Alert is a tool that allows the carrying out of searches\nconfigured in ElasticSearch and the sending of alerts with the\nresults of said search to a Telegram channel, one or more email\naddresses or both."
+		message = "\nCopyright@2021 Tekium. All rights reserved.\nTelk-Alert v3.1\nAuthor: Erick Rodríguez\nEmail: erickrr.tbd93@gmail.com, erodriguez@tekium.mx\n" + "License: GPLv3\n\nTelk-Alert is a tool that allows the carrying out of searches\nconfigured in ElasticSearch and the sending of alerts with the\nresults of said search to a Telegram channel, one or more email\naddresses or both."
 		self.getScrollBox(message, "About")
+		self.mainMenu()
 
 	"""
 	Method that launches an action based on the option chosen in the main menu.
@@ -592,16 +573,16 @@ class FormDialog:
 	def switchMmenu(self, option):
 		if option == 1:
 			self.defineConfiguration()
-		if option == 2:
+		elif option == 2:
 			self.getMenuRules()
-		if option == 3:
-			self.getMenuService()
-		if option == 4:
+		elif option == 3:
+			self.serviceMenu()
+		elif option == 4:
 			self.getMenuAgent()
-		if option == 5:
+		elif option == 5:
 			self.getAbout()
-		if option == 6:
-			sys.exit(0)
+		elif option == 6:
+			exit(0)
 
 	"""
 	Method that launches an action based on the option chosen in the alert rules menu.
@@ -659,15 +640,15 @@ class FormDialog:
 	option -- Chosen option.
 	"""
 	def switchMService(self, option):
-		service = Service()
+		service = Service(self)
 		if option == 1:
-			service.startService(FormDialogs())
-		if option == 2:
-			service.restartService(FormDialogs())
-		if option == 3:
-			service.stopService(FormDialogs())
-		if option == 4:
-			service.getStatusService(FormDialogs())
+			service.startService()
+		elif option == 2:
+			service.restartService()
+		elif option == 3:
+			service.stopService()
+		elif option == 4:
+			service.getStatusService()
 
 	"""
 	Method that defines the menu on the actions to be carried out in the main menu.
@@ -685,5 +666,20 @@ class FormDialog:
 
 		option_mm = self.getMenu("Select a option:", options_mm, "Main Menu")
 		self.switchMmenu(int(option_mm))
+
+	"""
+	Method that defines the menu on the actions to be carried out on the Telk-Alert service.
+
+	Parameters:
+	self -- An instantiated object of the FormDialog class.
+	"""
+	def serviceMenu(self):
+		options_ms = [("1", "Start Service"),
+					  ("2", "Restart Service"),
+					  ("3", "Stop Service"),
+					  ("4", "Service Status")]
+
+		option_ms = self.getMenu("Select a option:", options_ms, "Telk-Alert Service")
+		self.switchMService(int(option_ms))
 
 		
