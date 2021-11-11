@@ -57,7 +57,7 @@ class FormDialog:
 		if code_menu == self.d.OK:
 			return tag_menu
 		if code_menu == self.d.CANCEL:
-			exit(0)
+			self.mainMenu()
 
 	"""
 	Method that generates an interface with scroll box.
@@ -240,22 +240,22 @@ class FormDialog:
 
 	Parameters:
 	self -- An instantiated object of the FormDialog class.
-	text -- Text that will be shown to the user.
-	initial_value -- Default value that will be shown to the user in the interface.
+	text -- Text displayed on the interface.
+	initial_value -- Default value shown on the interface.
 
 	Return:
-	tag_email -- The email address entered.
+	tag_inputbox -- The email address entered.
 	"""
 	def getDataEmail(self, text, initial_value):
-		email_reg_exp = re.compile(r'^[a-z0-9]+[\._]?[a-z0-9]+[@]\w+[.]\w+$' )
+		email_reg_exp = re_compile(r'^[a-z0-9]+[\._]?[a-z0-9]+[@]\w+[.]\w+$' )
 		while True:
-			code_email, tag_email = self.d.inputbox(text, 10, 50, initial_value)
-			if code_email == self.d.OK:
-				if(not self.utils.validateRegularExpression(email_reg_exp, tag_email)):
-					self.d.msgbox("\nInvalid email address", 7, 50, title = "Error message")
+			code_inputbox, tag_inputbox = self.d.inputbox(text = text, height = 10, width = 50, init = initial_value)
+			if code_inputbox == self.d.OK:
+				if(not self.utils.validateRegularExpression(email_reg_exp, tag_inputbox)):
+					self.d.msgbox(text = "\nInvalid data entered. Required value (email address).", height = 8, width = 50, title = "Error Message")
 				else:
-					return tag_email
-			if code_email == self.d.CANCEL:
+					return tag_inputbox
+			elif code_inputbox == self.d.CANCEL:
 				self.mainMenu()
 
 	"""
@@ -322,22 +322,22 @@ class FormDialog:
 
 	Parameters:
 	self -- An instantiated object of the FormDialog class.
-	text -- Text that will be shown to the user.
-	initial_value -- Default value that will be shown to the user in the interface.
+	text -- Text displayed on the interface.
+	initial_value -- Default value shown on the interface.
 
 	Return:
 	tag_num -- Number entered.
 	"""
 	def getDataNumber(self, text, initial_value):
-		number_reg_exp = re.compile(r'^([0-9]{1,4}|[1-5][0-9]{4}|6[0-4][0-9]{3}|65[0-4][0-9]{2}|655[0-2][0-9]|6553[0-5])$')
+		number_reg_exp = re_compile(r'^\d+$')
 		while True:
-			code_num, tag_num = self.d.inputbox(text, 10, 50, initial_value)
-			if code_num == self.d.OK:
-				if(not self.utils.validateRegularExpression(number_reg_exp, tag_num)):
-					self.d.msgbox("\nInvalid number", 7, 50, title = "Error message")
+			code_inputbox, tag_inputbox = self.d.inputbox(text = text, height = 10, width = 50, init = initial_value)
+			if code_inputbox == self.d.OK:
+				if(not self.utils.validateRegularExpression(number_reg_exp, tag_inputbox)):
+					self.d.msgbox(text = "\nInvalid data entered. Required value (integer number).", height = 8, width = 50, title = "Error Message")
 				else:
-					return tag_num
-			if code_num == self.d.CANCEL:
+					return tag_inputbox
+			elif code_inputbox == self.d.CANCEL:
 				self.mainMenu()
 
 	"""
@@ -363,40 +363,42 @@ class FormDialog:
 			self.mainMenu()
 
 	"""
-	Method that generates the interface to enter several text type values ​​at the same time.
+	Method that generates an interface of a form.
 
 	Parameters:
 	self -- An instantiated object of the FormDialog class.
-	list_fields -- List of all the fields that will be entered through the form.
-	title -- Title that will be given to the interface and that will be shown to the user.
 	text -- Text that will be shown to the user.
+	list_to_elements -- List of elements displayed on the interface.
+	title -- Title displayed on the interface.
+	type_form -- Type of form, to define the validation to be performed.
 
 	Return:
-	tag_nf -- List with the names of the fields with which the search will be restricted.
+	tag_form -- Values entered in the form.
 	"""
-	def getFields(self, list_fields, title, text):
-		list_new_fields = []
-		i = 0
-		for field in list_fields:
-			list_new_fields.append(("Field " + str(i + 1) + ":", (i + 1), 5, field, (i + 1), 20, 30, 100))
-			i += 1
+	def getForm(self, text, list_to_elements, title, type_form):
 		while True:
-			code_nf, tag_nf = self.d.form(text,
-										elements = list_new_fields,
-										width = 50,
-										height = 15,
-										form_height = len(list_fields),
-										title = title)
-			if code_nf == self.d.OK:
-				cont = 0
-				for tag in tag_nf:
-					if tag == "":
-						cont += 1
-				if cont > 0:
-					self.d.msgbox("\nThere cannot be a null or empty field", 7, 50, title = "Error message")
-				else:
-					return tag_nf
-			if code_nf == self.d.CANCEL:
+			code_form, tag_form = self.d.form(text = text, elements = list_to_elements, height = 15, width = 50, form_height = len(list_to_elements), title = title)
+			if code_form == self.d.OK:
+				if type_form == 1:
+					cont = 0
+					for tag in tag_form:
+						if tag == "":
+							cont += 1
+					if cont > 0:
+						self.d.msgbox(text = "\nThere should be no empty or null fields.", height = 7, width = 50, title = "Error Message")
+					else:
+						return tag_form
+				elif type_form == 2:
+					email_reg_exp = re_compile(r'^[a-z0-9]+[\._]?[a-z0-9]+[@]\w+[.]\w+$')
+					cont = 0
+					for tag in tag_form:
+						if(not self.utils.validateRegularExpression(email_reg_exp, tag)):
+							cont += 1
+					if cont > 0:
+						self.d.msgbox(text = "\nInvalid data entered. Required value (email address).", height = 7, width = 50, title = "Error Message")
+					else:
+						return tag_inputbox
+			elif code_form == self.d.CANCEL:
 				self.mainMenu()
 
 	"""
@@ -438,38 +440,6 @@ class FormDialog:
 				self.mainMenu()
 
 	"""
-	Method that generates a list with the total of fields that will be entered of type text.
-
-	Parameters:
-	self -- An instantiated object of the FormDialog class.
-	total_fields -- Total of fields entered by the user.
-	
-	Return:
-	list_new_fields -- The list with the total of fields that will be entered.
-	"""
-	def getFieldsAdd(self, total_fields):
-		list_new_fields = []
-		for i in range(int(total_fields)):
-			list_new_fields.append("Field " + str(i + 1))
-		return list_new_fields
-
-	"""
-	Method that generates a list with the total of fields that will be entered of type email address.
-
-	Parameters:
-	self -- An instantiated object of the FormDialog class.
-	total_emails -- Total number of emails entered by the user.
-
-	Return:
-	list_new_emails -- List with the total of emails that will be entered.
-	"""
-	def getEmailAdd(self, total_emails):
-		list_new_emails = []
-		for i in range(int(total_emails)):
-			list_new_emails.append("Email " + str(i + 1))
-		return list_new_emails
-
-	"""
 	Method that defines the actions to be carried out around the Telk-Alert configuration.
 
 	Parameters:
@@ -491,6 +461,55 @@ class FormDialog:
 				configuration.updateConfiguration()
 
 	"""
+	Method that removes one or more alert rules from Telk-Alert.
+
+	Parameters:
+	self -- An instantiated object of the FormDialog class.
+	rules -- Rules class object.
+	"""
+	def deleteAlertRules(self, rules):
+		configuration = Configuration(self)
+		if not path.exists(configuration.conf_file):
+			self.d.msgbox(text = "\nConfiguration file not found.", height = 7, width = 50, title = "Notification Message")
+		else:
+			list_alert_rules_aux = rules.getAllAlertRules()
+			if len(list_alert_rules_aux) == 0:
+				self.d.msgbox(text = "\nNo alert rules found on the path.", height = 7, width = 50, title = "Notification Message")
+			else:
+				list_alert_rules = self.utils.convertListToCheckOrRadioList(list_alert_rules_aux, "Alert Rule")
+				options_alert_rules = self.getDataCheckList("Select one or more options:", list_alert_rules, "Alert Rules")
+				confirmation_delete_alert_rules = self.getDataYesOrNo("\nAre you sure to delete the following alert rules?\n\n** This action cannot be undone.", "Delete Alert Rules")
+				if confirmation_delete_alert_rules == "ok":
+					message_to_display = "\nAlert rules removed:\n"
+					for option in options_alert_rules:
+						rules.deleteAlertRule(option)
+						message_to_display += "\n- " + option
+					self.getScrollBox(message_to_display, "Delete Alert Rules")
+		self.mainMenu()
+
+	"""
+	Method that shows all alert rules created so far.
+
+	Parameters:
+	self -- An instantiated object of the FormDialog class.
+	rules -- Rules class object.
+	"""
+	def showAllAlertRules(self, rules):
+		configuration = Configuration(self)
+		if not path.exists(configuration.conf_file):
+			self.d.msgbox(text = "\nConfiguration file not found.", height = 7, width = 50, title = "Notification Message")
+		else:
+			list_alert_rules = rules.getAllAlertRules()
+			if len(list_alert_rules) == 0:
+				self.d.msgbox(text = "\nNo alert rules found on the path.", height = 7, width = 50, title = "Notification Message")
+			else:
+				message_to_display = "\nAlert rules in: " + rules.path_folder_rules + '\n'
+				for alert_rule in list_alert_rules:
+					message_to_display += "\n- " + alert_rule
+				self.getScrollBox(message_to_display, "Alert Rules")
+		self.mainMenu()
+
+	"""
 	Method that defines the action to be performed on the Telk-Alert-Agent configuration file (creation or modification).
 
 	Parameters:
@@ -505,24 +524,6 @@ class FormDialog:
 			opt_conf_agent_true = self.getDataRadioList("Select a option", self.options_conf_true, "Configuration options")
 			if opt_conf_agent_true == "Modify configuration":
 				self.agent.modifyAgentConfiguration(FormDialogs())
-
-	"""
-	Method that defines the menu on the actions to be carried out on the alert rules.
-
-	Parameters:
-	self -- An instantiated object of the FormDialog class.
-	"""
-	def getMenuRules(self):
-		options_mr = [("1", "Create new alert rule"),
-					 ("2", "Update alert rule"),
-					 ("3", "Delete alert rule(s)"),
-					 ("4", "Show all alert rules")]
-
-		if not os.path.exists(self.utils.getPathTalert('conf') + '/es_conf.yaml'):
-			self.d.msgbox("\nConfiguration file not found", 7, 50, title = "Error message")
-		else:
-			option_mr = self.getMenu(options_mr, "Rules Menu")
-			self.switchMrules(int(option_mr))
 
 	"""
 	Method that defines the menu on the actions to be carried out on Telk-Alert-Agent.
@@ -574,7 +575,7 @@ class FormDialog:
 		if option == 1:
 			self.defineConfiguration()
 		elif option == 2:
-			self.getMenuRules()
+			self.rulesMenu()
 		elif option == 3:
 			self.serviceMenu()
 		elif option == 4:
@@ -592,15 +593,15 @@ class FormDialog:
 	option -- Chosen option.
 	"""
 	def switchMrules(self, option):
-		rules = Rules()
+		rules = Rules(self)
 		if option == 1:
-			rules.createNewRule(FormDialogs())
-		if option == 2:
+			rules.createNewRule()
+		elif option == 2:
 			rules.getUpdateAlertRules(FormDialogs())
-		if option == 3:
-			rules.getDeleteRules(FormDialogs())
-		if option == 4:
-			rules.showAllAlertRules(FormDialogs())
+		elif option == 3:
+			self.deleteAlertRules(rules)
+		elif option == 4:
+			self.showAllAlertRules(rules)
 
 	"""
 	Method that launches an action based on the option chosen in the Telk-Alert-Agent menu.
@@ -682,4 +683,21 @@ class FormDialog:
 		option_ms = self.getMenu("Select a option:", options_ms, "Telk-Alert Service")
 		self.switchMService(int(option_ms))
 
-		
+	"""
+	Method that defines the menu on the actions to be carried out on the alert rules.
+
+	Parameters:
+	self -- An instantiated object of the FormDialog class.
+	"""
+	def rulesMenu(self):
+		options_mr = [("1", "Create new alert rule"),
+					 ("2", "Update alert rule"),
+					 ("3", "Delete alert rule(s)"),
+					 ("4", "Show all alert rules")]
+
+		configuration = Configuration(self)
+		if not path.exists(configuration.conf_file):
+			self.d.msgbox(text = "\nConfiguration file not found.", height = 7, width = 50, title = "Notification Message")
+		else:
+			option_mr = self.getMenu("Select  a option:", options_mr, "Alert Rules Menu")
+			self.switchMrules(int(option_mr))

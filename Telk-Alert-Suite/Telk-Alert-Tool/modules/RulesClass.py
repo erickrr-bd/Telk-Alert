@@ -1,6 +1,5 @@
-import os
-import yaml
-import glob
+from glob import glob
+from os import path, remove
 from modules.UtilsClass import Utils
 
 """
@@ -10,40 +9,42 @@ class Rules:
 	"""
 	Property that contains the name of the folder where the alert rules are saved.
 	"""
-	folder_rules = None
+	path_folder_rules = None
 
 	"""
 	Property that stores an object of type Utils.
 	"""
 	utils = None
 
+	"""
+	"""
 	form_dialog = None
 	
 	"""
 	Property that contains the options for the alert rule level.
 	"""
-	options_level_alert = [["Low", "Low level alert", 1],
-						  ["Medium", "Medium level alert", 0],
-						  ["High", "High level alert", 0]]
+	list_level_alert = [["Low", "Low level alert", 1],
+						["Medium", "Medium level alert", 0],
+						["High", "High level alert", 0]]
 
 	"""
 	Property that contains the options for the unit of time.
 	"""
-	options_unit_time = [["minutes", "Time expressed in minutes", 1],
-						["hours", "Time expressed in hours", 0],
-						["days", "Time expressed in days", 0]]
+	list_unit_time = [["minutes", "Time expressed in minutes", 1],
+					  ["hours", "Time expressed in hours", 0],
+					  ["days", "Time expressed in days", 0]]
 
 	"""
 	Property that contains the options for the alert sending platforms.
 	"""
-	options_send_alert = [("telegram", "The alert will be sent via Telegram", 0),
-						 ("email", "The alert will be sent via email", 0)]
+	list_send_platform = [("telegram", "The alert will be sent via Telegram", 0),
+					      ("email", "The alert will be sent via email", 0)]
 
 	"""
 	Property that stores the options for the types of sending alerts.
 	"""
-	options_type_alert_send = [["only", "A single alert with the total of events found", 1],
-						 ["multiple", "An alert for each event found", 0]]
+	list_type_alert_send = [["only", "A single alert with the total of events found", 1],
+						    ["multiple", "An alert for each event found", 0]]
 
 	"""
 	Constructor for the Rules class.
@@ -54,108 +55,128 @@ class Rules:
 	def __init__(self, form_dialog):
 		self.form_dialog = form_dialog
 		self.utils = Utils(form_dialog)
-		self.folder_rules = self.utils.readFileYaml(self.utils.getPathTalert('conf') + '/es_conf.yaml')['rules_folder']
+		name_folder_rules = self.utils.readYamlFile(self.utils.getPathTelkAlert('conf') + '/telk_alert_conf.yaml', 'r')['rules_folder']
+		self.path_folder_rules = self.utils.getPathTelkAlert(name_folder_rules)
 
 	"""
 	Method that requests the data for the creation of an alert rule.
 
 	Parameters:
 	self -- An instantiated object of the Rules class.
-	form_dialog -- A FormDialogs class object.
 	"""
-	def createNewRule(self, form_dialog):
-		options_type_alert = [("Frequency", "Make the searches in the index periodically", 1)]
+	def createNewRule(self):
+		list_type_alert = [("Frequency", "Make the searches in the index periodically", 1)]
 
-		options_filter_alert = [("query_string", "Perform the search using the Query String of ElasticSearch", 1)]
+		list_query_type = [("query_string", "Perform the search using the Query String of ElasticSearch", 1)]
+
+		list_custom_rule = [("Hostname", "Restrict by hostname", 0),
+							   ("Username", "Restrict by username", 0)]
 
 		data_rule = []
-		name_rule = form_dialog.getDataNameFolderOrFile("Enter the name of the alert rule:", "rule1")
+		name_rule = self.form_dialog.getDataNameFolderOrFile("Enter the name of the alert rule:", "rule1")
 		data_rule.append(name_rule)
-		level_alert = form_dialog.getDataRadioList("Select a option:", self.options_level_alert, "Alert Rule Level")
-		data_rule.append(level_alert)
-		index_name = form_dialog.getDataInputText("Enter the index pattern where the searches will be made:", "winlogbeat-*")
+		option_level_alert = self.form_dialog.getDataRadioList("Select a option:", self.list_level_alert, "Alert Rule Level")
+		data_rule.append(option_level_alert)
+		index_name = self.form_dialog.getDataInputText("Enter the index pattern where the searches will be made:", "winlogbeat-*")
 		data_rule.append(index_name)
-		type_rule = form_dialog.getDataRadioList("Select a option:", options_type_alert, "Alert Rule Type")
-		data_rule.append(type_rule)
-		if type_rule == "Frequency":
-			num_events = form_dialog.getDataNumber("Enter the number of events found in the rule to send the alert to:", "1")
-			unit_time_search = form_dialog.getDataRadioList("Select a option:", self.options_unit_time, "Search Time Unit")
-			num_time_search = form_dialog.getDataNumber("Enter the total amount in " + str(unit_time_search) + " in which you want the search to be repeated:", "2")
-			unit_time_back = form_dialog.getDataRadioList("Select a option:", self.options_unit_time, "Time Back Unit")
-			num_time_back = form_dialog.getDataNumber("Enter the total amount in " + str(unit_time_back) + " of time back in which you want to perform the search:", "2")
-			data_rule.append(num_events)
-			data_rule.append(unit_time_search)
-			data_rule.append(num_time_search)
-			data_rule.append(unit_time_back)
-			data_rule.append(num_time_back)
-		filter_type = form_dialog.getDataRadioList("Select a option:", options_filter_alert, "Alert Rule Filter:")
-		data_rule.append(filter_type)
-		if filter_type == "query_string":
-			query_string = form_dialog.getDataInputText("Enter the query string:", "event.code : 4120")
+		option_type_rule = self.form_dialog.getDataRadioList("Select a option:", list_type_alert, "Alert Rule Type")
+		data_rule.append(option_type_rule)
+		if option_type_rule == "Frequency":
+			number_events = self.form_dialog.getDataNumber("Enter the number of events found in the rule to send the alert to:", "1")
+			data_rule.append(number_events)
+			option_unit_time_search = self.form_dialog.getDataRadioList("Select a option:", self.list_unit_time, "Search Time Unit")
+			data_rule.append(option_unit_time_search)
+			number_unit_time_search = self.form_dialog.getDataNumber("Enter the total amount in " + str(option_unit_time_search) + " in which you want the search to be repeated:", "2")
+			data_rule.append(number_unit_time_search)
+			option_unit_time_back = self.form_dialog.getDataRadioList("Select a option:", self.list_unit_time, "Time Back Unit")
+			data_rule.append(option_unit_time_back)
+			number_unit_time_back = self.form_dialog.getDataNumber("Enter the total amount in " + str(option_unit_time_back) + " of time back in which you want to perform the search:", "2")
+			data_rule.append(number_unit_time_back)
+		query_type = self.form_dialog.getDataRadioList("Select a option:", list_query_type, "Query Type")
+		data_rule.append(query_type)
+		if query_type == "query_string":
+			query_string = self.form_dialog.getDataInputText("Enter the query string:", "event.code : 4120")
 			data_rule.append(query_string)
-			type_alert_send = form_dialog.getDataRadioList("Select a option:", self.options_type_alert_send, "Alert Sending Type")
-			data_rule.append(type_alert_send)
-			use_restriction_fields = form_dialog.getDataYesOrNo("\nDo you want your search results to be restricted to certain fields?", "Restriction By Fields")
-			if use_restriction_fields == "ok":
-				data_rule.append(True)
-				number_fields = form_dialog.getDataNumber("Enter how many fields you want to enter for the restriction:", "2")
-				list_fields_add = form_dialog.getFieldsAdd(number_fields)
-				es_fields = form_dialog.getFields(list_fields_add, "Restriction By Fields", "Enter the name of the field or fields:")
-				data_rule.append(es_fields)
-			else:
-				data_rule.append(False)
-		restrict_hostname = form_dialog.getDataYesOrNo("\nDo you want the sending of the alert to be restricted to a certain number of events per hostname?", "Restriction By Hostname")
-		if restrict_hostname == "ok":
-			number_events_hostname = form_dialog.getDataNumber("Enter the total number of events per hostname to which the alert will be sent:", "3")
+		specific_fields_search = self.form_dialog.getDataYesOrNo("\nDo you require that the search only return certain fields?", "Specific Fields In Search")
+		if specific_fields_search == "ok":
 			data_rule.append(True)
-			data_rule.append(number_events_hostname)
-			field_hostname = form_dialog.getDataInputText("Enter the name of the field that contains the hostname:", "host.hostname")
-			data_rule.append(field_hostname)
+			total_fields_to_enter = self.form_dialog.getDataNumber("Enter the total number of field names to be defined:", "2")
+			list_to_fields = self.utils.generateListToForm(int(total_fields_to_enter), "Field")
+			list_fields_names = self.form_dialog.getForm("Enter the name of the fields:", list_to_fields, "Field Names", 1)
+			data_rule.append(list_fields_names)
 		else:
 			data_rule.append(False)
-		opt_alert_send = form_dialog.getDataCheckList("Select one or more options:", self.options_send_alert, "Alert Sending Platforms")
+		is_custom_rule = self.form_dialog.getDataYesOrNo("\nDo you need to create a custom alert rule?", "Custom Rule")
+		if is_custom_rule == "ok":
+			data_rule.append(True)
+			flag_hostname = 0
+			flag_username = 0
+			options_custom_rule = self.form_dialog.getDataCheckList("Select one or more options:", list_custom_rule, "Custom Rule")
+			for option in options_custom_rule:
+				if option == "Hostname":
+					flag_hostname = 1
+				elif option == "Username":
+					flag_username = 1
+			if flag_hostname == 1:
+				data_rule.append(True)
+				field_name_hostname = self.form_dialog.getDataInputText("Enter the name of the field in the index that corresponds to the hostname:", "host.hostname")
+				data_rule.append(field_name_hostname)
+				number_events_hostname = self.form_dialog.getDataNumber("Enter the number of events per hostname to which the alert will be sent:", "3")
+				data_rule.append(number_events_hostname)
+			else:
+				data_rule.append(False)
+			if flag_username == 1:
+				data_rule.append(True)
+				field_name_username = self.form_dialog.getDataInputText("Enter the name of the field in the index that corresponds to the username:", "winlog.username")
+				data_rule.append(field_name_username)
+				number_events_username = self.form_dialog.getDataNumber("Enter the number of events per username to which the alert will be sent:", "3")
+				data_rule.append(number_events_username)
+			else:
+				data_rule.append(False)
+		else:
+			data_rule.append(False)
+		option_type_alert_send = self.form_dialog.getDataRadioList("Select a option:", self.list_type_alert_send, "Alert Sending Type")
+		data_rule.append(option_type_alert_send)
+		options_send_platform = self.form_dialog.getDataCheckList("Select one or more options:", self.list_send_platform, "Alert Sending Platforms")
 		flag_telegram = 0
 		flag_email = 0
-		for opt_alert in opt_alert_send:
-			if opt_alert == "telegram":
+		for option in options_send_platform:
+			if option == "telegram":
 				flag_telegram = 1
-			if opt_alert == "email":
+			elif option == "email":
 				flag_email = 1
 		if flag_telegram == 1:
-			telegram_bot_token = self.utils.encryptAES(form_dialog.getDataInputText("Enter the Telegram bot token:", "751988420:AAHrzn7RXWxVQQNha0tQUzyouE5lUcPde1g"), form_dialog)
-			telegram_chat_id = self.utils.encryptAES(form_dialog.getDataInputText("Enter the Telegram channel identifier:", "-1002365478941"), form_dialog)
-			data_rule.append(telegram_bot_token)
-			data_rule.append(telegram_chat_id)
+			telegram_bot_token = self.utils.encryptAES(self.form_dialog.getDataInputText("Enter the Telegram bot token:", "751988420:AAHrzn7RXWxVQQNha0tQUzyouE5lUcPde1g"))
+			data_rule.append(telegram_bot_token.decode('utf-8'))
+			telegram_chat_id = self.utils.encryptAES(self.form_dialog.getDataInputText("Enter the Telegram channel identifier:", "-1002365478941"))
+			data_rule.append(telegram_chat_id.decode('utf-8'))
 		if flag_email == 1:
-			email_from = form_dialog.getDataEmail("Enter the email address from which the alerts will be sent (gmail or outlook):", "usuario@gmail.com")
-			email_from_password = self.utils.encryptAES(form_dialog.getDataPassword("Enter the password of the email address from which the alerts will be sent:", "password"), form_dialog)
-			number_email_to = form_dialog.getDataNumber("Enter the total number of email addresses to which the alert will be sent:", "3")
-			list_email_to_add = form_dialog.getEmailAdd(number_email_to)
-			list_email_to = form_dialog.getEmailsTo(list_email_to_add, "Destination Email Addresses:", "Enter email addresses:")
+			email_from = self.form_dialog.getDataEmail("Enter the email address from which the alerts will be sent (gmail or outlook):", "usuario@gmail.com")
 			data_rule.append(email_from)
-			data_rule.append(email_from_password)
-			data_rule.append(list_email_to)
+			email_from_password = self.utils.encryptAES(self.form_dialog.getDataPassword("Enter the password of the email address from which the alerts will be sent:", "password"))
+			data_rule.append(email_from_password.decode('utf-8'))
+			total_emails_to_enter = self.form_dialog.getDataNumber("Enter the total number of email address to be defined:", "3")
+			list_to_emails = self.utils.generateListToForm(int(total_emails_to_enter), "Email")
+			list_email_address = self.form_dialog.getForm("Enter the email addresses:", list_to_emails, "Email Addresses", 2)
+			data_rule.append(list_email_address)
 		self.createRuleYaml(data_rule, flag_telegram, flag_email)
-		if(not os.path.exists(self.utils.getPathTalert(self.folder_rules) + '/' + name_rule + '.yaml')):
-			form_dialog.d.msgbox("\nError creating alert rule. For more details, see the logs.", 7, 50, title = "Error message")
+		if(not path.exists(self.path_folder_rules + '/' + name_rule + '.yaml')):
+			self.form_dialog.d.msgbox("\nError creating alert rule. For more information, see the logs.", height = 8, width = 50, title = "Error Message")
 		else:
-			self.utils.createLogTool("Alert rule created: " + name_rule, 2)
-			form_dialog.d.msgbox("\nAlert rule created: " + name_rule, 7, 50, title = "Notification message")	
-		form_dialog.mainMenu()
+			self.utils.createTelkAlertToolLog("Alert rule created: " + name_rule, 1)
+			self.form_dialog.d.msgbox(text = "\nAlert rule created: " + name_rule + '.', height = 7, width = 50, title = "Notification Message")	
+		self.form_dialog.mainMenu()
 
 	"""
 	Method that modifies one or more fields of a specific alert rule.
 
 	Parameters:
 	self -- An instantiated object of the Rules class.
-	form_dialog -- A FormDialogs class object.
 
 	Exceptions:
 	KeyError -- A Python KeyError exception is what is raised when you try to access a key that isn’t in a dictionary (dict).
-	OSError -- This exception is raised when a system function returns a system-related error, including I/O failures such as “file not found” 
-	or “disk full” (not for illegal argument types or other incidental errors). 
 	"""
-	def modifyAlertRule(self, form_dialog, name_alert_rule):
+	def updateAlertRule(self, name_alert_rule):
 		options_fields_update = [("Name", "Alert rule name", 0),
 								("Level", "Alert rule level", 0),
 								("Index", "Index name in ElastcSearch", 0),
@@ -495,57 +516,9 @@ class Rules:
 				os.rename(self.utils.getPathTalert(self.folder_rules) + '/' + name_alert_rule, self.utils.getPathTalert(self.folder_rules) + '/' + name_rule + '.yaml')	
 			form_dialog.mainMenu()
 		except KeyError as exception:
-			self.utils.createLogTool("Key not found in alert rule: " + str(exception), 4)
-			form_dialog.d.msgbox("\nKey not found in alert rule: " + str(exception), 7, 50, title = "Error message")
-			form_dialog.mainMenu()
-		except OSError as exception:
-			self.utils.createLogTool(str(exception), 4)
-			form_dialog.d.msgbox("\nError opening the alert rule. For more details, see the logs.", 7, 50, title = "Error message")
-			form_dialog.mainMenu()
-
-	"""
-	Method that eliminates one or more alert rules.
-
-	Parameters:
-	self -- An instantiated object of the Rules class.
-	form_dialog -- A FormDialogs class object.
-	"""
-	def getDeleteRules(self, form_dialog):
-		try:
-			list_rules_delete = self.getAllAlertRules(self.utils.getPathTalert(self.folder_rules))
-			if len(list_rules_delete) == 0:
-				form_dialog.d.msgbox("\nThere are no alert rules in the directory", 7, 50, title = "Notification message")
-			else:
-				options_rules_delete = []
-				for rule in list_rules_delete:
-					options_rules_delete.append((rule, "", 0))
-				opt_rules_delete = form_dialog.getDataCheckList("Select one or more options:", options_rules_delete, "Delete Alert Rules")
-				for opt_rule in opt_rules_delete:
-					os.remove(self.utils.getPathTalert(self.folder_rules) + '/' + opt_rule)
-				self.utils.createLogTool("Alert rule(s) removed: " + ",".join(opt_rules_delete), 2)
-				form_dialog.d.msgbox("\nAlert rule(s) removed: " + ",".join(opt_rules_delete), 7, 50, title = "Notification message")
-			form_dialog.mainMenu()
-		except OSError as exception:
-			self.utils.createLogTool(str(exception), 4)
-			form_dialog.d.msgbox("\nFailed to delete alert rule(s). For more details, see the logs.", 7, 50, title = "Error message")
-			form_dialog.mainMenu()
-
-	"""
-	Method that shows all the alert rules created so far on the screen.
-
-	Parameters:
-	self -- An instantiated object of the Rules class.
-	form_dialog -- A FormDialogs class object.
-	"""
-	def showAllAlertRules(self, form_dialog):
-		list_all_rules = self.getAllAlertRules(self.utils.getPathTalert(self.folder_rules))
-		if len(list_all_rules) == 0:
-			form_dialog.getScrollBox("Zero alert rules in " + str(self.folder_rules), "Alert Rules")
-		else:
-			message = "\nAlert rules in " + str(self.folder_rules) + ":\n\n"
-			for rule in list_all_rules:
-				message += "- " + rule + "\n"
-			form_dialog.getScrollBox(message, "Alert Rules")
+			self.utils.createTelkAlertToolLog("Key Error: " + exception, 3)
+			self.form_dialog.d.msgbox(text = "\nFailed to update alert rule. For more information, see the logs.", height = 8, width = 50, title = "Error Message")
+			self.form_dialog.mainMenu()
 
 	"""
 	Method that allows creating the alert rule file with extension .yaml based on what was entered.
@@ -555,101 +528,95 @@ class Rules:
 	data_rule -- List with all the data entered for the alert rule.
 	flag_telegram -- Flag that lets you know if the alert will be sent by telegram or not.
 	flag_email -- Flag that lets you know if the alert will be sent by email or not.
-
-	Exceptions:
-	OSError -- This exception is raised when a system function returns a system-related error, including I/O failures such as “file not found” 
-	or “disk full” (not for illegal argument types or other incidental errors).
 	"""
 	def createRuleYaml(self, data_rule, flag_telegram, flag_email):
-		d_rule = {'name_rule' : str(data_rule[0]),
-		'alert_level' : str(data_rule[1]),
-		'type_alert' : str(data_rule[3]),
-		'index_name' : str(data_rule[2]),
-		'num_events' : int(data_rule[4]),
-		'time_search' : { str(data_rule[5]) : int(data_rule[6]) },
-		'time_back' : { str(data_rule[7]) : int(data_rule[8]) },
-		'filter_search' : [{ str(data_rule[9]) : { 'query' : str(data_rule[10])}}],
-		'type_alert_send' : str(data_rule[11]),
-		'use_restriction_fields' : data_rule[12]
-		}
+		data_json_rule = {'name_rule' : data_rule[0],
+						  'alert_level' : data_rule[1],
+						  'index_name' : data_rule[2],
+						  'type_alert' : data_rule[3],
+			  			  'num_events' : int(data_rule[4]),
+						  'time_search' : { data_rule[5] : int(data_rule[6]) },
+		 				  'time_back' : { data_rule[7] : int(data_rule[8]) },
+						  'query_type' : [{ data_rule[9] : { 'query' : data_rule[10] }}],
+						  'specific_fields_search' : data_rule[11]}
 
-		if data_rule[12] == True:
-			fields_json = { 'fields' : data_rule[13] }
-			d_rule.update(fields_json)
-			restrict_by_host = data_rule[14]
-			if restrict_by_host == True:
-				number_events_host = { 'number_events_host' : int(data_rule[15]), 'field_hostname' : str(data_rule[16]) }
-				d_rule.update(number_events_host)
-				last_index = 16
-			else:
-				last_index = 14
+		if data_rule[11] == True:
+			fields_name_json = { 'field_name' : data_rule[12] }
+			data_json_rule.update(fields_name_json)
+			last_index = 12
 		else:
-			restrict_by_host = data_rule[13]
-			if restrict_by_host == True:
-				number_events_host = { 'number_events_host' : int(data_rule[14]), 'field_hostname' : str(data_rule[15]) }
-				d_rule.update(number_events_host)
-				last_index = 15
+			last_index = 11
+		custom_rule_json = { 'custom_rule' : data_rule[last_index + 1] }
+		if data_rule[last_index + 1] == True:
+			data_json_rule.update(custom_rule_json)
+			if data_rule[last_index + 2] == True:
+				restriction_hostname_json = { 'restriction_hostname' : data_rule[last_index + 2], 'field_hostname' : data_rule[last_index + 3], 'number_events_hostname' : int(data_rule[last_index + 4]) }
+				last_index += 3
 			else:
-				last_index = 13
-		restrict_host_json = { 'restrict_by_host' : restrict_by_host }
-		d_rule.update(restrict_host_json)
+				restriction_hostname_json = { 'restriction_hostname' : data_rule[last_index + 2] }
+				last_index += 1
+			data_json_rule.update(restriction_hostname_json)
+			if data_rule[last_index + 1] == True:
+				restriction_username_json = { 'restriction_username' : data_rule[last_index + 1], 'field_username' : data_rule[last_index + 2], 'number_events_username' : int(data_rule[last_index + 3]) }
+				last_index += 3
+			else:
+				restriction_username_json = { 'restriction_username' : data_rule[last_index + 1] }
+				last_index += 1
+			data_json_rule.update(restriction_username_json)
+		last_index += 1
+		type_alert_send_json = { 'type_alert_send' : data_rule[last_index + 1] }
+		data_json_rule.update(type_alert_send_json)
+		last_index += 1
 		if flag_telegram == 1 and flag_email == 0:
-			alert_json = { 'alert' : ['telegram'] }
-			telegram_json = { 'telegram_bot_token' : data_rule[last_index + 1].decode('utf-8'), 'telegram_chat_id' : data_rule[last_index + 2].decode('utf-8') }
-			d_rule.update(telegram_json)
-			d_rule.update(alert_json)
+			alert_platform_json = { 'alert' : ['telegram'] }
+			telegram_data_json = { 'telegram_bot_token' : data_rule[last_index + 1], 'telegram_chat_id' : data_rule[last_index + 2] }
+			data_json_rule.update(telegram_data_json)
 		if flag_email == 1 and flag_telegram == 0:
-			alert_json = { 'alert' : ['email'] }
-			email_json = { 'email_from' : str(data_rule[last_index + 1]), 'email_from_password' : data_rule[last_index + 2].decode('utf-8'), 'email_to' : data_rule[last_index + 3] }
-			d_rule.update(email_json)
-			d_rule.update(alert_json)
+			alert_platform_json = { 'alert' : ['email'] }
+			email_data_json = { 'email_from' : data_rule[last_index + 1], 'email_from_password' : data_rule[last_index + 2], 'email_to' : data_rule[last_index + 3] }
+			data_json_rule.update(email_data_json)
 		if flag_telegram == 1 and flag_email == 1:
-			alert_json = { 'alert' : ['telegram', 'email'] }
-			telegram_json = { 'telegram_bot_token' : data_rule[last_index + 1].decode('utf-8'), 'telegram_chat_id' : data_rule[last_index + 2].decode('utf-8') }
-			email_json = { 'email_from' : str(data_rule[last_index + 3]), 'email_from_password' : data_rule[last_index + 4].decode('utf-8'), 'email_to' : data_rule[last_index + 5] }
-			d_rule.update(telegram_json)
-			d_rule.update(email_json)
-			d_rule.update(alert_json)
-		try:
-			with open(self.utils.getPathTalert(self.folder_rules) + '/' + str(data_rule[0]) + '.yaml', 'w') as rule_file:
-				yaml.dump(d_rule, rule_file, default_flow_style = False)
-			self.utils.changeUidGid(self.utils.getPathTalert(self.folder_rules) + '/' + str(data_rule[0]) + '.yaml')
-		except OSError as exception:
-			self.utils.createLogTool(str(exception), 4)
+			alert_platform_json = { 'alert' : ['telegram', 'email'] }
+			telegram_data_json = { 'telegram_bot_token' : data_rule[last_index + 1], 'telegram_chat_id' : data_rule[last_index + 2] }
+			data_json_rule.update(telegram_data_json)
+			email_data_json = { 'email_from' : data_rule[last_index + 3], 'email_from_password' : data_rule[last_index + 4], 'email_to' : data_rule[last_index + 5] }
+			data_json_rule.update(email_data_json)
+		data_json_rule.update(alert_platform_json)
+		self.utils.createYamlFile(data_json_rule, self.path_folder_rules + '/' + data_rule[0] + '.yaml', 'w')
 
 	"""
-	Method that shows on screen all the alert rules created so far to select one, which will be modified.
+	Method that removes the YAML file corresponding to a specific alert rule.
 
 	Parameters:
 	self -- An instantiated object of the Rules class.
-	form_dialog -- A FormDialogs class object.
+	name_alert_rule -- Name of the rule to be removed.
+
+	exceptions:
+	OSError -- This exception is raised when a system function returns a system-related error, including I/O failures such as “file not found” or “disk full” (not for illegal argument types or other incidental errors).
 	"""
-	def getUpdateAlertRules(self, form_dialog):
-		list_alert_rules = self.getAllAlertRules(self.utils.getPathTalert(self.folder_rules))
-		if len(list_alert_rules) == 0:
-			form_dialog.d.msgbox("\nThere are no alert rules in the directory", 7, 50, title = "Notification message")
-		else:
-			options_alert_rules = []
-			for alert_rule in list_alert_rules:
-				options_alert_rules.append((alert_rule, "", False))
-			rule_to_modify = form_dialog.getDataRadioList("Select a option:", options_alert_rules, "Alert Rules List")
-			self.modifyAlertRule(form_dialog, rule_to_modify)
+	def deleteAlertRule(self, name_alert_rule):
+		try:
+			remove(self.path_folder_rules + '/' + name_alert_rule)
+		except OSError as exception:
+			self.utils.createTelkAlertToolLog(exception, 3)
+			self.form_dialog.d.msgbox(text = "\nFailed to delete alert rule. For more information see the logs.", height = 8, width = 50, title = "Error message")
+			self.form_dialog.mainMenu()
 
 	"""
 	Method that gets a list with all the names of the alert rules stored in the rules directory.
 
 	Parameters:
 	self -- An instantiated object of the Rules class.
-	path_folder_rules -- Directory where all alert rules are stored.
 
 	Return:
-	list_alert_rules -- List with the names of the alert rules stored in the directory.
+	list_all_alert_rules -- List with the names of the alert rules stored in the directory.
 	"""
-	def getAllAlertRules(self, path_folder_rules):
-		list_alert_rules = [os.path.basename(x) for x in glob.glob(path_folder_rules + '/*.yaml')]
-		return list_alert_rules
-
-
-
-
- 
+	def getAllAlertRules(self):
+		try:
+			list_all_alert_rules = [path.basename(x) for x in glob(self.path_folder_rules + '/*.yaml')]
+		except OSError as exception:
+			self.utils.createTelkAlertToolLog(exception, 3)
+			self.form_dialog.d.msgbox(text = "\nFailed to get alert rules. For more information, see the logs." , height = 8, width = 50, title = "Error Message")
+			self.form_dialog.mainMenu()
+		else:
+			return list_all_alert_rules

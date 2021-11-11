@@ -189,6 +189,40 @@ class Utils:
 		return True
 
 	"""
+	Method that generates a list for the Form type dialog.
+
+	Parameters:
+	self -- 
+	len_to_list -- Size of the list to be created.
+	text -- Text that will be displayed in the interface for each element of the list.
+	
+	Return:
+	list_to_form -- Generated list.
+	"""
+	def generateListToForm(self, len_to_list, text):
+		list_to_form = []
+		for i in range(len_to_list):
+			list_to_form.append((text + ' ' + str(i + 1) + ':', (i + 1), 5, text, (i +1), 20, 30, 100))
+		return list_to_form
+
+	"""
+	Method that converts a list into a list that can be used for a checklist or radiolist in the application.
+
+	Parameters:
+	self -- An instantiated object of the Utils class.
+	list_to_convert -- List to convert.
+	text -- Text that will be displayed next to the item in the interface.
+
+	Return:
+	new_list_convert -- Converted list.
+	"""
+	def convertListToCheckOrRadioList(self, list_to_convert, text):
+		new_list_convert = []
+		for item in list_to_convert:
+			new_list_convert.append((item, text, 0))
+		return new_list_convert
+
+	"""
 	Method that changes an owner path, by telk_alert user and 
 	group.
 
@@ -197,11 +231,7 @@ class Utils:
 	path_to_change -- Directory that will change owner.
 
 	Exceptions:
-	OSError -- This exception is raised when a system function
-	           returns a system-related error, including I/O
-	           failures such as “file not found” or “disk full”
-	           (not for illegal argument types or other incidental
-	           errors).
+	OSError -- This exception is raised when a system function returns a system-related error, including I/O failures such as “file not found” or “disk full” (not for illegal argument types or other incidental errors).
 	"""
 	def ownerChange(self, path_to_change):
 		try:
