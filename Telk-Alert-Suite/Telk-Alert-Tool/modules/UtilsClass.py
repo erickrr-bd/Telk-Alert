@@ -3,9 +3,9 @@ from datetime import date
 from Crypto import Random
 from hashlib import sha256
 from Crypto.Cipher import AES
-from os import path, chown, mkdir
 from yaml import safe_load, safe_dump
 from base64 import b64encode, b64decode
+from os import path, chown, mkdir, rename
 from Crypto.Util.Padding import pad, unpad
 from logging import getLogger, INFO, Formatter, FileHandler
 
@@ -100,6 +100,25 @@ class Utils:
 		except OSError as exception:
 			self.createTelkAlertToolLog(exception, 3)
 			self.form_dialog.d.msgbox(text = "\nFailed to create directory. For more information, see the logs.", height = 8, width = 50, title = "Error Message")
+			self.form_dialog.mainMenu()
+
+	"""
+	Method that renames a file or directory.
+
+	Parameters:
+	self -- An instantiated object of the Utils class.
+	souce_path -- Source path that will be renamed.
+	destination_path -- Destination path that the source path will be renamed to.
+	
+	Exceptions:
+	OSError -- This exception is raised when a system function returns a system-related error, including I/O failures such as “file not found” or “disk full” (not for illegal argument types or other incidental errors).
+	"""
+	def renameFileOrDirectory(self, source_path, destination_source):
+		try:
+			rename(source_path, destination_source)
+		except OSError as exception:
+			self.createTelkAlertToolLog(exception, 3)
+			self.form_dialog.d.msgbox(text = "\nError renaming the file or directory. For more information, see the logs.", height = 8, width = 50, title = "Error Message")
 			self.form_dialog.mainMenu()
 
 	"""

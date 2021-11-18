@@ -397,7 +397,7 @@ class FormDialog:
 					if cont > 0:
 						self.d.msgbox(text = "\nInvalid data entered. Required value (email address).", height = 7, width = 50, title = "Error Message")
 					else:
-						return tag_inputbox
+						return tag_form
 			elif code_form == self.d.CANCEL:
 				self.mainMenu()
 

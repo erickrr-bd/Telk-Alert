@@ -1,5 +1,5 @@
 from glob import glob
-from os import path, remove, rename
+from os import path, remove
 from modules.UtilsClass import Utils
 
 """
@@ -48,6 +48,7 @@ class Rules:
 						    ["multiple", "An alert for each event found", 0]]
 
 	"""
+	Property that stores the options of the types of restrictions for a custom rule.
 	"""
 	list_custom_rule = [("Hostname", "Restrict by hostname", 0),
 					 	("Username", "Restrict by username", 0)]
@@ -81,16 +82,16 @@ class Rules:
 		data_rule.append(name_rule)
 		option_level_alert = self.form_dialog.getDataRadioList("Select a option:", self.list_level_alert, "Alert Rule Level")
 		data_rule.append(option_level_alert)
-		index_name = self.form_dialog.getDataInputText("Enter the index pattern where the searches will be made:", "winlogbeat-*")
+		index_name = self.form_dialog.getDataInputText("Enter the name of the index or index pattern where it will be searched:", "winlogbeat-*")
 		data_rule.append(index_name)
 		option_type_rule = self.form_dialog.getDataRadioList("Select a option:", list_type_alert, "Alert Rule Type")
 		data_rule.append(option_type_rule)
 		if option_type_rule == "Frequency":
-			number_events = self.form_dialog.getDataNumber("Enter the number of events found in the rule to send the alert to:", "1")
+			number_events = self.form_dialog.getDataNumber("Enter the number of events found to which the alert is sent:", "1")
 			data_rule.append(number_events)
-			option_unit_time_search = self.form_dialog.getDataRadioList("Select a option:", self.list_unit_time, "Search Time Unit")
+			option_unit_time_search = self.form_dialog.getDataRadioList("Select a option:", self.list_unit_time, "Time Unit")
 			data_rule.append(option_unit_time_search)
-			number_unit_time_search = self.form_dialog.getDataNumber("Enter the total amount in " + str(option_unit_time_search) + " in which you want the search to be repeated:", "2")
+			number_unit_time_search = self.form_dialog.getDataNumber("Enter the total in " + str(option_unit_time_search) + " in which you want the search to be repeated:", "2")
 			data_rule.append(number_unit_time_search)
 			option_unit_time_range = self.form_dialog.getDataRadioList("Select a option:", self.list_unit_time, "Time Unit")
 			data_rule.append(option_unit_time_range)
@@ -176,6 +177,7 @@ class Rules:
 
 	Parameters:
 	self -- An instantiated object of the Rules class.
+	name_alert_rule -- Name of the alert rule to be modified.
 
 	Exceptions:
 	KeyError -- A Python KeyError exception is what is raised when you try to access a key that isn’t in a dictionary (dict).
@@ -188,7 +190,7 @@ class Rules:
 							  ("Time Search", "Time in which the search will be repeated", 0),
 							  ("Time Range", "Time range in which events will be searched", 0),
 							  ("Query String", "Query string for event search", 0),
-							  ("Specific Fields", "Enables or disables the use of specific fields in the alert", 0),
+							  ("Specific Fields", "Enables or disables the use of specific fields", 0),
 							  ("Custom Rule", "Enable or disable the use of custom rule", 0),
 							  ("Shipping Type", "How the alert will be sent", 0),
 							  ("Platforms", "Alerts sending platforms", 0)]
@@ -223,26 +225,27 @@ class Rules:
 		list_restriction_username_update = [("Field", "Name of the field in the index", 0),
 								 		    ("Events", "Number of events per hostname", 0)]
 
-		options_telegram_true = [("To Disable", "Disable sending by Telegram", 0),
-								("Modify Data", "Modify existing data", 0)]
+		list_telegram_true = [("Disable", "Disable the sending of alerts by Telegram", 0),
+							  ("Data", "Modify configured data", 0)]
 
-		options_telegram_false = [("Enable", "Enable sending by Telegram", 0)]
+		list_telegram_false = [("Enable", "Enable the sending of alerts by Telegram", 0)]
 
-		options_telegram_modify = [("Bot Token", "Telegram bot token", 0),
-								  ("Chat ID", "Telegram channel identifier", 0)]
+		list_telegram_update = [("Bot Token", "Telegram bot token", 0),
+								("Chat ID", "Telegram channel identifier", 0)]
 
-		options_email_true = [("To Disable", "Disable sending by Email", 0),
-							 ("Modify Data", "Modify existing data", 0)]
+		list_email_true = [("Disable", "Disable the sending of alerts by Email", 0),
+						   ("Data", "Modify configured data", 0)]
 
-		options_email_false = [("Enable", "Enable sending by Email", 0)]
+		list_email_false = [("Enable", "Enable the sending of alerts by Email", 0)]
 
-		options_email_modify = [("Email From", "Sender email address", 0),
-							   ("Email Password", "Sender email password", 0),
-							   ("Email To", "Recipient email addresses", 0)]
+		list_email_update = [("Email From", "Sender email address", 0),
+							 ("Email Password", "Sender email password", 0),
+							 ("Email To", "Recipient email addresses", 0)]
 
-		options_email_to = [("Add New Email(s)", "Add one or more new emails", 0),
-						   ("Modify Email(s)", "Modify Existing Emails", 0),
-						   ("Remove Email(s)", "Remove Existing Emails", 0)]
+		list_email_to = [("1", "Add New Email(s)"),
+						 ("2", "Modify Email(s)"),
+						 ("3", "Remove Email(s)")]
+
 		flag_name_rule = 0
 		flag_level_rule = 0
 		flag_index_rule = 0
@@ -311,7 +314,7 @@ class Rules:
 					else:
 						option[2] = 0
 				unit_time_search = self.form_dialog.getDataRadioList("Select a option:", self.list_unit_time, "Time Unit")
-				num_time_search = self.form_dialog.getDataNumber("Enter the total amount in " + str(unit_time_search) + " in which you want the search to be repeated:", str(data_rule['time_search'][num_time_search_actual]))
+				num_time_search = self.form_dialog.getDataNumber("Enter the total in " + str(unit_time_search) + " in which you want the search to be repeated:", str(data_rule['time_search'][num_time_search_actual]))
 				data_rule['time_search'] = { str(unit_time_search) : int(num_time_search) }
 			if flag_time_range_rule == 1:
 				for unit_time in data_rule['time_range']:
@@ -334,24 +337,21 @@ class Rules:
 						data_rule['specific_fields_search'] = False
 						del(data_rule['field_name'])
 					elif option_specific_fields_true == "Data":
-						list_specific_fields_definied = data_rule['field_name']
 						option_specific_fields_update = self.form_dialog.getMenu("Select a option:", list_specific_fields_update, "Actions To Perform")
 						if int(option_specific_fields_update) == 1:
 							total_fields_to_enter = self.form_dialog.getDataNumber("Enter the total number of field names to be add:", "2")
 							list_to_fields = self.utils.generateListToForm(int(total_fields_to_enter), "Field")
 							list_fields_names = self.form_dialog.getForm("Enter the name of the fields:", list_to_fields, "Field Names", 1)
-							list_specific_fields_definied.extend(list_fields_names)
-							data_rule['field_name'] = list_specific_fields_definied
+							data_rule['field_name'].extend(list_fields_names)
 						elif int(option_specific_fields_update) == 2:
-							list_convert_to_form = self.utils.convertListToForm("Field", list_specific_fields_definied)
+							list_convert_to_form = self.utils.convertListToForm("Field", data_rule['field_name'])
 							list_fields_names = self.form_dialog.getForm("Enter the name of the fields:", list_convert_to_form, "Field Names", 1)
 							data_rule['field_name'] = list_fields_names
 						elif int(option_specific_fields_update) == 3:
-							list_specific_fields = self.utils.convertListToCheckOrRadioList(list_specific_fields_definied, "Field")
+							list_specific_fields = self.utils.convertListToCheckOrRadioList(data_rule['field_name'], "Field")
 							options_specific_fields = self.form_dialog.getDataCheckList("Select one or more options:", list_specific_fields, "Fields Names")
 							for option in options_specific_fields:
-								list_specific_fields_definied.remove(option)
-							data_rule['field_name'] = list_specific_fields_definied
+								data_rule['field_name'].remove(option)
 				else:
 					option_specific_fields_false = self.form_dialog.getDataRadioList("Select a option:", list_specific_fields_false, "Use Of Specific Fields")
 					if option_specific_fields_false == "Enable":
@@ -473,144 +473,119 @@ class Rules:
 						data_rule['custom_rule'] = True
 						data_rule.update(restriction_hostname_json)
 						data_rule.update(restriction_username_json)
-			"""
-			if flag_type_alert == 1:
-				for opt_type_send in self.options_type_alert_send:
-					if opt_type_send[0] == data_rule['type_alert_send']:
-						opt_type_send[2] = 1
+			if flag_type_alert_rule == 1:
+				for option in self.list_type_alert_send:
+					if option[0] == data_rule['type_alert_send']:
+						option[2] = 1
 					else:
-						opt_type_send[2] = 0
-				type_alert_send = form_dialog.getDataRadioList("Select a option:", self.options_type_alert_send, "Alert Sending Type")
-				data_rule['type_alert_send'] = str(type_alert_send)
-			if flag_sending_alert == 1:
-				flag_telegram = 0
-				flag_email = 0
-				flag_telegram_two = 0
-				flag_email_two = 0
-				for platform in data_rule['alert']:
-					if platform == "telegram":
-						flag_telegram = 1
-					if platform == "email":
-						flag_email = 1
-				opt_send_alert = form_dialog.getDataCheckList("Select one or more options:", self.options_send_alert, "Alert Sending Platforms")
-				for opt_send in opt_send_alert:
-					if opt_send == "telegram":
-						flag_telegram_two = 1
-					if opt_send == "email":
-						flag_email_two = 1
-				if flag_telegram_two == 1:
-					if flag_telegram == 1:
-						opt_telegram_true = form_dialog.getDataRadioList("Select a option:", options_telegram_true, "Sending By Telegram")
-						if opt_telegram_true == "To Disable":
-							if flag_email == 1:
-								del data_rule['alert']
-								del data_rule['telegram_bot_token']
-								del data_rule['telegram_chat_id']
-								alert_json = { 'alert' : ['email'] }
-								data_rule.update(alert_json)
+						option[2] = 0
+				option_type_alert_send = self.form_dialog.getDataRadioList("Select a option:", self.list_type_alert_send, "Alert sending type")
+				data_rule['type_alert_send'] = option_type_alert_send
+			if flag_platform_rule == 1:
+				flag_telegram_defined = 0
+				flag_telegram_option = 0
+				flag_email_defined = 0
+				flag_email_option = 0
+				for value in data_rule['alert']:
+					if value == "telegram":
+						flag_telegram_defined = 1
+					elif value == "email":
+						flag_email_defined = 1
+				options_send_platform = self.form_dialog.getDataCheckList("Select one or more options:", self.list_send_platform, "Alert Sending Platform")
+				for option in options_send_platform:
+					if option == "telegram":
+						flag_telegram_option = 1
+					elif option == "email":
+						flag_email_option = 1
+				if flag_telegram_option == 1:
+					if flag_telegram_defined == 1:
+						option_telegram_true = self.form_dialog.getDataRadioList("Select a option:", list_telegram_true, "Telegram")
+						if option_telegram_true == "Disable":
+							if flag_email_defined == 1:
+								data_rule['alert'].remove('telegram')
+								del(data_rule['telegram_bot_token'])
+								del(data_rule['telegram_chat_id'])
 							else:
-								form_dialog.d.msgbox("\nThere must be at least one way to send the alert", 7, 50, title = "Error message")
-								form_dialog.mainMenu()
-						if opt_telegram_true == "Modify Data":
-							flag_bot_token = 0
-							flag_chat_id = 0
-							opt_telegram_modify = form_dialog.getDataCheckList("Select one or more options:", options_telegram_modify, "Sending By Telegram")
-							for opt_telegram in opt_telegram_modify:
-								if opt_telegram == "Bot Token":
-									flag_bot_token = 1
-								if opt_telegram == "Chat ID":
-									flag_chat_id = 1
-							if flag_bot_token == 1:
-								telegram_bot_token = self.utils.encryptAES(form_dialog.getDataInputText("Enter the Telegram bot token:", self.utils.decryptAES(data_rule['telegram_bot_token'], form_dialog).decode('utf-8')), form_dialog)
+								self.form_dialog.d.msgbox(text = "\nFailed to disable. There must be at least one way to send alerts.", height = 8, width = 50, title = "Notification Message")
+						elif option_telegram_true == "Data":
+							flag_telegram_bot_token = 0
+							flag_telegram_chat_id = 0
+							options_telegram_update = self.form_dialog.getDataCheckList("Select one or more options:", list_telegram_update, "Telegram")
+							for option in options_telegram_update:
+								if option == "Bot Token":
+									flag_telegram_bot_token = 1
+								elif option == "Chat ID":
+									flag_telegram_chat_id = 1
+							if flag_telegram_bot_token == 1:
+								telegram_bot_token = self.utils.encryptAES(self.form_dialog.getDataInputText("Enter the Telegram bot token:", self.utils.decryptAES(data_rule['telegram_bot_token']).decode('utf-8')))
 								data_rule['telegram_bot_token'] = telegram_bot_token.decode('utf-8')
-							if flag_chat_id == 1:
-								telegram_chat_id = self.utils.encryptAES(form_dialog.getDataInputText("Enter the Telegram channel identifier:", self.utils.decryptAES(data_rule['telegram_chat_id'], form_dialog).decode('utf-8')), form_dialog)
+							if flag_telegram_chat_id == 1:
+								telegram_chat_id = self.utils.encryptAES(self.form_dialog.getDataInputText("Enter the Telegram channel identifier:", self.utils.decryptAES(data_rule['telegram_chat_id']).decode('utf-8')))
 								data_rule['telegram_chat_id'] = telegram_chat_id.decode('utf-8')
 					else:
-						opt_telegram_false = form_dialog.getDataRadioList("Select a option:", options_telegram_false, "Sending By Telegram")
-						if opt_telegram_false == "Enable":
-							del data_rule['alert']
-							telegram_bot_token = self.utils.encryptAES(form_dialog.getDataInputText("Enter the Telegram bot token:", "751988420:AAHrzn7RXWxVQQNha0tQUzyouE5lUcPde1g"), form_dialog)
-							telegram_chat_id = self.utils.encryptAES(form_dialog.getDataInputText("Enter the Telegram channel identifier:", "-1002365478941"), form_dialog)
-							telegram_json = { 'telegram_bot_token' : telegram_bot_token.decode('utf-8'), 'telegram_chat_id' : telegram_chat_id.decode('utf-8') }
-							if flag_email == 1:
-								alert_json = { 'alert' : ['telegram', 'email'] }
+						option_telegram_false = self.form_dialog.getDataRadioList("Select a option:", list_telegram_false, "Telegram")
+						if option_telegram_false == "Enable":
+							data_rule['alert'].append('telegram')
+							telegram_bot_token = self.utils.encryptAES(self.form_dialog.getDataInputText("Enter the Telegram bot token:", "751988420:AAHrzn7RXWxVQQNha0tQUzyouE5lUcPde1g"))
+							telegram_chat_id = self.utils.encryptAES(self.form_dialog.getDataInputText("Enter the Telegram channel identifier:", "-1002365478941"))
+							telegram_data_json = { 'telegram_bot_token' : telegram_bot_token.decode('utf-8'), 'telegram_chat_id' : telegram_chat_id.decode('utf-8') }
+							data_rule.update(telegram_data_json)
+				if flag_email_option == 1:
+					if flag_email_defined == 1:
+						option_email_true = self.form_dialog.getDataRadioList("Select a option:", list_email_true, "Email")
+						if option_email_true == "Disable":
+							if flag_telegram_defined == 1:
+								data_rule['alert'].remove('email')
+								del(data_rule['email_from'])
+								del(data_rule['email_from_password'])
+								del(data_rule['email_to'])
 							else:
-								alert_json = { 'alert' : ['telegram'] }
-							data_rule.update(alert_json)
-							data_rule.update(telegram_json)
-				if flag_email_two == 1:
-					if flag_email == 1:
-						opt_email_true = form_dialog.getDataRadioList("Select a option:", options_email_true, "Sending By Email")
-						if opt_email_true == "To Disable":
-							if flag_telegram == 1:
-								del data_rule['alert']
-								del data_rule['email_from']
-								del data_rule['email_from_password']
-								del data_rule['email_to']
-								alert_json = { 'alert' : ['telegram'] }
-								data_rule.update(alert_json)
-							else:
-								form_dialog.d.msgbox("\nThere must be at least one way to send the alert", 7, 50, title = "Error message")
-								form_dialog.mainMenu()
-						if opt_email_true == "Modify Data":
+								self.form_dialog.d.msgbox(text = "\nFailed to disable. There must be at least one way to send alerts.", height = 8, width = 50, title = "Notification Message")
+						elif option_email_true == "Data":
 							flag_email_from = 0
-							flag_email_from_pass = 0
+							flag_email_from_password = 0
 							flag_email_to = 0
-							opt_email_modify = form_dialog.getDataCheckList("Select one or more options:", options_email_modify, "Sending By Email")
-							for opt_email in opt_email_modify:
-								if opt_email == "Email From":
+							options_email_update = self.form_dialog.getDataCheckList("Select one or more options:", list_email_update, "Email")
+							for option in options_email_update:
+								if option == "Email From":
 									flag_email_from = 1
-								if opt_email == "Email Password":
-									flag_email_from_pass = 1
-								if opt_email == "Email To":
+								elif option == "Email Password":
+									flag_email_from_password = 1
+								elif option == "Email To":
 									flag_email_to = 1
 							if flag_email_from == 1:
-								email_from = form_dialog.getDataEmail("Enter the email address from which the alerts will be sent (gmail or outlook):", str(data_rule['email_from']))
-								data_rule['email_from'] = str(email_from)
-							if flag_email_from_pass == 1:
-								email_from_password = self.utils.encryptAES(form_dialog.getDataPassword("Enter the password of the email address from which the alerts will be sent:", "password"), form_dialog)
+								email_from = self.form_dialog.getDataEmail("Enter the email address from which the alerts will be sent (gmail or outlook):", data_rule['email_from'])
+								data_rule['email_from'] = email_from
+							if flag_email_from_password == 1:
+								email_from_password = self.utils.encryptAES(self.form_dialog.getDataPassword("Enter the password of the email address from which the alerts will be sent:", "password"))
 								data_rule['email_from_password'] = email_from_password.decode('utf-8')
 							if flag_email_to == 1:
-								list_emails_to_actual = data_rule['email_to']
-								opt_email_to = form_dialog.getDataRadioList("Select a option:", options_email_to, "Recipient Email Addresses")
-								if opt_email_to == "Add New Email(s)":
-									number_email_to = form_dialog.getDataNumber("Enter the total number of email addresses to which the alert will be sent:", "3")
-									list_email_to_add = form_dialog.getEmailAdd(number_email_to)
-									list_email_to = form_dialog.getEmailsTo(list_email_to_add, "Destination Email Addresses:", "Enter email addresses:")
-									for email_to in list_email_to:
-										list_emails_to_actual.append(email_to)
-									data_rule['email_to'] = list_emails_to_actual
-								if opt_email_to == "Modify Email(s)":
-									list_emails_to_update = form_dialog.getEmailsTo(list_emails_to_actual, "Recipient Email Addresses", "Modify the email address:")
-									del data_rule['email_to']
-									data['email_to'] = list_emails_to_update
-								if opt_email_to == "Remove Email(s)":
-									options_email_to_remove = []
-									for email_to in list_emails_to_actual:
-										options_email_to_remove.append((email_to, "", 0))
-									opt_email_to_remove = form_dialog.getDataCheckList("Select one or more options:", options_email_to_remove, "Recipient Email Addresses")
-									for opt_email_remove in opt_email_to_remove:
-										list_emails_to_actual.remove(opt_email_remove)
-									data_rule['email_to'] = list_emails_to_actual
-
+								option_email_to = self.form_dialog.getMenu("Select a option:", list_email_to, "Actions To Perform")
+								if int(option_email_to) == 1:
+									total_emails_to_enter = self.form_dialog.getDataNumber("Enter the total number of email address to add:", "3")
+									list_to_emails = self.utils.generateListToForm(int(total_emails_to_enter), "Email")
+									list_email_address = self.form_dialog.getForm("Enter the email addresses:", list_to_emails, "Email Addresses", 2)
+									data_rule['email_to'].extend(list_email_address)
+								elif int(option_email_to) == 2:
+									list_convert_to_form = self.utils.convertListToForm("Email", data_rule['email_to'])
+									list_email_address = self.form_dialog.getForm("Enter the email addresses:", list_convert_to_form, "Email Addresses", 2)
+									data_rule['email_to'] = list_email_address
+								elif int(option_email_to) == 3:
+									list_emails_to = self.utils.convertListToCheckOrRadioList(data_rule['email_to'], "Email")
+									options_email_to = self.form_dialog.getDataCheckList("Select one or more options:", list_emails_to, "Email To")
+									for option in options_email_to:
+										data_rule['email_to'].remove(option)
 					else:
-						opt_email_false = form_dialog.getDataRadioList("Select a option:", options_email_false, "Sending By Email")
-						if opt_email_false == "Enable":
-							del data_rule['alert']
-							email_from = form_dialog.getDataEmail("Enter the email address from which the alerts will be sent (gmail or outlook):", "usuario@gmail.com")
-							email_from_password = self.utils.encryptAES(form_dialog.getDataPassword("Enter the password of the email address from which the alerts will be sent:", "password"), form_dialog)
-							number_email_to = form_dialog.getDataNumber("Enter the total number of email addresses to which the alert will be sent:", "3")
-							list_email_to_add = form_dialog.getEmailAdd(number_email_to)
-							list_email_to = form_dialog.getEmailsTo(list_email_to_add, "Destination Email Addresses:", "Enter email addresses:")
-							email_json = { 'email_from' : str(email_from), 'email_from_password' : email_from_password.decode('utf-8'), 'email_to' : list_email_to }
-							if flag_telegram == 1:
-								alert_json = { 'alert' : ['telegram', 'email'] }
-							else:
-								alert_json = { 'alert' : ['email'] }
-							data_rule.update(email_json)
-							data_rule.update(alert_json)
-			"""
+						option_email_false = self.form_dialog.getDataRadioList("Select a option:", list_email_false, "Email")
+						if option_email_false == "Enable":
+							data_rule['alert'].append('email')
+							email_from = self.form_dialog.getDataEmail("Enter the email address from which the alerts will be sent (gmail or outlook):", "usuario@gmail.com")
+							email_from_password = self.utils.encryptAES(self.form_dialog.getDataPassword("Enter the password of the email address from which the alerts will be sent:", "password"))
+							total_emails_to_enter = self.form_dialog.getDataNumber("Enter the total number of email address to be defined:", "3")
+							list_to_emails = self.utils.generateListToForm(int(total_emails_to_enter), "Email")
+							list_email_address = self.form_dialog.getForm("Enter the email addresses:", list_to_emails, "Email Addresses", 2)
+							email_data_json = { 'email_from' : email_from, 'email_from_password' : email_from_password.decode('utf-8'), 'email_to' : list_email_address }
+							data_rule.update(email_data_json)
 			self.utils.createYamlFile(data_rule, self.path_folder_rules + '/' + name_alert_rule, 'w')
 			hash_file_new = self.utils.getHashToFile(self.path_folder_rules + '/' + name_alert_rule)
 			if hash_file_actual == hash_file_new:
@@ -619,7 +594,7 @@ class Rules:
 				self.utils.createTelkAlertToolLog("Modified alert rule: " + name_alert_rule, 2)
 				self.form_dialog.d.msgbox(text = "\nModified alert rule: " + name_alert_rule, height = 7, width = 50, title = "Notification Message")
 			if flag_name_rename == 1:
-				rename(self.path_folder_rules + '/' + name_rule_actual + ".yaml", self.path_folder_rules + '/' + name_rule + ".yaml")	
+				self.utils.renameFileOrDirectory(self.path_folder_rules + '/' + name_rule_actual + ".yaml", self.path_folder_rules + '/' + name_rule + ".yaml")	
 			self.form_dialog.mainMenu()
 		except KeyError as exception:
 			self.utils.createTelkAlertToolLog("Key Error: " + str(exception), 3)
