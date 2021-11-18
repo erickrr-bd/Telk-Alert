@@ -23,10 +23,10 @@ class FormDialog:
 	"""
 	utils = None
 
-	"""
-	Property that stores an object of the Agent class.
-	"""
-	agent = None
+
+	list_configuration_false = [("Create", "Create the configuration file", 0)]
+
+	list_configuration_true = [("Modify", "Modify the configuration file", 0)]
 
 	"""
 	Constructor for the FormDialog class.
@@ -38,7 +38,6 @@ class FormDialog:
 		self.d = Dialog(dialog = "dialog")
 		self.d.set_background_title("TELK-ALERT-TOOL")
 		self.utils = Utils(self)
-		#self.agent = Agent()
 
 	"""
 	Method that generates the menu interface.
@@ -350,16 +349,13 @@ class FormDialog:
 	minutes -- Minutes entered.
 
 	Return:
-	tag_time -- Time entered.
+	tag_timebox -- Time entered.
 	"""
 	def getDataTime(self, text, hour, minutes):
-		code_time, tag_time = self.d.timebox(text,
-											hour = hour,
-											minute = minutes,
-											second = 00)
-		if code_time == self.d.OK:
-			return tag_time
-		if code_time == self.d.CANCEL:
+		code_timebox, tag_timebox = self.d.timebox(text = text, hour = hour, minute = minutes, second = 00)
+		if code_timebox == self.d.OK:
+			return tag_timebox
+		if code_timebox == self.d.CANCEL:
 			self.mainMenu()
 
 	"""
@@ -421,6 +417,23 @@ class FormDialog:
 			opt_conf_true = self.getDataRadioList("Select a option:", options_conf_true, "Configuration Options")
 			if opt_conf_true == "Modify":
 				configuration.updateConfiguration()
+
+	"""
+	Method that defines the action to be performed on the Telk-Alert-Agent configuration file (creation or modification).
+
+	Parameters:
+	self -- An instantiated object of the FormDialog class.
+	"""
+	def defineAgentConfiguration(self):
+		agent = Agent(self)
+		if not path.exists(agent.path_configuration_file):
+			option_configuration_false = self.getDataRadioList("Select a option:", self.list_configuration_false, "Configuration Options")
+			if option_configuration_false == "Create":
+				agent.createAgentConfiguration()
+		else:
+			option_configuration_true = self.getDataRadioList("Select a option:", self.list_configuration_true, "Configuration Options")
+			if option_configuration_true == "Modify":
+				print("Hola2")
 
 	"""
 	"""
@@ -487,32 +500,16 @@ class FormDialog:
 		self.mainMenu()
 
 	"""
-	Method that defines the action to be performed on the Telk-Alert-Agent configuration file (creation or modification).
-
-	Parameters:
-	self -- An instantiated object of the FormDialog class.
-	"""
-	def getAgentConfiguration(self):
-		if not os.path.exists(self.utils.getPathTagent('conf') + '/agent_conf.yaml'):
-			opt_conf_agent_false = self.getDataRadioList("Select a option:", self.options_conf_false, "Configuration options")
-			if opt_conf_agent_false == "Create configuration":
-				self.agent.createAgentConfiguration(FormDialogs())
-		else:
-			opt_conf_agent_true = self.getDataRadioList("Select a option", self.options_conf_true, "Configuration options")
-			if opt_conf_agent_true == "Modify configuration":
-				self.agent.modifyAgentConfiguration(FormDialogs())
-
-	"""
 	Method that defines the menu on the actions to be carried out on Telk-Alert-Agent.
 
 	Parameters:
 	self -- An instantiated object of the FormDialog class.
 	"""
-	def getMenuAgent(self):
+	def menuAgent(self):
 		options_ma = [("1", "Configuration"),
-					 ("2", "Telk-Alert Agent Service")]
+					  ("2", "Telk-Alert Agent Service")]
 
-		option_ma = self.getMenu(options_ma, "Agent Menu")
+		option_ma = self.getMenu("Select a option:", options_ma, "Agent Menu")
 		self.switchMagent(int(option_ma))
 
 	"""
@@ -556,7 +553,7 @@ class FormDialog:
 		elif option == 3:
 			self.serviceMenu()
 		elif option == 4:
-			self.getMenuAgent()
+			self.menuAgent()
 		elif option == 5:
 			self.getAbout()
 		elif option == 6:
@@ -589,7 +586,7 @@ class FormDialog:
 	"""
 	def switchMagent(self, option):
 		if option == 1:
-			self.getAgentConfiguration()
+			self.defineAgentConfiguration()
 		if option == 2:
 			self.getMenuServiceAgent()
 

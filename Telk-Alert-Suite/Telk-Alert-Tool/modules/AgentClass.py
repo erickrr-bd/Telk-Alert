@@ -1,7 +1,5 @@
-import os
+from os import path
 import io
-import yaml
-from datetime import datetime
 from modules.UtilsClass import Utils
 
 """
@@ -9,77 +7,85 @@ Class that allows managing everything related to Telk-Alert-Agent.
 """
 class Agent:
 	"""
-	Property that stores an object of type Utils.
+	Property that stores an object of the Utils class.
 	"""
 	utils = None
+
+	"""
+	Property that stores an object of the FormDialog class.
+	"""
+	form_dialog = None
+
+	"""
+	Property that stores the path of the Telk-Alert-Agent configuration file.
+	"""
+	path_configuration_file = None
 
 	"""
 	Constructor for the Agent class.
 
 	Parameters:
 	self -- An instantiated object of the Agent class.
+	form_dialog -- FormDialog class object.
 	"""
 	def __init__(self, form_dialog):
+		self.form_dialog = form_dialog
 		self.utils = Utils(form_dialog)
+		self.path_configuration_file = self.utils.getPathTelkAlertAgent('conf') + "/telk_alert_agent_conf.yaml"
 	
 	"""
 	Method that requests the data for the creation of the Telk-Alert-Agent configuration file.
 
 	Parameters:
 	self -- An instantiated object of the Agent class.
-	form_dialog -- A FormDialogs class object.
 	"""
-	def createAgentConfiguration(self, form_dialog):
-		now = datetime.now()
-		data_agent_conf = []
-		time_agent_one = form_dialog.getDataTime("Select the first time of service validation:", now.hour, now.minute)
-		time_agent_two = form_dialog.getDataTime("Select the second time of service validation:", now.hour, now.minute)
-		telegram_bot_token = self.utils.encryptAES(form_dialog.getDataInputText("Enter the Telegram bot token:", "751988420:AAHrzn7RXWxVQQNha0tQUzyouE5lUcPde1g"), form_dialog)
-		telegram_chat_id = self.utils.encryptAES(form_dialog.getDataInputText("Enter the Telegram channel identifier:", "-1002365478941"), form_dialog)
-		data_agent_conf.append(time_agent_one)
-		data_agent_conf.append(time_agent_two)
-		data_agent_conf.append(telegram_bot_token)
-		data_agent_conf.append(telegram_chat_id)
-		self.createFileConfiguration(data_agent_conf, form_dialog)
-		if not os.path.exists(self.utils.getPathTagent('conf') + '/agent_conf.yaml'):
-			self.utils.createLogTool("Configuration file not created", 4)
-			form_dialog.d.msgbox("\nConfiguration file not created", 7, 50, title = "Error message")
+	def createAgentConfiguration(self):
+		data_agent_configuration = []
+		time_execution_one = self.form_dialog.getDataTime("Select the first time of service validation:", -1, -1)
+		data_agent_configuration.append(time_execution_one)
+		time_execution_two = self.form_dialog.getDataTime("Select the second time of service validation:", -1, -1)
+		data_agent_configuration.append(time_execution_two)
+		telegram_bot_token = self.utils.encryptAES(self.form_dialog.getDataInputText("Enter the Telegram bot token:", "751988420:AAHrzn7RXWxVQQNha0tQUzyouE5lUcPde1g"))
+		data_agent_configuration.append(telegram_bot_token.decode('utf-8'))
+		telegram_chat_id = self.utils.encryptAES(self.form_dialog.getDataInputText("Enter the Telegram channel identifier:", "-1002365478941"))
+		data_agent_configuration.append(telegram_chat_id.decode('utf-8'))
+		self.createFileConfiguration(data_agent_configuration)
+		if not path.exists(self.path_configuration_file):
+			self.form_dialog.d.msgbox(text = "\nConfiguration file not created.", height = 7, width = 50, title = "Error Message")
 		else:
-			self.utils.createLogTool("Configuration file created", 2)
-			form_dialog.d.msgbox("\nConfiguration file created", 7, 50, title = "Notification message")
-		form_dialog.mainMenu()
+			self.utils.createTelkAlertToolLog("Configuration file created", 1)
+			self.form_dialog.d.msgbox(text = "\nConfiguration file created.", height = 7, width = 50, title = "Notification Message")
+		self.form_dialog.mainMenu()
 
 	"""
 	Method that modifies one or more fields of the Telk-Alert-Agent configuration file.
 
 	Parameters:
 	self -- An instantiated object of the Agent class.
-	form_dialog -- A FormDialogs class object.
 
 	Exceptions:
 	KeyError -- A Python KeyError exception is what is raised when you try to access a key that isn’t in a dictionary (dict). 
-	OSError -- This exception is raised when a system function returns a system-related error, including I/O failures such as “file not found” or “disk full” (not for illegal argument types or other incidental errors).
 	"""
-	def modifyAgentConfiguration(self, form_dialog):
-		options_agent_modify = [("First Time", "First time the service is validated", 0),
-							   ("Second Time", "Second time the service is validated", 0),
-							   ("Bot Token", "Telegram bot token", 0),
-							   ("Chat ID", "Telegram chat id", 0)]
+	def updateAgentConfiguration(self):
+		list_fields_update_agent = [("First Time", "First time the service is validated", 0),
+							    	("Second Time", "Second time the service is validated", 0),
+							    	("Bot Token", "Telegram bot token", 0),
+							    	("Chat ID", "Telegram chat id", 0)]
 
 		flag_first_time = 0
 		flag_second_time = 0
-		flag_bot_token = 0
-		flag_chat_id = 0
-		opt_agent_modify = form_dialog.getDataCheckList("Select one or more options:", options_agent_modify, "Telk-Alert-Agent Configuration")
-		for opt_agent in opt_agent_modify:
-			if opt_agent == "First Time":
+		flag_telegram_bot_token = 0
+		flag_telegram_chat_id = 0
+		options_fields_update_agent = self.form_dialog.getDataCheckList("Select one or more options:", options_agent_modify, "Telk-Alert-Agent Configuration")
+		for option in options_fields_update_agent:
+			if option == "First Time":
 				flag_first_time = 1
-			if opt_agent == "Second Time":
+			elif option == "Second Time":
 				flag_second_time = 1
-			if opt_agent == "Bot Token":
-				flag_bot_token = 1
-			if opt_agent == "Chat ID":
-				flag_chat_id = 1
+			elif option == "Bot Token":
+				flag_telegram_bot_token = 1
+			elif option == "Chat ID":
+				flag_telegram_chat_id = 1
 		try:
 			hash_origen = self.utils.getSha256File(self.utils.getPathTagent('conf') + '/agent_conf.yaml', form_dialog)
 			with open(self.utils.getPathTagent('conf') + '/agent_conf.yaml') as file_agent_conf:
@@ -185,25 +191,13 @@ class Agent:
 
 	Parameters:
 	self -- An instantiated object of the Agent class.
-	data_agent_conf -- List containing all the data entered to create the configuration file.
-	form_dialog -- A FormDialogs class object.
-
-	Exceptions:
-	OSError -- This exception is raised when a system function returns a system-related error, including I/O failures such as “file not found” or “disk full” (not for illegal argument types or other incidental errors).
+	data_agent_configuration -- Object that stores the data that will be saved in the Telk-Alert-Agent configuration file.
 	"""
-	def createFileConfiguration(self, data_agent_conf, form_dialog):
+	def createFileConfiguration(self, data_agent_configuration):
 
-		data_conf = {'time_agent_one': str(data_agent_conf[0][0]) + ':' + str(data_agent_conf[0][1]),
-		'time_agent_two' : str(data_agent_conf[1][0]) + ':' + str(data_agent_conf[1][1]),
-		'telegram_bot_token' : data_agent_conf[2].decode('utf-8'),
-		'telegram_chat_id' : data_agent_conf[3].decode('utf-8')
-		}
+		data_json_agent = {'time_agent_one': str(data_agent_configuration[0][0]) + ':' + str(data_agent_configuration[0][1]),
+					 	   'time_agent_two' : str(data_agent_configuration[1][0]) + ':' + str(data_agent_configuration[1][1]),
+						   'telegram_bot_token' : data_agent_configuration[2],
+		  			 	   'telegram_chat_id' : data_agent_configuration[3]}
 
-		try:
-			with open(self.utils.getPathTagent('conf') + '/agent_conf.yaml', 'w') as agent_conf_file:
-				yaml.dump(data_conf, agent_conf_file, default_flow_style = False)
-			self.utils.changeUidGid(self.utils.getPathTagent('conf') + '/agent_conf.yaml')
-		except OSError as exception:
-			self.utils.createLogTool(str(exception), 4)
-			form_dialog.d.msgbox("\nError creating configuration file. For more details, see the logs.", 7, 50, title = "Error message")
-			form_dialog.mainMenu()
+		self.utils.createYamlFile(data_json_agent, self.path_configuration_file, 'w')
