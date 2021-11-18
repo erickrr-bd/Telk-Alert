@@ -1,22 +1,23 @@
 from glob import glob
-from os import path, remove
+from os import path, remove, rename
 from modules.UtilsClass import Utils
 
 """
-Class that allows managing alert rules.
+Class that allows handling everything related to alert rules.
 """
 class Rules:
 	"""
-	Property that contains the name of the folder where the alert rules are saved.
+	Property that stores the path of the folder where the alert rules are saved.
 	"""
 	path_folder_rules = None
 
 	"""
-	Property that stores an object of type Utils.
+	Property that stores an object of the Utils class.
 	"""
 	utils = None
 
 	"""
+	Property that stores an object of the FormDialog class.
 	"""
 	form_dialog = None
 	
@@ -51,6 +52,7 @@ class Rules:
 
 	Parameters:
 	self -- An instantiated object of the Rules class.
+	form_dialog -- FormDialog class object.
 	"""
 	def __init__(self, form_dialog):
 		self.form_dialog = form_dialog
@@ -88,10 +90,10 @@ class Rules:
 			data_rule.append(option_unit_time_search)
 			number_unit_time_search = self.form_dialog.getDataNumber("Enter the total amount in " + str(option_unit_time_search) + " in which you want the search to be repeated:", "2")
 			data_rule.append(number_unit_time_search)
-			option_unit_time_back = self.form_dialog.getDataRadioList("Select a option:", self.list_unit_time, "Time Back Unit")
-			data_rule.append(option_unit_time_back)
-			number_unit_time_back = self.form_dialog.getDataNumber("Enter the total amount in " + str(option_unit_time_back) + " of time back in which you want to perform the search:", "2")
-			data_rule.append(number_unit_time_back)
+			option_unit_time_range = self.form_dialog.getDataRadioList("Select a option:", self.list_unit_time, "Time Unit")
+			data_rule.append(option_unit_time_range)
+			number_unit_time_range = self.form_dialog.getDataNumber("Enter the total in " + str(option_unit_time_range) + " that define the range in which the events to search should be found:", "2")
+			data_rule.append(number_unit_time_range)
 		query_type = self.form_dialog.getDataRadioList("Select a option:", list_query_type, "Query Type")
 		data_rule.append(query_type)
 		if query_type == "query_string":
@@ -177,26 +179,26 @@ class Rules:
 	KeyError -- A Python KeyError exception is what is raised when you try to access a key that isn’t in a dictionary (dict).
 	"""
 	def updateAlertRule(self, name_alert_rule):
-		options_fields_update = [("Name", "Alert rule name", 0),
-								("Level", "Alert rule level", 0),
-								("Index", "Index name in ElastcSearch", 0),
-								("Number of Events", "Number of events found to which the alert is sent", 0),
-								("Time Search", "Time in which the event search will be repeated", 0),
-								("Time Back", "Time back in which the search will be made", 0),
-								("Query String", "Query string for event search", 0),
-								("Restriction Fields", "The search result only returns certain fields", 0),
-								("Restriction Hostname", "Sending of the alert is retracted by hostname", 0),
-								("Shipping Type", "How the alert will be sent", 0),
-								("Sending Alert", "Alerts sending platforms", 0)]
+		list_fields_update = [("Name", "Alert rule name", 0),
+							  ("Level", "Alert rule level", 0),
+							  ("Index", "Index name or index pattern in ElastcSearch", 0),
+							  ("Number Events", "Number of events to which the alert is sent", 0),
+							  ("Time Search", "Time in which the search will be repeated", 0),
+							  ("Time Range", "Time range in which events will be searched", 0),
+							  ("Query String", "Query string for event search", 0),
+							  ("Specific Fields", "Enables or disables the use of specific fields in the alert", 0),
+							  ("Custom Rule", "Enable or disable the use of custom rule", 0),
+							  ("Shipping Type", "How the alert will be sent", 0),
+							  ("Platforms", "Alerts sending platforms", 0)]
 
-		options_rest_field_false = [("Enable", "Enable restriction by fields", 0)]
+		list_specific_fields_false = [("Enable", "Enables the use of specific fields", 0)]
 
-		options_rest_field_true = [("To Disable", "Disable restriction by fields", 0),
-								  ("Modify Data", "Modify existing data", 0)]
+		list_specific_fields_true = [("Disable", "Disable the use of specific fields", 0),
+								     ("Data", "Modify configured data", 0)]
 
-		options_rest_field_modify = [("Add New Field(s)", "Add one or more new fields", 0),
-									("Modify Field(s)", "Modify Existing Fields", 0),
-									("Remove Field(s)", "Remove Existing Fields", 0)]
+		list_specific_fields_update = [("1", "Add New Field(s)"),
+									   ("2", "Modify Field(s)"),
+									   ("3", "Remove Field(s)")]
 
 		options_rest_host_false = [("Enable", "Enable restriction by host", 0)]
 
@@ -226,88 +228,125 @@ class Rules:
 		options_email_to = [("Add New Email(s)", "Add one or more new emails", 0),
 						   ("Modify Email(s)", "Modify Existing Emails", 0),
 						   ("Remove Email(s)", "Remove Existing Emails", 0)]
-		flag_name = 0
-		flag_level = 0
-		flag_index = 0
-		flag_number_events = 0
-		flag_time_search = 0
-		flag_time_back = 0
-		flag_query_string = 0
-		flag_restriction_fields = 0
-		flag_restriction_hostname = 0
-		flag_type_alert = 0
-		flag_sending_alert = 0
-		list_fields_update = form_dialog.getDataCheckList("Select one option or more:", options_fields_update, "Alert Rule Fields")
-		for field_update in list_fields_update:
-			if field_update == "Name":
-				flag_name = 1
-			if field_update == "Level":
-				flag_level = 1
-			if field_update == "Index":
-				flag_index = 1
-			if field_update == "Number of Events":
-				flag_number_events = 1
-			if field_update == "Time Search":
-				flag_time_search = 1
-			if field_update == "Time Back":
-				flag_time_back = 1
-			if field_update == "Query String":
-				flag_query_string = 1
-			if field_update == "Restriction Fields":
-				flag_restriction_fields = 1
-			if field_update == "Restriction Hostname":
-				flag_restriction_hostname = 1
-			if field_update == "Shipping Type":
-				flag_type_alert = 1
-			if field_update == "Sending Alert":
-				flag_sending_alert = 1
+		flag_name_rule = 0
+		flag_level_rule = 0
+		flag_index_rule = 0
+		flag_number_events_rule = 0
+		flag_time_search_rule = 0
+		flag_time_range_rule = 0
+		flag_query_string_rule = 0
+		flag_specific_fields_rule = 0
+		flag_custom_rule = 0
+		flag_type_alert_rule = 0
+		flag_platform_rule = 0
+		flag_name_rename = 0
+		options_fields_update = self.form_dialog.getDataCheckList("Select one or more options:", list_fields_update, "Alert Rule Fields")
+		for option in options_fields_update:
+			if option == "Name":
+				flag_name_rule = 1
+			elif option == "Level":
+				flag_level_rule = 1
+			elif option == "Index":
+				flag_index_rule = 1
+			elif option == "Number Events":
+				flag_number_events_rule = 1
+			elif option == "Time Search":
+				flag_time_search_rule = 1
+			elif option == "Time Range":
+				flag_time_range_rule = 1
+			elif option == "Query String":
+				flag_query_string_rule = 1
+			elif option == "Specific Fields":
+				flag_specific_fields_rule = 1
+			elif option == "Custom Rule":
+				flag_custom_rule = 1
+			elif option == "Shipping Type":
+				flag_type_alert_rule = 1
+			elif option == "Platforms":
+				flag_platform_rule = 1
 		try:
-			with open(self.utils.getPathTalert(self.folder_rules) + '/' + name_alert_rule, "rU") as file_rule:
-				data_rule = yaml.safe_load(file_rule)
-			hash_origen = self.utils.getSha256File(self.utils.getPathTalert(self.folder_rules) + '/' + name_alert_rule, form_dialog)
-			name_rule_actual = data_rule['name_rule']
-			if flag_name == 1:
-				name_rule = form_dialog.getDataNameFolderOrFile("Enter the name of the alert rule:", str(data_rule['name_rule']))
-				data_rule['name_rule'] = str(name_rule)
-			if flag_level == 1:
-				for opt_level in self.options_level_alert:
-					if opt_level[0] == data_rule['alert_level']:
-						opt_level[2] = 1
+			data_rule = self.utils.readYamlFile(self.path_folder_rules + '/' + name_alert_rule, 'rU')
+			hash_file_actual = self.utils.getHashToFile(self.utils.getPathTelkAlert(self.path_folder_rules) + '/' + name_alert_rule)
+			if flag_name_rule == 1:
+				name_rule_actual = data_rule['name_rule']
+				name_rule = self.form_dialog.getDataNameFolderOrFile("Enter the name of the alert rule:", data_rule['name_rule'])
+				if not name_rule == name_rule_actual:
+					flag_name_rename = 1
+					data_rule['name_rule'] = name_rule
+			if flag_level_rule == 1:
+				for option in self.list_level_alert:
+					if option[0] == data_rule['alert_level']:
+						option[2] = 1
 					else:
-						opt_level[2] = 0
-				level_alert = form_dialog.getDataRadioList("Select a option:", self.options_level_alert, "Alert Rule Level")
-				data_rule['alert_level'] = str(level_alert)
-			if flag_index == 1:
-				index_name = form_dialog.getDataInputText("Enter the index pattern where the searches will be made:", str(data_rule['index_name']))
-				data_rule['index_name'] = str(index_name)
-			if flag_number_events == 1:
-				num_events = form_dialog.getDataNumber("Enter the number of events found in the rule to send the alert to:", str(data_rule['num_events']))
+						option[2] = 0
+				level_alert = self.form_dialog.getDataRadioList("Select a option:", self.list_level_alert, "Alert Rule Level")
+				data_rule['alert_level'] = level_alert
+			if flag_index_rule == 1:
+				index_name = self.form_dialog.getDataInputText("Enter the name of the index or index pattern where it will be searched:", data_rule['index_name'])
+				data_rule['index_name'] = index_name
+			if flag_number_events_rule == 1:
+				num_events = self.form_dialog.getDataNumber("Enter the number of events found to which the alert is sent:", str(data_rule['num_events']))
 				data_rule['num_events'] = int(num_events)
-			if flag_time_search == 1:
+			if flag_time_search_rule == 1:
 				for unit_time in data_rule['time_search']:
 					num_time_search_actual = unit_time
-				for opt_unit_time in self.options_unit_time:
-					if opt_unit_time[0] == num_time_search_actual:
-						opt_unit_time[2] = 1
+				for option in self.list_unit_time:
+					if option[0] == num_time_search_actual:
+						option[2] = 1
 					else:
-						opt_unit_time[2] = 0
-				unit_time_search = form_dialog.getDataRadioList("Select a option:", self.options_unit_time, "Search Time Unit")
-				num_time_search = form_dialog.getDataNumber("Enter the total amount in " + str(unit_time_search) + " in which you want the search to be repeated:", str(data_rule['time_search'][num_time_search_actual]))
+						option[2] = 0
+				unit_time_search = self.form_dialog.getDataRadioList("Select a option:", self.list_unit_time, "Time Unit")
+				num_time_search = self.form_dialog.getDataNumber("Enter the total amount in " + str(unit_time_search) + " in which you want the search to be repeated:", str(data_rule['time_search'][num_time_search_actual]))
 				data_rule['time_search'] = { str(unit_time_search) : int(num_time_search) }
-			if flag_time_back == 1:
-				for unit_time in data_rule['time_back']:
-					num_time_back_actual = unit_time
-				for opt_unit_time in self.options_unit_time:
-					if opt_unit_time[0] == num_time_back_actual:
-						opt_unit_time[2] = 1
+			if flag_time_range_rule == 1:
+				for unit_time in data_rule['time_range']:
+					num_time_range_actual = unit_time
+				for option in self.list_unit_time:
+					if option[0] == num_time_range_actual:
+						option[2] = 1
 					else:
-						opt_unit_time[2] = 0
-				unit_time_back = form_dialog.getDataRadioList("Select a option:", self.options_unit_time, "Search Time Unit")
-				num_time_back = form_dialog.getDataNumber("Enter the total amount in " + str(unit_time_back) + " of time back in which you want to perform the search:", str(data_rule['time_back'][num_time_back_actual]))
-				data_rule['time_back'] = { str(unit_time_back) : int(num_time_back) }
-			if flag_query_string == 1:
-				query_string = form_dialog.getDataInputText("Enter the query string:", str(data_rule['filter_search'][0]['query_string']['query']))
-				data_rule['filter_search'] = [ { 'query_string' : { 'query' : str(query_string) } } ]
+						option[2] = 0
+				unit_time_range = self.form_dialog.getDataRadioList("Select a option:", self.list_unit_time, "Time Unit")
+				num_time_range = self.form_dialog.getDataNumber("Enter the total in " + str(unit_time_range) + " that define the range in which the events to search should be found:", str(data_rule['time_range'][num_time_range_actual]))
+				data_rule['time_range'] = { unit_time_range : int(num_time_range) }
+			if flag_query_string_rule == 1:
+				query_string = self.form_dialog.getDataInputText("Enter the query string:", data_rule['query_type'][0]['query_string']['query'])
+				data_rule['query_type'] = [ { 'query_string' : { 'query' : query_string }}]
+			if flag_specific_fields_rule == 1:
+				if data_rule['specific_fields_search'] == True:
+					option_specific_fields_true = self.form_dialog.getDataRadioList("Select a option:", list_specific_fields_true, "Use Of Specific Fields")
+					if option_specific_fields_true == "Disable":
+						data_rule['specific_fields_search'] = False
+						del(data_rule['field_name'])
+					elif option_specific_fields_true == "Data":
+						list_specific_fields_definied = data_rule['field_name']
+						option_specific_fields_update = self.form_dialog.getMenu("Select a option:", list_specific_fields_update, "Actions To Perform")
+						if int(option_specific_fields_update) == 1:
+							total_fields_to_enter = self.form_dialog.getDataNumber("Enter the total number of field names to be add:", "2")
+							list_to_fields = self.utils.generateListToForm(int(total_fields_to_enter), "Field")
+							list_fields_names = self.form_dialog.getForm("Enter the name of the fields:", list_to_fields, "Field Names", 1)
+							list_specific_fields_definied.extend(list_fields_names)
+							data_rule['field_name'] = list_specific_fields_definied
+						elif int(option_specific_fields_update) == 2:
+							list_convert_to_form = self.utils.convertListToForm("Field", list_specific_fields_definied)
+							list_fields_names = self.form_dialog.getForm("Enter the name of the fields:", list_convert_to_form, "Field Names", 1)
+							data_rule['field_name'] = list_fields_names
+						elif int(option_specific_fields_update) == 3:
+							list_specific_fields = self.utils.convertListToCheckOrRadioList(list_specific_fields_definied, "Field")
+							options_specific_fields = self.form_dialog.getDataCheckList("Select one or more options:", list_specific_fields, "Fields Names")
+							for option in options_specific_fields:
+								list_specific_fields_definied.remove(option)
+							data_rule['field_name'] = list_specific_fields_definied
+				else:
+					option_specific_fields_false = self.form_dialog.getDataRadioList("Select a option:", list_specific_fields_false, "Use Of Specific Fields")
+					if option_specific_fields_false == "Enable":
+						data_rule['specific_fields_search'] = True
+						total_fields_to_enter = self.form_dialog.getDataNumber("Enter the total number of field names to be defined:", "2")
+						list_to_fields = self.utils.generateListToForm(int(total_fields_to_enter), "Field")
+						list_fields_names = self.form_dialog.getForm("Enter the name of the fields:", list_to_fields, "Field Names", 1)
+						fields_name_json = { 'field_name' : list_fields_names }
+						data_rule.update(fields_name_json)
+			"""
 			if flag_restriction_fields == 1:
 				if data_rule['use_restriction_fields'] == False:
 					opt_rest_field_false = form_dialog.getDataRadioList("Select a option:", options_rest_field_false, "Field Restriction")
@@ -320,23 +359,8 @@ class Rules:
 						data_rule.update(restriction_fields_json)
 				else:
 					list_fields_actual = data_rule['fields']
-					opt_rest_field_true = form_dialog.getDataRadioList("Select a option:", options_rest_field_true, "Field Restriction")
-					if opt_rest_field_true == "To Disable":
-						data_rule['use_restriction_fields'] = False
-						del(data_rule['fields'])
 					if opt_rest_field_true == "Modify Data":
 						opt_rest_field_modify = form_dialog.getDataRadioList("Select a option:", options_rest_field_modify, "Field Restriction")
-						if opt_rest_field_modify == "Add New Field(s)":
-							number_fields = form_dialog.getDataNumber("Enter how many fields you want to enter for the restriction:", "2")
-							list_fields_add = form_dialog.getFieldsAdd(number_fields)
-							es_fields = form_dialog.getFields(list_fields_add, "Restriction By Fields", "Enter the name of the field or fields:")
-							for field in es_fields:
-								list_fields_actual.append(field)
-							data_rule['fields'] = list_fields_actual
-						if opt_rest_field_modify == "Modify Field(s)":
-							list_fields_update = form_dialog.getFields(list_fields_actual, "Modify Existing Field(s)", "Modify field name(s):")
-							del(data_rule['fields'])
-							data_rule['fields'] = list_fields_update
 						if opt_rest_field_modify == "Remove Field(s)":
 							options_remove_fields = []
 							for field in list_fields_actual:
@@ -504,19 +528,19 @@ class Rules:
 								alert_json = { 'alert' : ['email'] }
 							data_rule.update(email_json)
 							data_rule.update(alert_json)
-			with open(self.utils.getPathTalert(self.folder_rules) + '/' + name_alert_rule, "w") as file_rule_update:
-				yaml.safe_dump(data_rule, file_rule_update, default_flow_style = False)
-			hash_modify = self.utils.getSha256File(self.utils.getPathTalert(self.folder_rules) + '/' + name_alert_rule, form_dialog)
-			if hash_origen == hash_modify:
-				form_dialog.d.msgbox("\nAlert rule not modified: " + name_alert_rule, 7, 50, title = "Notification message")
+			"""
+			self.utils.createYamlFile(data_rule, self.path_folder_rules + '/' + name_alert_rule, 'w')
+			hash_file_new = self.utils.getHashToFile(self.path_folder_rules + '/' + name_alert_rule)
+			if hash_file_actual == hash_file_new:
+				self.form_dialog.d.msgbox(text = "\nAlert rule not modified: " + name_alert_rule, height = 7, width = 50, title = "Notification message")
 			else:
-				self.utils.createLogTool("Modified alert rule: " + name_alert_rule, 3)
-				form_dialog.d.msgbox("\nModified alert rule: " + name_alert_rule, 7, 50, title = "Notification message")
-			if flag_name == 1:
-				os.rename(self.utils.getPathTalert(self.folder_rules) + '/' + name_alert_rule, self.utils.getPathTalert(self.folder_rules) + '/' + name_rule + '.yaml')	
-			form_dialog.mainMenu()
+				self.utils.createTelkAlertToolLog("Modified alert rule: " + name_alert_rule, 2)
+				self.form_dialog.d.msgbox(text = "\nModified alert rule: " + name_alert_rule, height = 7, width = 50, title = "Notification Message")
+			if flag_name_rename == 1:
+				rename(self.path_folder_rules + '/' + name_rule_actual + ".yaml", self.path_folder_rules + '/' + name_rule + ".yaml")	
+			self.form_dialog.mainMenu()
 		except KeyError as exception:
-			self.utils.createTelkAlertToolLog("Key Error: " + exception, 3)
+			self.utils.createTelkAlertToolLog("Key Error: " + str(exception), 3)
 			self.form_dialog.d.msgbox(text = "\nFailed to update alert rule. For more information, see the logs.", height = 8, width = 50, title = "Error Message")
 			self.form_dialog.mainMenu()
 
@@ -536,7 +560,7 @@ class Rules:
 						  'type_alert' : data_rule[3],
 			  			  'num_events' : int(data_rule[4]),
 						  'time_search' : { data_rule[5] : int(data_rule[6]) },
-		 				  'time_back' : { data_rule[7] : int(data_rule[8]) },
+		 				  'time_range' : { data_rule[7] : int(data_rule[8]) },
 						  'query_type' : [{ data_rule[9] : { 'query' : data_rule[10] }}],
 						  'specific_fields_search' : data_rule[11]}
 

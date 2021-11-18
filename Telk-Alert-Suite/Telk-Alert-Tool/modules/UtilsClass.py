@@ -192,7 +192,7 @@ class Utils:
 	Method that generates a list for the Form type dialog.
 
 	Parameters:
-	self -- 
+	self -- An instantiated object of the Utils class.
 	len_to_list -- Size of the list to be created.
 	text -- Text that will be displayed in the interface for each element of the list.
 	
@@ -203,6 +203,25 @@ class Utils:
 		list_to_form = []
 		for i in range(len_to_list):
 			list_to_form.append((text + ' ' + str(i + 1) + ':', (i + 1), 5, text, (i +1), 20, 30, 100))
+		return list_to_form
+
+	"""
+	Method that converts a list into a list for the form dialog.
+
+	Parameters:
+	self -- An instantiated object of the Utils class.
+	text -- Text that will be displayed in the interface for each element of the list.
+	list_to_convert -- List to convert.
+
+	Return:
+	list_to_form -- Generated list.
+	"""
+	def convertListToForm(self, text, list_to_convert):
+		i = 0
+		list_to_form = []
+		for value in list_to_convert:
+			list_to_form.append((text + ' ' + str(i + 1) + ':', (i + 1), 5, value, (i +1), 20, 30, 100))
+			i += 1
 		return list_to_form
 
 	"""

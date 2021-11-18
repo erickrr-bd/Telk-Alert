@@ -402,44 +402,6 @@ class FormDialog:
 				self.mainMenu()
 
 	"""
-	Method that generates the interface for the entry of several values ​​of type email address at the same time.
-
-	Parameters:
-	self -- An instantiated object of the FormDialog class.
-	list_emails -- List of total emails that will be entered.
-	title -- Title that will be given to the interface and that will be shown to the user.
-	text -- Text that will be shown to the user.
-
-	Return:
-	tag_et -- List of emails entered by the user.
-	"""
-	def getEmailsTo(self, list_emails, title, text):
-		email_reg_exp = re.compile(r'^[a-z0-9]+[\._]?[a-z0-9]+[@]\w+[.]\w+$')
-		list_new_emails = []
-		i = 0
-		for email in list_emails:
-			list_new_emails.append(("Email " + str(i + 1) + ":", (i + 1), 5, email, (i + 1), 20, 30, 100))
-			i += 1
-		while True:
-			code_et , tag_et = self.d.form(text,
-										elements = list_new_emails,
-										width = 50,
-										height = 15,
-										form_height = len(list_emails),
-										title = title)
-			if code_et == self.d.OK:
-				cont = 0
-				for tag in tag_et:
-					if(not self.utils.validateRegularExpression(email_reg_exp, tag)):
-						cont += 1
-				if cont > 0:
-					self.d.msgbox("\nThe data entered must correspond to an email", 7, 50, title = "Error message")
-				else:
-					return tag_et
-			if code_et == self.d.CANCEL:
-				self.mainMenu()
-
-	"""
 	Method that defines the actions to be carried out around the Telk-Alert configuration.
 
 	Parameters:
@@ -461,6 +423,21 @@ class FormDialog:
 				configuration.updateConfiguration()
 
 	"""
+	"""
+	def updateAlertRules(self, rules):
+		configuration = Configuration(self)
+		if not path.exists(configuration.conf_file):
+			self.d.msgbox(text = "\nConfiguration file not found.", height = 7, width = 50, title = "Notification Message")
+		else:
+			list_alert_rules_aux = rules.getAllAlertRules()
+			if len(list_alert_rules_aux) == 0:
+				self.d.msgbox(text = "\nNo alert rules found in: " + rules.path_folder_rules, height = 7, width = 50, title = "Notification Message")
+			else:
+				list_alert_rules = self.utils.convertListToCheckOrRadioList(list_alert_rules_aux, "Alert Rule")
+				option_alert_rules = self.getDataRadioList("Select a option:", list_alert_rules, "Alert Rules")
+				rules.updateAlertRule(option_alert_rules)
+
+	"""
 	Method that removes one or more alert rules from Telk-Alert.
 
 	Parameters:
@@ -474,7 +451,7 @@ class FormDialog:
 		else:
 			list_alert_rules_aux = rules.getAllAlertRules()
 			if len(list_alert_rules_aux) == 0:
-				self.d.msgbox(text = "\nNo alert rules found on the path.", height = 7, width = 50, title = "Notification Message")
+				self.d.msgbox(text = "\nNo alert rules found in: " + rules.path_folder_rules, height = 7, width = 50, title = "Notification Message")
 			else:
 				list_alert_rules = self.utils.convertListToCheckOrRadioList(list_alert_rules_aux, "Alert Rule")
 				options_alert_rules = self.getDataCheckList("Select one or more options:", list_alert_rules, "Alert Rules")
@@ -501,7 +478,7 @@ class FormDialog:
 		else:
 			list_alert_rules = rules.getAllAlertRules()
 			if len(list_alert_rules) == 0:
-				self.d.msgbox(text = "\nNo alert rules found on the path.", height = 7, width = 50, title = "Notification Message")
+				self.d.msgbox(text = "\nNo alert rules found in: " + rules.path_folder_rules, height = 7, width = 50, title = "Notification Message")
 			else:
 				message_to_display = "\nAlert rules in: " + rules.path_folder_rules + '\n'
 				for alert_rule in list_alert_rules:
@@ -597,7 +574,7 @@ class FormDialog:
 		if option == 1:
 			rules.createNewRule()
 		elif option == 2:
-			rules.getUpdateAlertRules(FormDialogs())
+			self.updateAlertRules(rules)
 		elif option == 3:
 			self.deleteAlertRules(rules)
 		elif option == 4:
