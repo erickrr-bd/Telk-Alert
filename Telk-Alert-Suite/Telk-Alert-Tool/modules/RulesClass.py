@@ -48,6 +48,11 @@ class Rules:
 						    ["multiple", "An alert for each event found", 0]]
 
 	"""
+	"""
+	list_custom_rule = [("Hostname", "Restrict by hostname", 0),
+					 	("Username", "Restrict by username", 0)]
+
+	"""
 	Constructor for the Rules class.
 
 	Parameters:
@@ -70,9 +75,6 @@ class Rules:
 		list_type_alert = [("Frequency", "Make the searches in the index periodically", 1)]
 
 		list_query_type = [("query_string", "Perform the search using the Query String of ElasticSearch", 1)]
-
-		list_custom_rule = [("Hostname", "Restrict by hostname", 0),
-							   ("Username", "Restrict by username", 0)]
 
 		data_rule = []
 		name_rule = self.form_dialog.getDataNameFolderOrFile("Enter the name of the alert rule:", "rule1")
@@ -113,7 +115,7 @@ class Rules:
 			data_rule.append(True)
 			flag_hostname = 0
 			flag_username = 0
-			options_custom_rule = self.form_dialog.getDataCheckList("Select one or more options:", list_custom_rule, "Custom Rule")
+			options_custom_rule = self.form_dialog.getDataCheckList("Select one or more options:", self.list_custom_rule, "Custom Rule")
 			for option in options_custom_rule:
 				if option == "Hostname":
 					flag_hostname = 1
@@ -200,13 +202,26 @@ class Rules:
 									   ("2", "Modify Field(s)"),
 									   ("3", "Remove Field(s)")]
 
-		options_rest_host_false = [("Enable", "Enable restriction by host", 0)]
+		list_custom_rule_false = [("Enable", "Enable the use of a custom rule", 0)]
 
-		options_rest_host_true = [("To Disable", "Disable restriction by host", 0),
-								 ("Modify Data", "Modify existing data", 0)]
+		list_custom_rule_true = [("Disable", "Disable the use of a custom rule", 0),
+								 ("Data", "Modify configured data", 0)]
 
-		options_rest_host_modify = [("Number of Events", "Number of events per host", 0),
-									("Field", "Host name field", 0)]
+		list_restriction_hostname_false = [("Enable", "Enable restriction by hostname", 0)]
+
+		list_restriction_hostname_true = [("Disable", "Disable hostname restriction", 0),
+								 		   ("Data", "Modify configured data", 0)]
+
+		list_restriction_hostname_update = [("Field", "Name of the field in the index", 0),
+								 		    ("Events", "Number of events per hostname", 0)]
+
+		list_restriction_username_false = [("Enable", "Enable restriction by username", 0)]
+
+		list_restriction_username_true = [("Disable", "Disable restriction by username", 0),
+								 		  ("Data", "Modify configured data", 0)]
+
+		list_restriction_username_update = [("Field", "Name of the field in the index", 0),
+								 		    ("Events", "Number of events per hostname", 0)]
 
 		options_telegram_true = [("To Disable", "Disable sending by Telegram", 0),
 								("Modify Data", "Modify existing data", 0)]
@@ -346,52 +361,119 @@ class Rules:
 						list_fields_names = self.form_dialog.getForm("Enter the name of the fields:", list_to_fields, "Field Names", 1)
 						fields_name_json = { 'field_name' : list_fields_names }
 						data_rule.update(fields_name_json)
+			if flag_custom_rule == 1:
+				if data_rule['custom_rule'] == True:
+					option_custom_rule_true = self.form_dialog.getDataRadioList("Select a option:", list_custom_rule_true, "Custom Rule")
+					if option_custom_rule_true == "Disable":
+						data_rule['custom_rule'] = False
+						if 'restriction_hostname' in data_rule:
+							if data_rule['restriction_hostname'] == True:
+								del(data_rule['field_hostname'])
+								del(data_rule['number_events_hostname'])
+							del(data_rule['restriction_hostname'])
+						if 'restriction_username' in data_rule:
+							if data_rule['restriction_username'] == True:
+								del(data_rule['field_username'])
+								del(data_rule['number_events_username'])
+							del(data_rule['restriction_username'])
+					elif option_custom_rule_true == "Data":
+						flag_hostname = 0
+						flag_username = 0
+						options_custom_rule = self.form_dialog.getDataCheckList("Select one or more options:", self.list_custom_rule, "Custom Rule")
+						for option in options_custom_rule:
+							if option == "Hostname":
+								flag_hostname = 1
+							elif option == "Username":
+								flag_username = 1
+						if flag_hostname == 1:
+							if 'restriction_hostname' in data_rule:
+								if data_rule['restriction_hostname'] == True:
+									option_restriction_hostname_true = self.form_dialog.getDataRadioList("Select a option:", list_restriction_hostname_true, "Restriction By Hostname")
+									if option_restriction_hostname_true == "Disable":
+										data_rule['restriction_hostname'] = False
+										del(data_rule['field_hostname'])
+										del(data_rule['number_events_hostname'])
+									elif option_restriction_hostname_true == "Data":
+										flag_field_hostname = 0
+										flag_number_events_hostname = 0
+										options_restriction_hostname_update = self.form_dialog.getDataCheckList("Select one or more options:", list_restriction_hostname_update, "Restriction By Hostname")
+										for option in options_restriction_hostname_update:
+											if option == "Field":
+												flag_field_hostname = 1
+											elif option == "Events":
+												flag_number_events_hostname = 1
+										if flag_field_hostname == 1:
+											field_name_hostname = self.form_dialog.getDataInputText("Enter the name of the field in the index that corresponds to the hostname:", data_rule['field_hostname'])
+											data_rule['field_hostname'] = field_name_hostname
+										if flag_number_events_hostname == 1:
+											number_events_hostname = self.form_dialog.getDataNumber("Enter the number of events per hostname to which the alert will be sent:", str(data_rule['number_events_hostname']))
+											data_rule['number_events_hostname'] = int(number_events_hostname)
+								else:
+									option_restriction_hostname_false = self.form_dialog.getDataRadioList("Select a option:", list_restriction_hostname_false, "Restriction By Hostname")
+									if option_restriction_hostname_false == "Enable":
+										data_rule['restriction_hostname'] = True
+										field_name_hostname = self.form_dialog.getDataInputText("Enter the name of the field in the index that corresponds to the hostname:", "host.hostname")
+										number_events_hostname = self.form_dialog.getDataNumber("Enter the number of events per hostname to which the alert will be sent:", "3")
+										restriction_hostname_json = { 'field_hostname' : field_name_hostname, 'number_events_hostname' : int(number_events_hostname) }
+										data_rule.update(restriction_hostname_json)
+						if flag_username == 1:
+							if 'restriction_username' in data_rule:
+								if data_rule['restriction_username'] == True:
+									option_restriction_username_true = self.form_dialog.getDataRadioList("Select a option:", list_restriction_username_true, "Restriction By Username")
+									if option_restriction_username_true == "Disable":
+										data_rule['restriction_username'] = False
+										del(data_rule['field_username'])
+										del(data_rule['number_events_username'])
+									elif option_restriction_username_true == "Data":
+										flag_field_username = 0
+										flag_number_events_username = 0
+										options_restriction_username_update = self.form_dialog.getDataCheckList("Select one or more options:", list_restriction_username_update, "Restriction By Username")
+										for option in options_restriction_username_update:
+											if option == "Field":
+												flag_field_username = 1
+											elif option == "Events":
+												flag_number_events_username = 1
+										if flag_field_username == 1:
+											field_name_username = self.form_dialog.getDataInputText("Enter the name of the field in the index that corresponds to the username:", data_rule['field_username'])
+											data_rule['field_username'] = field_name_username
+										if flag_number_events_username == 1:
+											number_events_username = self.form_dialog.getDataNumber("Enter the number of events per username to which the alert will be sent:", str(data_rule['number_events_username']))
+											data_rule['number_events_username'] = int(number_events_username)
+								else:
+									option_restriction_username_false = self.form_dialog.getDataRadioList("Select a option:", list_restriction_username_false, "Restriction By Username")
+									if option_restriction_username_false == "Enable":
+										data_rule['restriction_username'] = True
+										field_name_username = self.form_dialog.getDataInputText("Enter the name of the field in the index that corresponds to the username:", "winlog.username")
+										number_events_username = self.form_dialog.getDataNumber("Enter the number of events per username to which the alert will be sent:", "3")
+										restriction_username_json = { 'field_username' : field_name_username, 'number_events_username' : int(number_events_username) }
+										data_rule.update(restriction_username_json)
+				else:
+					option_custom_rule_false = self.form_dialog.getDataRadioList("Select a option:", list_custom_rule_false, "Custom Rule")
+					if option_custom_rule_false == "Enable":
+						flag_hostname = 0
+						flag_username = 0
+						options_custom_rule = self.form_dialog.getDataCheckList("Select one or more options:", self.list_custom_rule, "Custom Rule")
+						for option in options_custom_rule:
+							if option == "Hostname":
+								flag_hostname = 1
+							elif option == "Username":
+								flag_username = 1
+						if flag_hostname == 1:
+							field_name_hostname = self.form_dialog.getDataInputText("Enter the name of the field in the index that corresponds to the hostname:", "host.hostname")
+							number_events_hostname = self.form_dialog.getDataNumber("Enter the number of events per hostname to which the alert will be sent:", "3")
+							restriction_hostname_json = { 'restriction_hostname' : True, 'field_hostname' : field_name_hostname, 'number_events_hostname' : int(number_events_hostname) }
+						else:
+							restriction_hostname_json = { 'restriction_hostname' : False }
+						if flag_username == 1:
+							field_name_username = self.form_dialog.getDataInputText("Enter the name of the field in the index that corresponds to the username:", "winlog.username")
+							number_events_username = self.form_dialog.getDataNumber("Enter the number of events per username to which the alert will be sent:", "3")
+							restriction_username_json = { 'restriction_username' : True, 'field_username' : field_name_username, 'number_events_username' : int(number_events_username) }
+						else:
+							restriction_username_json = { 'restriction_username' : False }
+						data_rule['custom_rule'] = True
+						data_rule.update(restriction_hostname_json)
+						data_rule.update(restriction_username_json)
 			"""
-			if flag_restriction_fields == 1:
-				if data_rule['use_restriction_fields'] == False:
-					opt_rest_field_false = form_dialog.getDataRadioList("Select a option:", options_rest_field_false, "Field Restriction")
-					if opt_rest_field_false == "Enable":
-						number_fields = form_dialog.getDataNumber("Enter how many fields you want to enter for the restriction:", "2")
-						list_fields_add = form_dialog.getFieldsAdd(number_fields)
-						es_fields = form_dialog.getFields(list_fields_add, "Restriction By Fields", "Enter the name of the field or fields:")
-						data_rule['use_restriction_fields'] = True
-						restriction_fields_json = { 'fields' : es_fields }
-						data_rule.update(restriction_fields_json)
-				else:
-					list_fields_actual = data_rule['fields']
-					if opt_rest_field_true == "Modify Data":
-						opt_rest_field_modify = form_dialog.getDataRadioList("Select a option:", options_rest_field_modify, "Field Restriction")
-						if opt_rest_field_modify == "Remove Field(s)":
-							options_remove_fields = []
-							for field in list_fields_actual:
-								options_remove_fields.append((field, "", 0))
-							opt_remove_fields = form_dialog.getDataCheckList("Select one or more options:", options_remove_fields, "Remove Existing Fields")
-							for opt_remove in opt_remove_fields:
-								list_fields_actual.remove(opt_remove)
-							data_rule['fields'] = list_fields_actual
-			if flag_restriction_hostname == 1:
-				if data_rule['restrict_by_host'] == False:
-					opt_rest_host_false = form_dialog.getDataRadioList("Select a option:", options_rest_host_false, "Restriction By Host")
-					if opt_rest_host_false == "Enable":
-						number_events_hostname = form_dialog.getDataNumber("Enter the total number of events per hostname to which the alert will be sent:", "3")
-						field_hostname = form_dialog.getDataInputText("Enter the name of the field that contains the hostname:", "host.hostname")
-						data_rule['restrict_by_host'] = True
-						restriction_host_json = { 'number_events_host' : int(number_events_hostname), 'field_hostname' : str(field_hostname) }
-						data_rule.update(restriction_host_json)
-				else:
-					opt_rest_host_true = form_dialog.getDataRadioList("Select a option:", options_rest_host_true, "Restriction By Host")
-					if opt_rest_host_true == "To Disable":
-						del data_rule['number_events_host']
-						del data_rule['field_hostname']
-						data_rule['restrict_by_host'] = False
-					if opt_rest_host_true == "Modify Data":
-						opt_rest_host_modify = form_dialog.getDataRadioList("Select a option:", options_rest_host_modify, "Restriction By Host")
-						if opt_rest_host_modify == "Number of Events":
-							number_events_hostname = form_dialog.getDataNumber("Enter the total number of events per hostname to which the alert will be sent:", str(data_rule['number_events_host']))
-							data_rule['number_events_host'] = int(number_events_hostname)
-						if opt_rest_host_modify == "Field":
-							field_hostname = form_dialog.getDataInputText("Enter the name of the field that contains the hostname:", data_rule['field_hostname'])
-							data_rule['field_hostname'] = field_hostname
 			if flag_type_alert == 1:
 				for opt_type_send in self.options_type_alert_send:
 					if opt_type_send[0] == data_rule['type_alert_send']:
@@ -572,7 +654,6 @@ class Rules:
 			last_index = 11
 		custom_rule_json = { 'custom_rule' : data_rule[last_index + 1] }
 		if data_rule[last_index + 1] == True:
-			data_json_rule.update(custom_rule_json)
 			if data_rule[last_index + 2] == True:
 				restriction_hostname_json = { 'restriction_hostname' : data_rule[last_index + 2], 'field_hostname' : data_rule[last_index + 3], 'number_events_hostname' : int(data_rule[last_index + 4]) }
 				last_index += 3
@@ -587,6 +668,7 @@ class Rules:
 				restriction_username_json = { 'restriction_username' : data_rule[last_index + 1] }
 				last_index += 1
 			data_json_rule.update(restriction_username_json)
+		data_json_rule.update(custom_rule_json)
 		last_index += 1
 		type_alert_send_json = { 'type_alert_send' : data_rule[last_index + 1] }
 		data_json_rule.update(type_alert_send_json)
