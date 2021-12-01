@@ -77,43 +77,43 @@ class Rules:
 
 		list_query_type = [("query_string", "Perform the search using the Query String of ElasticSearch", 1)]
 
-		data_rule = []
-		name_rule = self.form_dialog.getDataNameFolderOrFile("Enter the name of the alert rule:", "rule1")
-		data_rule.append(name_rule)
+		data_alert_rule = []
+		name_alert_rule = self.form_dialog.getDataNameFolderOrFile("Enter the name of the alert rule:", "rule1")
+		data_alert_rule.append(name_alert_rule)
 		option_level_alert = self.form_dialog.getDataRadioList("Select a option:", self.list_level_alert, "Alert Rule Level")
-		data_rule.append(option_level_alert)
-		index_name = self.form_dialog.getDataInputText("Enter the name of the index or index pattern where it will be searched:", "winlogbeat-*")
-		data_rule.append(index_name)
+		data_alert_rule.append(option_level_alert)
+		es_index_name = self.form_dialog.getDataInputText("Enter the name of the index or index pattern where it will be searched:", "winlogbeat-*")
+		data_alert_rule.append(es_index_name)
 		option_type_rule = self.form_dialog.getDataRadioList("Select a option:", list_type_alert, "Alert Rule Type")
-		data_rule.append(option_type_rule)
+		data_alert_rule.append(option_type_rule)
 		if option_type_rule == "Frequency":
 			number_events = self.form_dialog.getDataNumber("Enter the number of events found to which the alert is sent:", "1")
-			data_rule.append(number_events)
+			data_alert_rule.append(number_events)
 			option_unit_time_search = self.form_dialog.getDataRadioList("Select a option:", self.list_unit_time, "Time Unit")
-			data_rule.append(option_unit_time_search)
+			data_alert_rule.append(option_unit_time_search)
 			number_unit_time_search = self.form_dialog.getDataNumber("Enter the total in " + str(option_unit_time_search) + " in which you want the search to be repeated:", "2")
-			data_rule.append(number_unit_time_search)
+			data_alert_rule.append(number_unit_time_search)
 			option_unit_time_range = self.form_dialog.getDataRadioList("Select a option:", self.list_unit_time, "Time Unit")
-			data_rule.append(option_unit_time_range)
+			data_alert_rule.append(option_unit_time_range)
 			number_unit_time_range = self.form_dialog.getDataNumber("Enter the total in " + str(option_unit_time_range) + " that define the range in which the events to search should be found:", "2")
-			data_rule.append(number_unit_time_range)
+			data_alert_rule.append(number_unit_time_range)
 		query_type = self.form_dialog.getDataRadioList("Select a option:", list_query_type, "Query Type")
-		data_rule.append(query_type)
+		data_alert_rule.append(query_type)
 		if query_type == "query_string":
 			query_string = self.form_dialog.getDataInputText("Enter the query string:", "event.code : 4120")
-			data_rule.append(query_string)
+			data_alert_rule.append(query_string)
 		specific_fields_search = self.form_dialog.getDataYesOrNo("\nDo you require that the search only return certain fields?", "Specific Fields In Search")
 		if specific_fields_search == "ok":
-			data_rule.append(True)
+			data_alert_rule.append(True)
 			total_fields_to_enter = self.form_dialog.getDataNumber("Enter the total number of field names to be defined:", "2")
 			list_to_fields = self.utils.generateListToForm(int(total_fields_to_enter), "Field")
 			list_fields_names = self.form_dialog.getForm("Enter the name of the fields:", list_to_fields, "Field Names", 1)
-			data_rule.append(list_fields_names)
+			data_alert_rule.append(list_fields_names)
 		else:
-			data_rule.append(False)
+			data_alert_rule.append(False)
 		is_custom_rule = self.form_dialog.getDataYesOrNo("\nDo you need to create a custom alert rule?", "Custom Rule")
 		if is_custom_rule == "ok":
-			data_rule.append(True)
+			data_alert_rule.append(True)
 			flag_hostname = 0
 			flag_username = 0
 			options_custom_rule = self.form_dialog.getDataCheckList("Select one or more options:", self.list_custom_rule, "Custom Rule")
@@ -123,25 +123,25 @@ class Rules:
 				elif option == "Username":
 					flag_username = 1
 			if flag_hostname == 1:
-				data_rule.append(True)
+				data_alert_rule.append(True)
 				field_name_hostname = self.form_dialog.getDataInputText("Enter the name of the field in the index that corresponds to the hostname:", "host.hostname")
-				data_rule.append(field_name_hostname)
+				data_alert_rule.append(field_name_hostname)
 				number_events_hostname = self.form_dialog.getDataNumber("Enter the number of events per hostname to which the alert will be sent:", "3")
-				data_rule.append(number_events_hostname)
+				data_alert_rule.append(number_events_hostname)
 			else:
-				data_rule.append(False)
+				data_alert_rule.append(False)
 			if flag_username == 1:
-				data_rule.append(True)
+				data_alert_rule.append(True)
 				field_name_username = self.form_dialog.getDataInputText("Enter the name of the field in the index that corresponds to the username:", "winlog.username")
-				data_rule.append(field_name_username)
+				data_alert_rule.append(field_name_username)
 				number_events_username = self.form_dialog.getDataNumber("Enter the number of events per username to which the alert will be sent:", "3")
-				data_rule.append(number_events_username)
+				data_alert_rule.append(number_events_username)
 			else:
-				data_rule.append(False)
+				data_alert_rule.append(False)
 		else:
-			data_rule.append(False)
+			data_alert_rule.append(False)
 		option_type_alert_send = self.form_dialog.getDataRadioList("Select a option:", self.list_type_alert_send, "Alert Sending Type")
-		data_rule.append(option_type_alert_send)
+		data_alert_rule.append(option_type_alert_send)
 		options_send_platform = self.form_dialog.getDataCheckList("Select one or more options:", self.list_send_platform, "Alert Sending Platforms")
 		flag_telegram = 0
 		flag_email = 0
@@ -152,19 +152,19 @@ class Rules:
 				flag_email = 1
 		if flag_telegram == 1:
 			telegram_bot_token = self.utils.encryptAES(self.form_dialog.getDataInputText("Enter the Telegram bot token:", "751988420:AAHrzn7RXWxVQQNha0tQUzyouE5lUcPde1g"))
-			data_rule.append(telegram_bot_token.decode('utf-8'))
+			data_alert_rule.append(telegram_bot_token.decode('utf-8'))
 			telegram_chat_id = self.utils.encryptAES(self.form_dialog.getDataInputText("Enter the Telegram channel identifier:", "-1002365478941"))
-			data_rule.append(telegram_chat_id.decode('utf-8'))
+			data_alert_rule.append(telegram_chat_id.decode('utf-8'))
 		if flag_email == 1:
 			email_from = self.form_dialog.getDataEmail("Enter the email address from which the alerts will be sent (gmail or outlook):", "usuario@gmail.com")
-			data_rule.append(email_from)
+			data_alert_rule.append(email_from)
 			email_from_password = self.utils.encryptAES(self.form_dialog.getDataPassword("Enter the password of the email address from which the alerts will be sent:", "password"))
-			data_rule.append(email_from_password.decode('utf-8'))
+			data_alert_rule.append(email_from_password.decode('utf-8'))
 			total_emails_to_enter = self.form_dialog.getDataNumber("Enter the total number of email address to be defined:", "3")
 			list_to_emails = self.utils.generateListToForm(int(total_emails_to_enter), "Email")
 			list_email_address = self.form_dialog.getForm("Enter the email addresses:", list_to_emails, "Email Addresses", 2)
-			data_rule.append(list_email_address)
-		self.createRuleYaml(data_rule, flag_telegram, flag_email)
+			data_alert_rule.append(list_email_address)
+		self.createRuleYaml(data_alert_rule, flag_telegram, flag_email)
 		if(not path.exists(self.path_folder_rules + '/' + name_rule + '.yaml')):
 			self.form_dialog.d.msgbox("\nError creating alert rule. For more information, see the logs.", height = 8, width = 50, title = "Error Message")
 		else:
@@ -610,60 +610,60 @@ class Rules:
 	flag_telegram -- Flag that lets you know if the alert will be sent by telegram or not.
 	flag_email -- Flag that lets you know if the alert will be sent by email or not.
 	"""
-	def createRuleYaml(self, data_rule, flag_telegram, flag_email):
-		data_json_rule = {'name_rule' : data_rule[0],
-						  'alert_level' : data_rule[1],
-						  'index_name' : data_rule[2],
-						  'type_alert' : data_rule[3],
-			  			  'num_events' : int(data_rule[4]),
-						  'time_search' : { data_rule[5] : int(data_rule[6]) },
-		 				  'time_range' : { data_rule[7] : int(data_rule[8]) },
-						  'query_type' : [{ data_rule[9] : { 'query' : data_rule[10] }}],
-						  'specific_fields_search' : data_rule[11]}
+	def createRuleYaml(self, data_alert_rule, flag_telegram, flag_email):
+		data_json_alert_rule = {'name_rule' : data_alert_rule[0],
+						  		'alert_level' : data_alert_rule[1],
+						  		'index_name' : data_alert_rule[2],
+						  		'type_alert' : data_alert_rule[3],
+			  			  		'num_events' : int(data_alert_rule[4]),
+						  		'time_search' : { data_alert_rule[5] : int(data_alert_rule[6]) },
+		 				  		'time_range' : { data_alert_rule[7] : int(data_alert_rule[8]) },
+						  		'query_type' : [{ data_alert_rule[9] : { 'query' : data_alert_rule[10] }}],
+						  		'specific_fields_search' : data_alert_rule[11]}
 
-		if data_rule[11] == True:
-			fields_name_json = { 'field_name' : data_rule[12] }
-			data_json_rule.update(fields_name_json)
+		if data_alert_rule[11] == True:
+			fields_name_json = { 'field_name' : data_alert_rule[12] }
+			data_json_alert_rule.update(fields_name_json)
 			last_index = 12
 		else:
 			last_index = 11
-		custom_rule_json = { 'custom_rule' : data_rule[last_index + 1] }
-		if data_rule[last_index + 1] == True:
-			if data_rule[last_index + 2] == True:
-				restriction_hostname_json = { 'restriction_hostname' : data_rule[last_index + 2], 'field_hostname' : data_rule[last_index + 3], 'number_events_hostname' : int(data_rule[last_index + 4]) }
+		custom_rule_json = { 'custom_rule' : data_alert_rule[last_index + 1] }
+		if data_alert_rule[last_index + 1] == True:
+			if data_alert_rule[last_index + 2] == True:
+				restriction_hostname_json = { 'restriction_hostname' : data_alert_rule[last_index + 2], 'field_hostname' : data_alert_rule[last_index + 3], 'number_events_hostname' : int(data_alert_rule[last_index + 4]) }
 				last_index += 3
 			else:
-				restriction_hostname_json = { 'restriction_hostname' : data_rule[last_index + 2] }
+				restriction_hostname_json = { 'restriction_hostname' : data_alert_rule[last_index + 2] }
 				last_index += 1
-			data_json_rule.update(restriction_hostname_json)
-			if data_rule[last_index + 1] == True:
-				restriction_username_json = { 'restriction_username' : data_rule[last_index + 1], 'field_username' : data_rule[last_index + 2], 'number_events_username' : int(data_rule[last_index + 3]) }
+			data_json_alert_rule.update(restriction_hostname_json)
+			if data_alert_rule[last_index + 1] == True:
+				restriction_username_json = { 'restriction_username' : data_alert_rule[last_index + 1], 'field_username' : data_alert_rule[last_index + 2], 'number_events_username' : int(data_alert_rule[last_index + 3]) }
 				last_index += 3
 			else:
-				restriction_username_json = { 'restriction_username' : data_rule[last_index + 1] }
+				restriction_username_json = { 'restriction_username' : data_alert_rule[last_index + 1] }
 				last_index += 1
-			data_json_rule.update(restriction_username_json)
-		data_json_rule.update(custom_rule_json)
+			data_json_alert_rule.update(restriction_username_json)
+		data_json_alert_rule.update(custom_rule_json)
 		last_index += 1
-		type_alert_send_json = { 'type_alert_send' : data_rule[last_index + 1] }
-		data_json_rule.update(type_alert_send_json)
+		type_alert_send_json = { 'type_alert_send' : data_alert_rule[last_index + 1] }
+		data_json_alert_rule.update(type_alert_send_json)
 		last_index += 1
 		if flag_telegram == 1 and flag_email == 0:
 			alert_platform_json = { 'alert' : ['telegram'] }
-			telegram_data_json = { 'telegram_bot_token' : data_rule[last_index + 1], 'telegram_chat_id' : data_rule[last_index + 2] }
-			data_json_rule.update(telegram_data_json)
+			telegram_data_json = { 'telegram_bot_token' : data_alert_rule[last_index + 1], 'telegram_chat_id' : data_alert_rule[last_index + 2] }
+			data_json_alert_rule.update(telegram_data_json)
 		if flag_email == 1 and flag_telegram == 0:
 			alert_platform_json = { 'alert' : ['email'] }
-			email_data_json = { 'email_from' : data_rule[last_index + 1], 'email_from_password' : data_rule[last_index + 2], 'email_to' : data_rule[last_index + 3] }
-			data_json_rule.update(email_data_json)
+			email_data_json = { 'email_from' : data_alert_rule[last_index + 1], 'email_from_password' : data_alert_rule[last_index + 2], 'email_to' : data_alert_rule[last_index + 3] }
+			data_json_alert_rule.update(email_data_json)
 		if flag_telegram == 1 and flag_email == 1:
 			alert_platform_json = { 'alert' : ['telegram', 'email'] }
-			telegram_data_json = { 'telegram_bot_token' : data_rule[last_index + 1], 'telegram_chat_id' : data_rule[last_index + 2] }
-			data_json_rule.update(telegram_data_json)
-			email_data_json = { 'email_from' : data_rule[last_index + 3], 'email_from_password' : data_rule[last_index + 4], 'email_to' : data_rule[last_index + 5] }
-			data_json_rule.update(email_data_json)
-		data_json_rule.update(alert_platform_json)
-		self.utils.createYamlFile(data_json_rule, self.path_folder_rules + '/' + data_rule[0] + '.yaml', 'w')
+			telegram_data_json = { 'telegram_bot_token' : data_alert_rule[last_index + 1], 'telegram_chat_id' : data_alert_rule[last_index + 2] }
+			data_json_alert_rule.update(telegram_data_json)
+			email_data_json = { 'email_from' : data_alert_rule[last_index + 3], 'email_from_password' : data_alert_rule[last_index + 4], 'email_to' : data_alert_rule[last_index + 5] }
+			data_json_alert_rule.update(email_data_json)
+		data_json_alert_rule.update(alert_platform_json)
+		self.utils.createYamlFile(data_json_alert_rule, self.path_folder_rules + '/' + data_rule[0] + '.yaml', 'w')
 
 	"""
 	Method that removes the YAML file corresponding to a specific alert rule.

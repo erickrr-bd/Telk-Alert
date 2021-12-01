@@ -67,45 +67,7 @@ class FormDialog:
 		if code_menu == self.d.OK:
 			return tag_menu
 		if code_menu == self.d.CANCEL:
-			self.mainMenu()
-
-	"""
-	Method that generates an interface with scroll box.
-
-	Parameters:
-	self -- An instantiated object of the FormDialog class.
-	text -- Text displayed on the interface.
-	title -- Title displayed on the interface.
-	"""
-	def getScrollBox(self, text, title):
-		code_scrollbox = self.d.scrollbox(text = text, height = 15, width = 70, title = title)
-
-	"""
-	Method that generates an interface to select a file.
-
-	Parameters:
-	self -- An instantiated object of the FormDialog class.
-	initial_path -- Initial path in the interface.
-	title -- Title displayed on the interface.
-	extension_file -- Allowed file extension.
-
-	Return:
-	tag_fselect -- Path of the selected file.
-	"""
-	def getFile(self, initial_path, title, extension_file):
-		while True:
-			code_fselect, tag_fselect = self.d.fselect(filepath = initial_path, height = 8, width = 50, title = title)
-			if code_fselect == self.d.OK:
-				if tag_fselect == "":
-					self.d.msgbox(text = "\nSelect a file. Required value: " + extension_file + " file.", height = 7, width = 50, title = "Error Message")
-				else:
-					ext_file = Path(tag_fselect).suffix
-					if not ext_file == extension_file:
-						self.d.msgbox(text = "\nSelect a file. Required value: " + extension_file + " file.", height = 7, width = 50, title = "Error Message")
-					else:
-						return tag_fselect
-			elif code_fselect == self.d.CANCEL:
-				self.mainMenu()
+			self.mainMenu()	
 
 	"""
 	Method that generates an interface with several available options, and where only one of them can be chosen.
@@ -151,6 +113,73 @@ class FormDialog:
 				else:
 					return tag_checklist
 			elif code_checklist == self.d.CANCEL:
+				self.mainMenu()
+
+	"""
+	Method that generates an interface to enter text.
+
+	Parameters:
+	self -- An instantiated object of the FormDialog class.
+	text -- Text displayed on the interface.
+	initial_value -- Default value shown on the interface.
+
+	Return:
+	tag_inputbox -- Text entered.
+	"""
+	def getDataInputText(self, text, initial_value):
+		while True:
+			code_inputbox, tag_inputbox = self.d.inputbox(text = text, height = 10, width = 50, init = initial_value)
+			if code_inputbox == self.d.OK:
+				if tag_inputbox == "":
+					self.d.msgbox(text = "\nInvalid data entered. Required value (not empty).", height = 8, width = 50, title = "Error Message")
+				else:
+					return tag_inputbox
+			elif code_inputbox == self.d.CANCEL:
+				self.mainMenu()
+
+	"""
+	Method that generates an interface to enter a password.
+
+	Parameters:
+	self -- An instantiated object of the FormDialog class.
+	text -- Text displayed on the interface.
+	initial_value -- Default value shown on the interface.
+
+	Return:
+	tag_passwordbox -- Password entered.
+	"""
+	def getDataPassword(self, text, initial_value):
+		while True:
+			code_passwordbox, tag_passwordbox = self.d.passwordbox(text = text, height = 10, width = 50, init = initial_value, insecure = True)
+			if code_passwordbox == self.d.OK:
+				if tag_passwordbox == "":
+					self.d.msgbox(text = "\nInvalid data entered. Required value (not empty).", height = 8, width = 50, title = "Error Message")
+				else:
+					return tag_passwordbox
+			elif code_passwordbox == self.d.CANCEL:
+				self.mainMenu()
+
+	"""
+	Method that generates the interface for entering integer data.
+
+	Parameters:
+	self -- An instantiated object of the FormDialog class.
+	text -- Text displayed on the interface.
+	initial_value -- Default value shown on the interface.
+
+	Return:
+	tag_num -- Number entered.
+	"""
+	def getDataNumber(self, text, initial_value):
+		number_reg_exp = re_compile(r'^\d+$')
+		while True:
+			code_inputbox, tag_inputbox = self.d.inputbox(text = text, height = 10, width = 50, init = initial_value)
+			if code_inputbox == self.d.OK:
+				if(not self.utils.validateRegularExpression(number_reg_exp, tag_inputbox)):
+					self.d.msgbox(text = "\nInvalid data entered. Required value (integer number).", height = 8, width = 50, title = "Error Message")
+				else:
+					return tag_inputbox
+			elif code_inputbox == self.d.CANCEL:
 				self.mainMenu()
 
 	"""
@@ -269,88 +298,6 @@ class FormDialog:
 				self.mainMenu()
 
 	"""
-	Method that generates a decision-making interface (yes / no).
-
-	Parameters:
-	self -- An instantiated object of the FormDialog class.
-	text -- Text displayed on the interface.
-	title -- Title displayed on the interface.
-
-	Return:
-	tag_yesno -- Chosen option (yes or no).
-	"""
-	def getDataYesOrNo(self, text, title):
-		tag_yesno = self.d.yesno(text = text, height = 10, width = 50, title = title)
-		return tag_yesno
-
-	"""
-	Method that generates an interface to enter text.
-
-	Parameters:
-	self -- An instantiated object of the FormDialog class.
-	text -- Text displayed on the interface.
-	initial_value -- Default value shown on the interface.
-
-	Return:
-	tag_inputbox -- Text entered.
-	"""
-	def getDataInputText(self, text, initial_value):
-		while True:
-			code_inputbox, tag_inputbox = self.d.inputbox(text = text, height = 10, width = 50, init = initial_value)
-			if code_inputbox == self.d.OK:
-				if tag_inputbox == "":
-					self.d.msgbox(text = "\nInvalid data entered. Required value (not empty).", height = 8, width = 50, title = "Error Message")
-				else:
-					return tag_inputbox
-			elif code_inputbox == self.d.CANCEL:
-				self.mainMenu()
-
-	"""
-	Method that generates an interface to enter a password.
-
-	Parameters:
-	self -- An instantiated object of the FormDialog class.
-	text -- Text displayed on the interface.
-	initial_value -- Default value shown on the interface.
-
-	Return:
-	tag_passwordbox -- Password entered.
-	"""
-	def getDataPassword(self, text, initial_value):
-		while True:
-			code_passwordbox, tag_passwordbox = self.d.passwordbox(text = text, height = 10, width = 50, init = initial_value, insecure = True)
-			if code_passwordbox == self.d.OK:
-				if tag_passwordbox == "":
-					self.d.msgbox(text = "\nInvalid data entered. Required value (not empty).", height = 8, width = 50, title = "Error Message")
-				else:
-					return tag_passwordbox
-			elif code_passwordbox == self.d.CANCEL:
-				self.mainMenu()
-
-	"""
-	Method that generates the interface for entering integer data.
-
-	Parameters:
-	self -- An instantiated object of the FormDialog class.
-	text -- Text displayed on the interface.
-	initial_value -- Default value shown on the interface.
-
-	Return:
-	tag_num -- Number entered.
-	"""
-	def getDataNumber(self, text, initial_value):
-		number_reg_exp = re_compile(r'^\d+$')
-		while True:
-			code_inputbox, tag_inputbox = self.d.inputbox(text = text, height = 10, width = 50, init = initial_value)
-			if code_inputbox == self.d.OK:
-				if(not self.utils.validateRegularExpression(number_reg_exp, tag_inputbox)):
-					self.d.msgbox(text = "\nInvalid data entered. Required value (integer number).", height = 8, width = 50, title = "Error Message")
-				else:
-					return tag_inputbox
-			elif code_inputbox == self.d.CANCEL:
-				self.mainMenu()
-
-	"""
 	Method that generates the interface for entering data of the time type.
 
 	Parameters:
@@ -368,6 +315,33 @@ class FormDialog:
 			return tag_timebox
 		if code_timebox == self.d.CANCEL:
 			self.mainMenu()
+
+	"""
+	Method that generates an interface to select a file.
+
+	Parameters:
+	self -- An instantiated object of the FormDialog class.
+	initial_path -- Initial path in the interface.
+	title -- Title displayed on the interface.
+	extension_file -- Allowed file extension.
+
+	Return:
+	tag_fselect -- Path of the selected file.
+	"""
+	def getFile(self, initial_path, title, extension_file):
+		while True:
+			code_fselect, tag_fselect = self.d.fselect(filepath = initial_path, height = 8, width = 50, title = title)
+			if code_fselect == self.d.OK:
+				if tag_fselect == "":
+					self.d.msgbox(text = "\nSelect a file. Required value: " + extension_file + " file.", height = 7, width = 50, title = "Error Message")
+				else:
+					ext_file = Path(tag_fselect).suffix
+					if not ext_file == extension_file:
+						self.d.msgbox(text = "\nSelect a file. Required value: " + extension_file + " file.", height = 7, width = 50, title = "Error Message")
+					else:
+						return tag_fselect
+			elif code_fselect == self.d.CANCEL:
+				self.mainMenu()
 
 	"""
 	Method that generates an interface of a form.
@@ -407,6 +381,32 @@ class FormDialog:
 						return tag_form
 			elif code_form == self.d.CANCEL:
 				self.mainMenu()
+
+	"""
+	Method that generates a decision-making interface (yes / no).
+
+	Parameters:
+	self -- An instantiated object of the FormDialog class.
+	text -- Text displayed on the interface.
+	title -- Title displayed on the interface.
+
+	Return:
+	tag_yesno -- Chosen option (yes or no).
+	"""
+	def getDataYesOrNo(self, text, title):
+		tag_yesno = self.d.yesno(text = text, height = 10, width = 50, title = title)
+		return tag_yesno
+
+	"""
+	Method that generates an interface with scroll box.
+
+	Parameters:
+	self -- An instantiated object of the FormDialog class.
+	text -- Text displayed on the interface.
+	title -- Title displayed on the interface.
+	"""
+	def getScrollBox(self, text, title):
+		code_scrollbox = self.d.scrollbox(text = text, height = 15, width = 70, title = title)
 
 	"""
 	Method that defines the actions to be carried out around the Telk-Alert configuration.
@@ -660,8 +660,7 @@ class FormDialog:
 					 ("3", "Delete alert rule(s)"),
 					 ("4", "Show all alert rules")]
 
-		configuration = Configuration(self)
-		if not path.exists(configuration.path_configuration_file):
+		if not path.exists(self.configuration.path_configuration_file):
 			self.d.msgbox(text = "\nConfiguration file not found.", height = 7, width = 50, title = "Notification Message")
 		else:
 			option_mr = self.getMenu("Select  a option:", options_mr, "Alert Rules Menu")
