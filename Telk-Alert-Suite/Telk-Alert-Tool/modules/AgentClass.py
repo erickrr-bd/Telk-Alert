@@ -87,9 +87,8 @@ class Agent:
 			elif option == "Chat ID":
 				flag_telegram_chat_id = 1
 		try:
-			hash_origen = self.utils.getSha256File(self.utils.getPathTagent('conf') + '/agent_conf.yaml', form_dialog)
-			with open(self.utils.getPathTagent('conf') + '/agent_conf.yaml') as file_agent_conf:
-				data_agent_conf = yaml.safe_load(file_agent_conf)
+			hash_agent_conf = self.utils.getHashToFile(self.path_configuration_file)
+			data_agent_conf = self.utils.readYamlFile(self.path_configuration_file, 'rU')
 			if flag_first_time == 1:
 				time_actual_one = data_agent_conf['time_agent_one'].split(':')
 				time_agent_one = form_dialog.getDataTime("Select the first time of service validation:", int(time_actual_one[0]), int(time_actual_one[1]))

@@ -23,9 +23,19 @@ class FormDialog:
 	"""
 	utils = None
 
+	"""
+	Property that stores an object of the Configuration class.
+	"""
+	configuration = None
 
+	"""
+	List with the options to show when the Telk-Alert configuration file is not created.
+	"""
 	list_configuration_false = [("Create", "Create the configuration file", 0)]
 
+	"""
+	List with the options to show when the Telk-Alert configuration file is created.
+	"""
 	list_configuration_true = [("Modify", "Modify the configuration file", 0)]
 
 	"""
@@ -38,6 +48,7 @@ class FormDialog:
 		self.d = Dialog(dialog = "dialog")
 		self.d.set_background_title("TELK-ALERT-TOOL")
 		self.utils = Utils(self)
+		self.configuration = Configuration(self)
 
 	"""
 	Method that generates the menu interface.
@@ -404,19 +415,14 @@ class FormDialog:
 	self -- An instantiated object of the FormDialog class.
 	"""
 	def defineConfiguration(self):
-		options_conf_false = [("Create", "Create the configuration file", 0)]
-
-		options_conf_true = [("Modify", "Modify the configuration file", 0)]
-		
-		configuration = Configuration(self)
-		if not path.exists(configuration.conf_file):
-			opt_conf_false = self.getDataRadioList("Select a option:", options_conf_false, "Configuration Options")
-			if opt_conf_false == "Create":
-				configuration.createConfiguration()
+		if not path.exists(self.configuration.path_configuration_file):
+			option_configuration_false = self.getDataRadioList("Select a option:", self.list_configuration_false, "Configuration Options")
+			if option_configuration_false == "Create":
+				self.configuration.createConfiguration()
 		else:
-			opt_conf_true = self.getDataRadioList("Select a option:", options_conf_true, "Configuration Options")
-			if opt_conf_true == "Modify":
-				configuration.updateConfiguration()
+			option_configuration_true = self.getDataRadioList("Select a option:", self.list_configuration_true, "Configuration Options")
+			if option_configuration_true == "Modify":
+				self.configuration.updateConfiguration()
 
 	"""
 	Method that defines the action to be performed on the Telk-Alert-Agent configuration file (creation or modification).
@@ -643,6 +649,25 @@ class FormDialog:
 		self.switchMmenu(int(option_mm))
 
 	"""
+	Method that defines the menu on the actions to be carried out on the alert rules.
+
+	Parameters:
+	self -- An instantiated object of the FormDialog class.
+	"""
+	def rulesMenu(self):
+		options_mr = [("1", "Create new alert rule"),
+					 ("2", "Update alert rule"),
+					 ("3", "Delete alert rule(s)"),
+					 ("4", "Show all alert rules")]
+
+		configuration = Configuration(self)
+		if not path.exists(configuration.path_configuration_file):
+			self.d.msgbox(text = "\nConfiguration file not found.", height = 7, width = 50, title = "Notification Message")
+		else:
+			option_mr = self.getMenu("Select  a option:", options_mr, "Alert Rules Menu")
+			self.switchMrules(int(option_mr))
+
+	"""
 	Method that defines the menu on the actions to be carried out on the Telk-Alert service.
 
 	Parameters:
@@ -656,22 +681,3 @@ class FormDialog:
 
 		option_ms = self.getMenu("Select a option:", options_ms, "Telk-Alert Service")
 		self.switchMService(int(option_ms))
-
-	"""
-	Method that defines the menu on the actions to be carried out on the alert rules.
-
-	Parameters:
-	self -- An instantiated object of the FormDialog class.
-	"""
-	def rulesMenu(self):
-		options_mr = [("1", "Create new alert rule"),
-					 ("2", "Update alert rule"),
-					 ("3", "Delete alert rule(s)"),
-					 ("4", "Show all alert rules")]
-
-		configuration = Configuration(self)
-		if not path.exists(configuration.conf_file):
-			self.d.msgbox(text = "\nConfiguration file not found.", height = 7, width = 50, title = "Notification Message")
-		else:
-			option_mr = self.getMenu("Select  a option:", options_mr, "Alert Rules Menu")
-			self.switchMrules(int(option_mr))
