@@ -425,7 +425,64 @@ class FormDialog:
 				self.configuration.updateConfiguration()
 
 	"""
-	Method that defines the action to be performed on the Telk-Alert-Agent configuration file (creation or modification).
+	Method that obtains the list of alert rules to update one of them.
+
+	Parameters:
+	self -- An instantiated object of the FormDialog class.
+	rules -- Rules class object.
+	"""
+	def updateAlertRules(self, rules):
+		list_alert_rules_aux = rules.getAllAlertRules()
+		if len(list_alert_rules_aux) == 0:
+			self.d.msgbox(text = "\nNo alert rules found in: " + rules.path_folder_rules, height = 7, width = 50, title = "Notification Message")
+		else:
+			list_alert_rules = self.utils.convertListToCheckOrRadioList(list_alert_rules_aux, "Alert Rule")
+			option_alert_rules = self.getDataRadioList("Select a option:", list_alert_rules, "Alert Rules")
+			rules.updateAlertRule(option_alert_rules)
+
+	"""
+	Method that removes one or more alert rules from Telk-Alert.
+
+	Parameters:
+	self -- An instantiated object of the FormDialog class.
+	rules -- Rules class object.
+	"""
+	def deleteAlertRules(self, rules):
+		list_alert_rules_aux = rules.getAllAlertRules()
+		if len(list_alert_rules_aux) == 0:
+			self.d.msgbox(text = "\nNo alert rules found in: " + rules.path_folder_rules, height = 7, width = 50, title = "Notification Message")
+		else:
+			list_alert_rules = self.utils.convertListToCheckOrRadioList(list_alert_rules_aux, "Alert Rule")
+			options_alert_rules = self.getDataCheckList("Select one or more options:", list_alert_rules, "Alert Rules")
+			confirmation_delete_alert_rules = self.getDataYesOrNo("\nAre you sure to delete the following alert rules?\n\n** This action cannot be undone.", "Delete Alert Rules")
+			if confirmation_delete_alert_rules == "ok":
+				message_to_display = "\nAlert rules removed:\n"
+				for option in options_alert_rules:
+					rules.deleteAlertRule(option)
+					message_to_display += "\n- " + option
+				self.getScrollBox(message_to_display, "Delete Alert Rules")
+		self.mainMenu()
+
+	"""
+	Method that shows all alert rules created so far.
+
+	Parameters:
+	self -- An instantiated object of the FormDialog class.
+	rules -- Rules class object.
+	"""
+	def showAllAlertRules(self, rules):
+		list_alert_rules = rules.getAllAlertRules()
+		if len(list_alert_rules) == 0:
+			self.d.msgbox(text = "\nNo alert rules found in: " + rules.path_folder_rules, height = 7, width = 50, title = "Notification Message")
+		else:
+			message_to_display = "\nAlert rules in: " + rules.path_folder_rules + '\n'
+			for alert_rule in list_alert_rules:
+				message_to_display += "\n- " + alert_rule
+			self.getScrollBox(message_to_display, "Alert Rules")
+		self.mainMenu()
+	
+	"""
+	Method that defines the actions to be carried out around the Telk-Alert Agent configuration.
 
 	Parameters:
 	self -- An instantiated object of the FormDialog class.
@@ -439,99 +496,7 @@ class FormDialog:
 		else:
 			option_configuration_true = self.getDataRadioList("Select a option:", self.list_configuration_true, "Configuration Options")
 			if option_configuration_true == "Modify":
-				print("Hola2")
-
-	"""
-	"""
-	def updateAlertRules(self, rules):
-		configuration = Configuration(self)
-		if not path.exists(configuration.conf_file):
-			self.d.msgbox(text = "\nConfiguration file not found.", height = 7, width = 50, title = "Notification Message")
-		else:
-			list_alert_rules_aux = rules.getAllAlertRules()
-			if len(list_alert_rules_aux) == 0:
-				self.d.msgbox(text = "\nNo alert rules found in: " + rules.path_folder_rules, height = 7, width = 50, title = "Notification Message")
-			else:
-				list_alert_rules = self.utils.convertListToCheckOrRadioList(list_alert_rules_aux, "Alert Rule")
-				option_alert_rules = self.getDataRadioList("Select a option:", list_alert_rules, "Alert Rules")
-				rules.updateAlertRule(option_alert_rules)
-
-	"""
-	Method that removes one or more alert rules from Telk-Alert.
-
-	Parameters:
-	self -- An instantiated object of the FormDialog class.
-	rules -- Rules class object.
-	"""
-	def deleteAlertRules(self, rules):
-		configuration = Configuration(self)
-		if not path.exists(configuration.conf_file):
-			self.d.msgbox(text = "\nConfiguration file not found.", height = 7, width = 50, title = "Notification Message")
-		else:
-			list_alert_rules_aux = rules.getAllAlertRules()
-			if len(list_alert_rules_aux) == 0:
-				self.d.msgbox(text = "\nNo alert rules found in: " + rules.path_folder_rules, height = 7, width = 50, title = "Notification Message")
-			else:
-				list_alert_rules = self.utils.convertListToCheckOrRadioList(list_alert_rules_aux, "Alert Rule")
-				options_alert_rules = self.getDataCheckList("Select one or more options:", list_alert_rules, "Alert Rules")
-				confirmation_delete_alert_rules = self.getDataYesOrNo("\nAre you sure to delete the following alert rules?\n\n** This action cannot be undone.", "Delete Alert Rules")
-				if confirmation_delete_alert_rules == "ok":
-					message_to_display = "\nAlert rules removed:\n"
-					for option in options_alert_rules:
-						rules.deleteAlertRule(option)
-						message_to_display += "\n- " + option
-					self.getScrollBox(message_to_display, "Delete Alert Rules")
-		self.mainMenu()
-
-	"""
-	Method that shows all alert rules created so far.
-
-	Parameters:
-	self -- An instantiated object of the FormDialog class.
-	rules -- Rules class object.
-	"""
-	def showAllAlertRules(self, rules):
-		configuration = Configuration(self)
-		if not path.exists(configuration.conf_file):
-			self.d.msgbox(text = "\nConfiguration file not found.", height = 7, width = 50, title = "Notification Message")
-		else:
-			list_alert_rules = rules.getAllAlertRules()
-			if len(list_alert_rules) == 0:
-				self.d.msgbox(text = "\nNo alert rules found in: " + rules.path_folder_rules, height = 7, width = 50, title = "Notification Message")
-			else:
-				message_to_display = "\nAlert rules in: " + rules.path_folder_rules + '\n'
-				for alert_rule in list_alert_rules:
-					message_to_display += "\n- " + alert_rule
-				self.getScrollBox(message_to_display, "Alert Rules")
-		self.mainMenu()
-
-	"""
-	Method that defines the menu on the actions to be carried out on Telk-Alert-Agent.
-
-	Parameters:
-	self -- An instantiated object of the FormDialog class.
-	"""
-	def menuAgent(self):
-		options_ma = [("1", "Configuration"),
-					  ("2", "Telk-Alert Agent Service")]
-
-		option_ma = self.getMenu("Select a option:", options_ma, "Agent Menu")
-		self.switchMagent(int(option_ma))
-
-	"""
-	Method that defines the menu on the actions to be carried out on the Telk-Alert-Agent service.
-
-	Parameters:
-	self -- An instantiated object of the FormDialog class.
-	"""
-	def getMenuServiceAgent(self):
-		options_msa = [("1", "Start Service"),
-					  ("2", "Restart Service"),
-					  ("3", "Stop Service"),
-					  ("4", "Service Status")]
-
-		option_msa = self.getMenu(options_msa, "Telk-Alert-Agent Service")
-		self.switchMServiceAgent(int(option_msa))
+				agent.updateAgentConfiguration()
 
 	"""
 	Method that displays a message on the screen with information about the application.
@@ -594,7 +559,7 @@ class FormDialog:
 		if option == 1:
 			self.defineAgentConfiguration()
 		if option == 2:
-			self.getMenuServiceAgent()
+			self.menuServiceAgent()
 
 	"""
 	Method that launches an action based on the option chosen in the Telk-Alert-Agent service menu.
@@ -604,14 +569,15 @@ class FormDialog:
 	option -- Chosen option.
 	"""
 	def switchMServiceAgent(self, option):
+		agent = Agent(self)
 		if option == 1:
-			self.agent.startService(FormDialogs())
-		if option == 2:
-			self.agent.restartService(FormDialogs())
-		if option == 3:
-			self.agent.stopService(FormDialogs())
-		if option == 4:
-			self.agent.getStatusService(FormDialogs())
+			agent.startService()
+		elif option == 2:
+			agent.restartService()
+		elif option == 3:
+			agent.stopService()
+		elif option == 4:
+			agent.getStatusService()
 
 	"""
 	Method that launches an action based on the option chosen in the Telk-Alert service menu.
@@ -680,3 +646,31 @@ class FormDialog:
 
 		option_ms = self.getMenu("Select a option:", options_ms, "Telk-Alert Service")
 		self.switchMService(int(option_ms))
+
+	"""
+	Method that defines the menu on the actions to be carried out on Telk-Alert-Agent.
+
+	Parameters:
+	self -- An instantiated object of the FormDialog class.
+	"""
+	def menuAgent(self):
+		options_ma = [("1", "Configuration"),
+					  ("2", "Telk-Alert Agent Service")]
+
+		option_ma = self.getMenu("Select a option:", options_ma, "Telk-Alert-Agent Menu")
+		self.switchMagent(int(option_ma))
+
+	"""
+	Method that defines the menu on the actions to be carried out on the Telk-Alert-Agent service.
+
+	Parameters:
+	self -- An instantiated object of the FormDialog class.
+	"""
+	def menuServiceAgent(self):
+		options_msa = [("1", "Start Service"),
+					  ("2", "Restart Service"),
+					  ("3", "Stop Service"),
+					  ("4", "Service Status")]
+
+		option_msa = self.getMenu("Select a option:", options_msa, "Telk-Alert-Agent Service")
+		self.switchMServiceAgent(int(option_msa))

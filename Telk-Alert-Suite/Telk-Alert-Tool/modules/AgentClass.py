@@ -1,5 +1,5 @@
-from os import path
-import io
+from io import open as open_io
+from os import path, system, remove
 from modules.UtilsClass import Utils
 
 """
@@ -72,31 +72,31 @@ class Agent:
 							    	("Bot Token", "Telegram bot token", 0),
 							    	("Chat ID", "Telegram chat id", 0)]
 
-		flag_first_time = 0
-		flag_second_time = 0
+		flag_time_execution_one = 0
+		flag_time_execution_two = 0
 		flag_telegram_bot_token = 0
 		flag_telegram_chat_id = 0
-		options_fields_update_agent = self.form_dialog.getDataCheckList("Select one or more options:", options_agent_modify, "Telk-Alert-Agent Configuration")
+		options_fields_update_agent = self.form_dialog.getDataCheckList("Select one or more options:", list_fields_update_agent, "Configuration Fields")
 		for option in options_fields_update_agent:
 			if option == "First Time":
-				flag_first_time = 1
+				flag_time_execution_one = 1
 			elif option == "Second Time":
-				flag_second_time = 1
+				flag_time_execution_two = 1
 			elif option == "Bot Token":
 				flag_telegram_bot_token = 1
 			elif option == "Chat ID":
 				flag_telegram_chat_id = 1
 		try:
-			hash_agent_conf = self.utils.getHashToFile(self.path_configuration_file)
-			data_agent_conf = self.utils.readYamlFile(self.path_configuration_file, 'rU')
-			if flag_first_time == 1:
-				time_actual_one = data_agent_conf['time_agent_one'].split(':')
-				time_agent_one = form_dialog.getDataTime("Select the first time of service validation:", int(time_actual_one[0]), int(time_actual_one[1]))
-				data_agent_conf['time_agent_one'] = str(time_agent_one[0]) + ':' + str(time_agent_one[1])
-			if flag_second_time == 1:
-				time_actual_two = data_agent_conf['time_agent_two'].split(':')
+			hash_configuration_file_original = self.utils.getHashToFile(self.path_configuration_file)
+			data_agent_configuration = self.utils.readYamlFile(self.path_configuration_file, 'rU')
+			if flag_time_execution_one == 1:
+				time_execution_one_actual = data_agent_configuration['time_execution_one'].split(':')
+				time_execution_one = self.form_dialog.getDataTime("Select the first time of service validation:", int(time_execution_one_actual[0]), int(time_execution_one_actual[1]))
+				data_agent_configuration['time_execution_one'] = str(time_execution_one[0]) + ':' + str(time_execution_one[1])
+			if flag_time_execution_two == 1:
+				time_actual_two = data_agent_conf['time_execution_two'].split(':')
 				time_agent_two = form_dialog.getDataTime("Select the second time of service validation:", int(time_actual_two[0]), int(time_actual_two[1]))
-				data_agent_conf['time_agent_two'] = str(time_agent_two[0]) + ':' + str(time_agent_two[1])
+				data_agent_conf['time_execution_two'] = str(time_agent_two[0]) + ':' + str(time_agent_two[1])
 			if flag_bot_token == 1:
 				telegram_bot_token = self.utils.encryptAES(form_dialog.getDataInputText("Enter the Telegram bot token:", self.utils.decryptAES(data_agent_conf['telegram_bot_token'], form_dialog).decode('utf-8')), form_dialog)
 				data_agent_conf['telegram_bot_token'] = telegram_bot_token.decode('utf-8')
@@ -116,75 +116,71 @@ class Agent:
 			self.utils.createLogTool("Key not found in configuration file: " + str(exception), 4)
 			form_dialog.d.msgbox("\nKey not found in configuration file: " + str(exception), 7, 50, title = "Error message")
 			form_dialog.mainMenu()
-		except OSError as exception:
-			self.utils.createLogTool(str(exception), 4)
-			form_dialog.d.msgbox("\nError opening or modifying the configuration file. For more details, see the logs.", 7, 50, title = "Error message")
-			form_dialog.mainMenu()
 		
 	"""
 	Method that starts the Telk-Alert-Agent service.
 
 	Parameters:
 	self -- An instantiated object of the Agent class.
-	form_dialog -- A FormDialogs class object.
 	"""
-	def startService(self, form_dialog):
-		result = os.system("systemctl start telk-alert-agent.service")
+	def startService(self):
+		result = system("systemctl start telk-alert-agent.service")
 		if int(result) == 0:
-			self.utils.createLogTool("Telk-Alert-Agent service started", 2)
-			form_dialog.d.msgbox("\nTelk-Alert-Agent service started", 7, 50, title = "Notification message")
+			self.utils.createTelkAlertToolLog("Telk-Alert-Agent service started", 1)
+			self.form_dialog.d.msgbox(text = "\nTelk-Alert-Agent service started.", height = 7, width = 50, title = "Notification Message")
 		if int(result) == 1280:
-			self.utils.createLogTool("Failed to start telk-alert-agent.service. Service not found.", 4)
-			form_dialog.d.msgbox("\nFailed to start telk-alert-agent.service. Service not found.", 7, 50, title = "Error message")
+			self.utils.createTelkAlertToolLog("Failed to start telk-alert-agent.service. Service not found.", 3)
+			self.form_dialog.d.msgbox(text = "\nFailed to start telk-alert-agent.service. Service not found.", height = 7, width = 50, title = "Error Message")
+		self.form_dialog.mainMenu()
 
 	"""
 	Method that restarts the Telk-Alert-Agent service.
 
 	Parameters:
 	self -- An instantiated object of the Agent class.
-	form_dialog -- A FormDialogs class object.
 	"""
-	def restartService(self, form_dialog):
-		result = os.system("systemctl restart telk-alert-agent.service")
+	def restartService(self):
+		result = system("systemctl restart telk-alert-agent.service")
 		if int(result) == 0:
-			self.utils.createLogTool("Telk-Alert-Agent service restarted", 2)
-			form_dialog.d.msgbox("\nTelk-Alert-Agent service restarted", 7, 50, title = "Notification message")	
+			self.utils.createTelkAlertToolLog("Telk-Alert-Agent service restarted", 1)
+			self.form_dialog.d.msgbox(text = "\nTelk-Alert-Agent service restarted.", height = 7, width = 50, title = "Notification Message")	
 		if int(result) == 1280:
-			self.utils.createLogTool("Failed to restart telk-alert-agent.service. Service not found.", 4)
-			form_dialog.d.msgbox("\nFailed to restart telk-alert-agent.service. Service not found.", 7, 50, title = "Error message")
-
+			self.utils.createTelkAlertToolLog("Failed to restart telk-alert-agent.service. Service not found.", 3)
+			self.form_dialog.d.msgbox(text = "\nFailed to restart telk-alert-agent.service. Service not found.", height = 7, width = 50, title = "Error Message")
+		self.form_dialog.mainMenu()
+		
 	"""
 	Method that stops the Telk-Alert-Agent service.
 
 	Parameters:
 	self -- An instantiated object of the Agent class.
-	form_dialog -- A FormDialogs class object.
 	"""
-	def stopService(self, form_dialog):
-		result = os.system("systemctl stop telk-alert-agent.service")
+	def stopService(self):
+		result = system("systemctl stop telk-alert-agent.service")
 		if int(result) == 0:
-			self.utils.createLogTool("Telk-Alert-Agent service stopped", 2)
-			form_dialog.d.msgbox("\nTelk-Alert-Agent service stopped", 7, 50, title = "Notification message")
+			self.utils.createTelkAlertToolLog("Telk-Alert-Agent service stopped", 1)
+			self.form_dialog.d.msgbox(text = "\nTelk-Alert-Agent service stopped.", height = 7, width = 50, title = "Notification Message")
 		if int(result) == 1280:
-			self.utils.createLogTool("Failed to stop telk-alert-agent.service. Service not found.", 4)
-			form_dialog.d.msgbox("\nFailed to stop telk-alert-agent.service. Service not found.", 7, 50, title = "Error message")
+			self.utils.createTelkAlertToolLog("Failed to stop telk-alert-agent.service. Service not found.", 3)
+			self.form_dialog.d.msgbox(text = "\nFailed to stop telk-alert-agent.service. Service not found.", height = 7, width = 50, title = "Error Message")
+		self.form_dialog.mainMenu()
 
 	"""
 	Method that obtains the status of the Telk-Alert-Agent service.
 
 	Parameters:
 	self -- An instantiated object of the Agent class.
-	form_dialog -- A FormDialogs class object.
 	"""
 	def getStatusService(self, form_dialog):
-		if os.path.exists('/tmp/telk_alert_agent.status'):
-			os.remove('/tmp/telk_alert_agent.status')
-		os.system('(systemctl is-active --quiet telk-alert-agent.service && echo "Telk-Alert Agent service is running!" || echo "Telk-Alert Agent service is not running!") >> /tmp/telk_alert_agent.status')
-		os.system('echo "Detailed service status:" >> /tmp/telk_alert_agent.status')
-		os.system('systemctl -l status telk-alert-agent.service >> /tmp/telk_alert_agent.status')
-		with io.open('/tmp/telk_alert_agent.status', 'r', encoding = 'utf-8') as file_status:
-			form_dialog.getScrollBox(file_status.read(), title = "Status Service")
-
+		if path.exists('/tmp/telk_alert_agent.status'):
+			remove('/tmp/telk_alert_agent.status')
+		system('(systemctl is-active --quiet telk-alert-agent.service && echo "Telk-Alert Agent service is running!" || echo "Telk-Alert Agent service is not running!") >> /tmp/telk_alert_agent.status')
+		system('echo "Detailed service status:" >> /tmp/telk_alert_agent.status')
+		system('systemctl -l status telk-alert-agent.service >> /tmp/telk_alert_agent.status')
+		with open_io('/tmp/telk_alert_agent.status', 'r', encoding = 'utf-8') as file_status:
+			self.form_dialog.getScrollBox(file_status.read(), title = "Status Service")
+		self.form_dialog.mainMenu()
+		
 	"""
 	Method that creates the YAML file of the Telk-Alert-Agent configuration.
 
@@ -194,8 +190,8 @@ class Agent:
 	"""
 	def createFileConfiguration(self, data_agent_configuration):
 
-		data_json_agent = {'time_agent_one': str(data_agent_configuration[0][0]) + ':' + str(data_agent_configuration[0][1]),
-					 	   'time_agent_two' : str(data_agent_configuration[1][0]) + ':' + str(data_agent_configuration[1][1]),
+		data_json_agent = {'time_execution_one': str(data_agent_configuration[0][0]) + ':' + str(data_agent_configuration[0][1]),
+					 	   'time_execution_two' : str(data_agent_configuration[1][0]) + ':' + str(data_agent_configuration[1][1]),
 						   'telegram_bot_token' : data_agent_configuration[2],
 		  			 	   'telegram_chat_id' : data_agent_configuration[3]}
 
