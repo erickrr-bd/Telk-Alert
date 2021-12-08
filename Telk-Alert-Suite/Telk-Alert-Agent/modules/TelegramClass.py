@@ -7,7 +7,9 @@ from modules.UtilsClass import Utils
 Class that allows you to manage the sending of alerts through Telegram.
 """
 class Telegram:
-
+	"""
+	Property that stores an object of type Utils.
+	"""
 	utils = None
 
 	"""
@@ -53,7 +55,7 @@ class Telegram:
 	message -- Message that will be sent via Telegram.
 	"""
 	def getTelegramMessage(self, status_service_telk_alert):
-		message = "" + u'\u26A0\uFE0F' + "Telk-Alert Service " + u'\u26A0\uFE0F' + '\n\n' + u'\u23F0' + "Service Status Validation Time: " + time.strftime("%c") + "\n\n\n"
+		message = "" + u'\u26A0\uFE0F' + "Telk-Alert Service " + u'\u26A0\uFE0F' + '\n\n' + u'\u23F0' + "Service Status Validation Time: " + strftime("%c") + "\n\n\n"
 		if status_service_telk_alert == "Not running":
 			message += "Service Telk-Alert Status: " + u'\U0001f534' + "\n\n"
 		elif status_service_telk_alert == "Running":

@@ -1,5 +1,6 @@
 from sys import exit
 from pwd import getpwnam
+from datetime import date
 from os import path, chown
 from yaml import safe_load
 from binascii import Error
@@ -7,6 +8,7 @@ from hashlib import sha256
 from base64 import b64decode
 from Crypto.Cipher import AES
 from Crypto.Util.Padding import unpad
+from logging import getLogger, INFO, Formatter, FileHandler
 
 """
 Class that allows to manage the utilities of the application.
@@ -157,7 +159,7 @@ class Utils:
 	Character string with decrypted text.
 
 	Exceptions:
-	binascii.Error -- Is raised if were incorrectly padded or if there are non-alphabet characters present in the string. 
+	Error -- Is raised if were incorrectly padded or if there are non-alphabet characters present in the string. 
 	"""
 	def decryptAES(self, text_encrypt):
 		try:
@@ -165,7 +167,7 @@ class Utils:
 			text_encrypt = b64decode(text_encrypt)
 			IV = text_encrypt[:AES.block_size]
 			aes = AES.new(key, AES.MODE_CBC, IV)
-		except binascii.Error as exception:
+		except Error as exception:
 			self.createTelkAlertAgentLog(exception, 3)
 			print("\nFailed to decrypt the data. For more information, see the logs.")
 			exit(1)

@@ -1,5 +1,5 @@
-import os
-import time
+from os import popen
+from time import sleep
 from datetime import datetime
 from modules.UtilsClass import Utils
 from modules.TelegramClass import Telegram
@@ -35,21 +35,20 @@ class Service:
 	self -- An instantiated object of the Services class.
 	"""
 	def sendStatusTelkAlertService(self):
-		agent_conf_data = self.utils.readFileYaml(self.utils.getPathTagent('conf') + '/agent_conf.yaml')
-		time_agent_one = agent_conf_data['time_agent_one'].split(':')
-		time_agent_two = agent_conf_data['time_agent_two'].split(':')
-		telegram_bot_token = self.utils.decryptAES(agent_conf_data['telegram_bot_token']).decode('utf-8')
-		telegram_chat_id = self.utils.decryptAES(agent_conf_data['telegram_chat_id']).decode('utf-8')
+		data_agent_configuration = self.utils.readYamlFile(self.utils.getPathTelkAlertAgent('conf') + '/telk_alert_agent_conf.yaml', 'r')
+		time_execution_one = data_agent_configuration['time_execution_one'].split(':')
+		time_execution_two = data_agent_configuration['time_execution_two'].split(':')
 		while True:
-			now = datetime.now()
-			if(now.hour == int(time_agent_one[0]) and now.minute == int(time_agent_one[1])) or (now.hour == int(time_agent_two[0]) and now.minute == int(time_agent_two[1])):
-				status_service = os.popen('(systemctl is-active --quiet telk-alert.service && echo "Running" || echo "Not running")')
-				status_telk_alert = status_service.readlines()
-				for status in status_telk_alert:
-					status_s = status.rstrip('\n')
-				message = self.telegram.getTelegramMessage(status_s)
-				status_telegram = self.telegram.sendTelegramAgent(telegram_chat_id, telegram_bot_token, message)
-				self.telegram.getStatusByTelegramCode(status_telegram, status_s)
-			time.sleep(60)
-
-		
+			result_status_service_telk_alert = popen('(systemctl is-active --quiet telk-alert.service && echo "Running" || echo "Not running")')
+			status_service_telk_alert_aux = result_status_service_telk_alert.readlines()
+			for status in status_service_telk_alert_aux:
+				status_service_telk_alert = status.rstrip('\n')
+			if status_service_telk_alert == "Not running":
+				message_telegram = self.telegram.getTelegramMessage(status_service_telk_alert)
+				self.telegram.sendTelegramAlert(self.utils.decryptAES(data_agent_configuration['telegram_chat_id']).decode('utf-8'), self.utils.decryptAES(data_agent_configuration['telegram_bot_token']).decode('utf-8'), message_telegram)
+			else:
+				now = datetime.now()
+				if(now.hour == int(time_execution_one[0]) and now.minute == int(time_execution_one[1])) or (now.hour == int(time_execution_two[0]) and now.minute == int(time_execution_two[1])):
+					message_telegram = self.telegram.getTelegramMessage(status_service_telk_alert)
+					self.telegram.sendTelegramAlert(self.utils.decryptAES(data_agent_configuration['telegram_chat_id']).decode('utf-8'), self.utils.decryptAES(data_agent_configuration['telegram_bot_token']).decode('utf-8'), message_telegram)
+			sleep(60)
