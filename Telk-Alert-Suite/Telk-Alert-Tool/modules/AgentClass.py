@@ -94,28 +94,27 @@ class Agent:
 				time_execution_one = self.form_dialog.getDataTime("Select the first time of service validation:", int(time_execution_one_actual[0]), int(time_execution_one_actual[1]))
 				data_agent_configuration['time_execution_one'] = str(time_execution_one[0]) + ':' + str(time_execution_one[1])
 			if flag_time_execution_two == 1:
-				time_actual_two = data_agent_conf['time_execution_two'].split(':')
-				time_agent_two = form_dialog.getDataTime("Select the second time of service validation:", int(time_actual_two[0]), int(time_actual_two[1]))
-				data_agent_conf['time_execution_two'] = str(time_agent_two[0]) + ':' + str(time_agent_two[1])
-			if flag_bot_token == 1:
-				telegram_bot_token = self.utils.encryptAES(form_dialog.getDataInputText("Enter the Telegram bot token:", self.utils.decryptAES(data_agent_conf['telegram_bot_token'], form_dialog).decode('utf-8')), form_dialog)
-				data_agent_conf['telegram_bot_token'] = telegram_bot_token.decode('utf-8')
-			if flag_chat_id == 1:
-				telegram_chat_id = self.utils.encryptAES(form_dialog.getDataInputText("Enter the Telegram channel identifier:", self.utils.decryptAES(data_agent_conf['telegram_chat_id'], form_dialog).decode('utf-8')), form_dialog)
-				data_agent_conf['telegram_chat_id'] = telegram_chat_id.decode('utf-8')
-			with open(self.utils.getPathTagent('conf') + '/agent_conf.yaml', 'w') as file_agent_conf:
-				yaml.safe_dump(data_agent_conf, file_agent_conf, default_flow_style = False)
-			hash_modify = self.utils.getSha256File(self.utils.getPathTagent('conf') + '/agent_conf.yaml', form_dialog)
-			if hash_origen == hash_modify:
-				form_dialog.d.msgbox("\nConfiguration file not modified", 7, 50, title = "Notification message")
+				time_execution_two_actual = data_agent_configuration['time_execution_two'].split(':')
+				time_execution_two = self.form_dialog.getDataTime("Select the second time of service validation:", int(time_execution_two_actual[0]), int(time_execution_two_actual[1]))
+				data_agent_configuration['time_execution_two'] = str(time_execution_two[0]) + ':' + str(time_execution_two[1])
+			if flag_telegram_bot_token == 1:
+				telegram_bot_token = self.utils.encryptAES(self.form_dialog.getDataInputText("Enter the Telegram bot token:", self.utils.decryptAES(data_agent_configuration['telegram_bot_token']).decode('utf-8')))
+				data_agent_configuration['telegram_bot_token'] = telegram_bot_token.decode('utf-8')
+			if flag_telegram_chat_id == 1:
+				telegram_chat_id = self.utils.encryptAES(self.form_dialog.getDataInputText("Enter the Telegram channel identifier:", self.utils.decryptAES(data_agent_configuration['telegram_chat_id']).decode('utf-8')))
+				data_agent_configuration['telegram_chat_id'] = telegram_chat_id.decode('utf-8')
+			self.utils.createYamlFile(data_agent_configuration, self.path_configuration_file, 'w')
+			hash_configuration_file_new = self.utils.getHashToFile(self.path_configuration_file)
+			if hash_configuration_file_original == hash_configuration_file_new:
+				self.form_dialog.d.msgbox(text = "\nConfiguration file not modified.", height = 7, width = 50, title = "Notification Message")
 			else:
-				self.utils.createLogTool("Modified configuration file", 2)
-				form_dialog.d.msgbox("\nModified configuration file", 7, 50, title = "Notification message")
-			form_dialog.mainMenu()
+				self.utils.createTelkAlertToolLog("Configuration file modified", 2)
+				self.form_dialog.d.msgbox(text = "\nConfiguration file modified.", height = 7, width = 50, title = "Notification Message")
+			self.form_dialog.mainMenu()
 		except KeyError as exception:
-			self.utils.createLogTool("Key not found in configuration file: " + str(exception), 4)
-			form_dialog.d.msgbox("\nKey not found in configuration file: " + str(exception), 7, 50, title = "Error message")
-			form_dialog.mainMenu()
+			self.utils.createTelkAlertToolLog("Key Error: " + str(exception), 3)
+			self.form_dialog.d.msgbox(text = "\nError modifying the configuration file. For more information, see the logs.", height = 8, width = 50, title = "Error Message")
+			self.form_dialog.mainMenu()
 		
 	"""
 	Method that starts the Telk-Alert-Agent service.
@@ -130,7 +129,7 @@ class Agent:
 			self.form_dialog.d.msgbox(text = "\nTelk-Alert-Agent service started.", height = 7, width = 50, title = "Notification Message")
 		if int(result) == 1280:
 			self.utils.createTelkAlertToolLog("Failed to start telk-alert-agent.service. Service not found.", 3)
-			self.form_dialog.d.msgbox(text = "\nFailed to start telk-alert-agent.service. Service not found.", height = 7, width = 50, title = "Error Message")
+			self.form_dialog.d.msgbox(text = "\nFailed to start telk-alert-agent.service. Service not found.", height = 8, width = 50, title = "Error Message")
 		self.form_dialog.mainMenu()
 
 	"""
@@ -146,7 +145,7 @@ class Agent:
 			self.form_dialog.d.msgbox(text = "\nTelk-Alert-Agent service restarted.", height = 7, width = 50, title = "Notification Message")	
 		if int(result) == 1280:
 			self.utils.createTelkAlertToolLog("Failed to restart telk-alert-agent.service. Service not found.", 3)
-			self.form_dialog.d.msgbox(text = "\nFailed to restart telk-alert-agent.service. Service not found.", height = 7, width = 50, title = "Error Message")
+			self.form_dialog.d.msgbox(text = "\nFailed to restart telk-alert-agent.service. Service not found.", height = 8, width = 50, title = "Error Message")
 		self.form_dialog.mainMenu()
 		
 	"""
@@ -162,7 +161,7 @@ class Agent:
 			self.form_dialog.d.msgbox(text = "\nTelk-Alert-Agent service stopped.", height = 7, width = 50, title = "Notification Message")
 		if int(result) == 1280:
 			self.utils.createTelkAlertToolLog("Failed to stop telk-alert-agent.service. Service not found.", 3)
-			self.form_dialog.d.msgbox(text = "\nFailed to stop telk-alert-agent.service. Service not found.", height = 7, width = 50, title = "Error Message")
+			self.form_dialog.d.msgbox(text = "\nFailed to stop telk-alert-agent.service. Service not found.", height = 8, width = 50, title = "Error Message")
 		self.form_dialog.mainMenu()
 
 	"""
@@ -171,7 +170,7 @@ class Agent:
 	Parameters:
 	self -- An instantiated object of the Agent class.
 	"""
-	def getStatusService(self, form_dialog):
+	def getStatusService(self):
 		if path.exists('/tmp/telk_alert_agent.status'):
 			remove('/tmp/telk_alert_agent.status')
 		system('(systemctl is-active --quiet telk-alert-agent.service && echo "Telk-Alert Agent service is running!" || echo "Telk-Alert Agent service is not running!") >> /tmp/telk_alert_agent.status')

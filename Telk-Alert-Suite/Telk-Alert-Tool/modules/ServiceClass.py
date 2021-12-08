@@ -40,7 +40,7 @@ class Service:
 			self.form_dialog.d.msgbox(text = "\nTelk-Alert service started.", height = 7, width = 50, title = "Notification Message")
 		if int(result) == 1280:
 			self.utils.createTelkAlertToolLog("Failed to start telk-alert.service. Service not found.", 3)
-			self.form_dialog.d.msgbox(text = "\nFailed to start telk-alert.service. Service not found.", height = 7, width = 50, title = "Error Message")
+			self.form_dialog.d.msgbox(text = "\nFailed to start telk-alert.service. Service not found.", height = 8, width = 50, title = "Error Message")
 		self.form_dialog.mainMenu()
 
 	"""
@@ -56,7 +56,7 @@ class Service:
 			self.form_dialog.d.msgbox(text = "\nTelk-Alert service restarted.", height = 7, width = 50, title = "Notification Message")
 		if int(result) == 1280:
 			self.utils.createTelkAlertToolLog("Failed to restart telk-alert.service. Service not found.", 3)
-			self.form_dialog.d.msgbox(text = "\nFailed to restart telk-alert.service. Service not found.", height = 7, width = 50, title = "Error Message")
+			self.form_dialog.d.msgbox(text = "\nFailed to restart telk-alert.service. Service not found.", height = 8, width = 50, title = "Error Message")
 		self.form_dialog.mainMenu()
 
 	"""
@@ -72,7 +72,7 @@ class Service:
 			self.form_dialog.d.msgbox(text = "\nTelk-Alert service stopped.", height = 7, width = 50, title = "Notification Message")	
 		if int(result) == 1280:
 			self.utils.createTelkAlertToolLog("Failed to stop telk-alert.service: Service not found", 3)
-			self.form_dialog.d.msgbox(text = "\nFailed to stop telk-alert.service. Service not found.", height = 7, width = 50, title = "Error Message")
+			self.form_dialog.d.msgbox(text = "\nFailed to stop telk-alert.service. Service not found.", height = 8, width = 50, title = "Error Message")
 		self.form_dialog.mainMenu()
 
 	"""

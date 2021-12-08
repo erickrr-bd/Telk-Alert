@@ -1,26 +1,21 @@
-import os
-import sys
-import yaml
-import binascii
+from sys import exit
+from pwd import getpwnam
+from os import path, chown
+from yaml import safe_load
+from binascii import Error
 from hashlib import sha256
 from base64 import b64decode
 from Crypto.Cipher import AES
 from Crypto.Util.Padding import unpad
-from modules.LoggerClass import Logger
 
 """
 Class that allows to manage the utilities of the application.
 """
 class Utils:
 	"""
-	Property that saves the passphrase that will be used for the decryption process.
+	Property that stores the passphrase for the process of encrypting/decrypting information.
 	"""
 	passphrase = None
-
-	"""
-	Property that stores an object of type Logger.
-	"""
-	logger = None
 
 	"""
 	Constructor for the Utils class.
@@ -29,61 +24,83 @@ class Utils:
 	self -- An instantiated object of the Utils class.
 	"""
 	def __init__(self):
-		self.logger = Logger()
 		self.passphrase = self.getPassphrase()
 
 	"""
-	Method that obtains the content of a file with the extension yaml.
+	Method that obtains and stores the content of a YAML file in a variable.
 
 	Parameters:
 	self -- An instantiated object of the Utils class.
-	file_yaml -- Yaml file path.
+	path_file_yaml -- YAML file path.
+	mode -- Mode in which the YAML file will be opened.
 
 	Return:
-	data_yaml -- Contents of the YAML file stored in a list.
+	data_file_yaml -- Variable that stores the content of the YAML file.
 
 	Exceptions:
 	IOError -- It is an error raised when an input/output operation fails.
+	FileNotFoundError -- This is an exception in python and it comes when a file does not exist and we want to use it.
 	"""
-	def readFileYaml(self, file_yaml):
+	def readYamlFile(self, path_file_yaml, mode):
 		try:
-			with open(file_yaml, 'r') as file:
-				data_yaml = yaml.safe_load(file)
-			return data_yaml
-		except IOError as exception:
-			self.logger.createLogAgent(str(exception), 4)
-			print("\nError reading YAML file. For more information see the application logs.")
-			sys.exit(1)
+			with open(path_file_yaml, mode) as file_yaml:
+				data_file_yaml = safe_load(file_yaml)
+		except (IOError, FileNotFoundError) as exception:
+			self.createTelkAlertAgentLog(exception, 3)
+			print("\nError opening or reading the YAML file. For more information, see the logs.")
+			exit(1)
+		else:
+			return data_file_yaml
 
 	"""
-	Method that creates a new route from the root path of Telk-Alert.
+	Method that defines a directory based on the main Telk-Alert directory.
 
 	Parameters:
 	self -- An instantiated object of the Utils class.
-	path_dir -- Folder or directory that will be added to the source path of Telk-Alert.
+	path_dir -- Directory that is added to the main Telk-Alert directory.
 
 	Return:
-	path_final -- Final directory.
+	path_final -- Defined final path.
+
+	Exceptions:
+	OSError -- This exception is raised when a system function returns a system-related error, including I/O failures such as “file not found” or “disk full” (not for illegal argument types or other incidental errors).
+	TypeError -- Raised when an operation or function is applied to an object of inappropriate type. The associate value is a string giving details about the type mismatch.
 	"""
-	def getPathTalert(self, path_dir):
-		path_root = "/etc/Telk-Alert-Suite/Telk-Alert"
-		path_final = os.path.join(path_root, path_dir)
-		return path_final
+	def getPathTelkAlert(self, path_dir):
+		path_main = "/etc/Telk-Alert-Suite/Telk-Alert"
+		try:
+			path_final = path.join(path_main, path_dir)
+		except (OSError, TypeError) as exception:
+			self.createTelkAlertAgentLog(exception, 3)
+			print("\nAn error has occurred. For more information, see the logs.")
+			exit(1)
+		else:
+			return path_final
 
 	"""
-	Method that creates a new route from the root path of Telk-Alert-Agent.
+	Method that defines a directory based on the main Telk-Alert-Agent directory.
 
 	Parameters:
 	self -- An instantiated object of the Utils class.
-	path_dir -- Folder or directory that will be added to the source path of Telk-Alert-Agent.
+	path_dir -- Directory that is added to the main Telk-Alert-Agent directory.
 
 	Return:
-	path_agent -- Final directory.
+	path_final -- Defined final path.
+
+	Exceptions:
+	OSError -- This exception is raised when a system function returns a system-related error, including I/O failures such as “file not found” or “disk full” (not for illegal argument types or other incidental errors).
+	TypeError -- Raised when an operation or function is applied to an object of inappropriate type. The associate value is a string giving details about the type mismatch.
 	"""
-	def getPathTagent(self, path_dir):
-		path_root = "/etc/Telk-Alert-Suite/Telk-Alert-Agent"
-		path_agent = os.path.join(path_root, path_dir)
-		return path_agent
+	def getPathTelkAlertAgent(self, path_dir):
+		path_main = "/etc/Telk-Alert-Suite/Telk-Alert-Agent"
+		try:
+			path_final = path.join(path_main, path_dir)
+		except (OSError, TypeError) as exception:
+			self.createTelkAlertAgentLog(exception, 3)
+			print("\nAn error has occurred. For more information, see the logs.")
+			exit(1)
+		else:
+			return path_final
 
 	"""
 	Method that obtains the passphrase used for the process of encrypting and decrypting a file.
@@ -99,14 +116,35 @@ class Utils:
 	"""
 	def getPassphrase(self):
 		try:
-			file_key = open(self.getPathTalert('conf') + '/key','r')
+			file_key = open(self.getPathTelkAlert('conf') + '/key','r')
 			pass_key = file_key.read()
 			file_key.close()
-			return pass_key
 		except FileNotFoundError as exception:
-			self.logger.createLogAgent(str(exception), 4)
-			print("\nKey File not found. For more information see the application logs.")
-			sys.exit(1)
+			self.createTelkAlertAgentLog(exception, 3)
+			print("\nError opening or reading the Key file. For more information, see the logs.")
+			exit(1)
+		else:
+			return pass_key
+
+	"""
+	Method that changes an owner path, by telk_alert user and group.
+
+	Parameters:
+	self -- An instantiated object of the Utils class.
+	path_to_change -- Directory that will change owner.
+
+	Exceptions:
+	OSError -- This exception is raised when a system function returns a system-related error, including I/O failures such as “file not found” or “disk full” (not for illegal argument types or other incidental errors).
+	"""
+	def ownerChange(self, path_to_change):
+		try:
+			uid = getpwnam('telk_alert').pw_uid
+			gid = getpwnam('telk_alert').pw_gid
+			chown(path_to_change, uid, gid)
+		except OSError as exception:
+			self.createTelkAlertAgentLog(exception, 3)
+			print("\nFailed to change owner path. For more information, see the logs.")
+			exit(1)
 
 	"""
 	Method that decrypts a text string.
@@ -127,8 +165,35 @@ class Utils:
 			text_encrypt = b64decode(text_encrypt)
 			IV = text_encrypt[:AES.block_size]
 			aes = AES.new(key, AES.MODE_CBC, IV)
-			return unpad(aes.decrypt(text_encrypt[AES.block_size:]), AES.block_size)
 		except binascii.Error as exception:
-			self.logger.createLogAgent(str(exception), 4)
-			print("\nDecryption failed. For more information see the application logs.")
-			sys.exit(1)
+			self.createTelkAlertAgentLog(exception, 3)
+			print("\nFailed to decrypt the data. For more information, see the logs.")
+			exit(1)
+		else:
+			return unpad(aes.decrypt(text_encrypt[AES.block_size:]), AES.block_size)
+
+	"""
+	Method that writes the logs generated by the application in a file.
+
+	Parameters:
+	self -- An instantiated object of the Logger class.
+	message -- Message to be shown in the log.
+	type_log -- Type of log to write.
+	"""
+	def createTelkAlertAgentLog(self, message, type_log):
+		name_log = "/var/log/Telk-Alert/telk-alert-agent-log-" + str(date.today()) + ".log"
+		logger = getLogger("Telk_Alert_Agent_Log")
+		logger.setLevel(INFO)
+		fh = FileHandler(name_log)
+		if (logger.hasHandlers()):
+   	 		logger.handlers.clear()
+		formatter = Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+		fh.setFormatter(formatter)
+		logger.addHandler(fh)
+		if type_log == 1:
+			logger.info(message)
+		elif type_log == 2:
+			logger.warning(message)
+		elif type_log == 3:
+			logger.error(message)
+		self.ownerChange(name_log)
