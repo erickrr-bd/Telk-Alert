@@ -40,7 +40,7 @@ class Configuration:
 	"""
 	def createConfiguration(self):
 		data_configuration = []
-		es_version = self.form_dialog.getDataNumberDecimal("Enter the ElasticSearch version:", "7.15")
+		es_version = self.form_dialog.getDataNumberDecimal("Enter the ElasticSearch version:", "7.16")
 		data_configuration.append(es_version)
 		es_host = self.form_dialog.getDataIP("Enter the ElasticSearch IP address:", "localhost")
 		data_configuration.append(es_host)
@@ -69,8 +69,6 @@ class Configuration:
 			data_configuration.append(password_http_authentication.decode('utf-8'))
 		else:
 			data_configuration.append(False)
-		write_index_name = self.form_dialog.getDataInputText("Enter the name of the index that will be created in ElasticSearch:", "telk-alert")
-		data_configuration.append(write_index_name)
 		self.createFileConfiguration(data_configuration)
 		if path.exists(self.path_configuration_file):
 			self.form_dialog.d.msgbox(text = "\nConfiguration file created.", height = 7, width = 50, title = "Notification Message")
@@ -94,8 +92,7 @@ class Configuration:
 							  ("Port", "ElasticSearch Port", 0),
 							  ("Folder", "Rules Folder", 0),
 							  ("SSL/TLS", "Enable or disable SSL/TLS connection", 0),
-							  ("HTTP Authentication", "Enable or disable Http authentication", 0),
-							  ("Index", "Index name for logs", 0)]
+							  ("HTTP Authentication", "Enable or disable Http authentication", 0)]
 
 		list_ssl_tls_true = [("Disable", "Disable SSL/TLS communication", 0),
 							 ("Certificate Validation", "Modify certificate validation", 0)]
@@ -121,7 +118,6 @@ class Configuration:
 		flag_name_folder_rules = 0
 		flag_use_ssl_tls = 0
 		flag_use_http_authentication = 0
-		flag_write_index_name = 0
 		options_fields_update = self.form_dialog.getDataCheckList("Select one or more options:", list_fields_update, "Configuration Fields")
 		for option in options_fields_update:
 			if option == "Version":
@@ -136,8 +132,6 @@ class Configuration:
 				flag_use_ssl_tls = 1
 			elif option == "HTTP Authentication":
 				flag_use_http_authentication = 1
-			elif option == "Index":
-				flag_write_index_name = 1
 		try:
 			data_configuration = self.utils.readYamlFile(self.path_configuration_file, 'rU')
 			hash_configuration_file_original = self.utils.getHashToFile(self.path_configuration_file)
@@ -221,9 +215,6 @@ class Configuration:
 						http_authentication_json = { 'user_http_authentication': user_http_authentication.decode('utf-8'), 'password_http_authentication': password_http_authentication.decode('utf-8') }
 						data_configuration.update(http_authentication_json)
 						data_configuration['use_http_authentication'] = True
-			if flag_write_index_name == 1:
-				write_index_name = self.form_dialog.getDataInputText("EEnter the name of the index that will be created in ElasticSearch:", data_configuration['write_index_name'])
-				data_configuration['write_index_name'] = write_index_name
 			self.utils.createYamlFile(data_configuration, self.path_configuration_file, 'w')
 			hash_configuration_file_new = self.utils.getHashToFile(self.path_configuration_file)
 			if hash_configuration_file_original == hash_configuration_file_new:
@@ -262,9 +253,9 @@ class Configuration:
 		else:
 			last_index = 4
 		if data_configuration[last_index + 1] == True:
-			http_authentication_json = { 'use_http_authentication' : data_configuration[last_index + 1], 'user_http_authentication' : data_configuration[last_index + 2], 'password_http_authentication' : data_configuration[last_index + 3], 'write_index_name' : data_configuration[last_index + 4] }
+			http_authentication_json = { 'use_http_authentication' : data_configuration[last_index + 1], 'user_http_authentication' : data_configuration[last_index + 2], 'password_http_authentication' : data_configuration[last_index + 3] }
 		else:
-			http_authentication_json = { 'use_http_authentication' : data_configuration[last_index + 1], 'write_index_name' : data_configuration[last_index + 2] }
+			http_authentication_json = { 'use_http_authentication' : data_configuration[last_index + 1] }
 		data_configuration_json.update(http_authentication_json)
 		
 		self.utils.createYamlFile(data_configuration_json, self.path_configuration_file, 'w')

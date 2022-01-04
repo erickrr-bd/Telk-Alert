@@ -505,7 +505,7 @@ class FormDialog:
 	self -- An instantiated object of the FormDialog class.
 	"""
 	def getAbout(self):
-		message = "\nCopyright@2021 Tekium. All rights reserved.\nTelk-Alert v3.1\nAuthor: Erick Rodríguez\nEmail: erickrr.tbd93@gmail.com, erodriguez@tekium.mx\n" + "License: GPLv3\n\nTelk-Alert is a tool that allows the carrying out of searches\nconfigured in ElasticSearch and the sending of alerts with the\nresults of said search to a Telegram channel, one or more email\naddresses or both."
+		message = "\nCopyright@2022 Tekium. All rights reserved.\nTelk-Alert v3.1\nAuthor: Erick Rodríguez\nEmail: erickrr.tbd93@gmail.com, erodriguez@tekium.mx\n" + "License: GPLv3\n\nTelk-Alert is a tool that allows the carrying out of searches\nconfigured in ElasticSearch and the sending of alerts with the\nresults of said search to a Telegram channel, one or more email\naddresses or both."
 		self.getScrollBox(message, "About")
 		self.mainMenu()
 
