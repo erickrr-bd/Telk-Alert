@@ -1,7 +1,7 @@
 #! /bin/bash
 
 clear
-echo -e "\e[96m@2021 Tekium. All rights reserved.\e[0m"
+echo -e "\e[96m@2022 Tekium. All rights reserved.\e[0m"
 echo -e '\e[96mInstaller for Telk-Alert v3.1\e[0m'
 echo -e '\e[96mAuthor: Erick Rodríguez\e[0m'
 echo -e '\e[96mEmail: erodriguez@tekium.mx, erickrr.tbd93@gmail.com\e[0m'
@@ -89,6 +89,10 @@ elif [ $opc = "U" ] || [ $opc = "u" ]; then
 	dir=$(sudo pwd)
 	cp -r Telk-Alert-Suite /etc/
 	chown telk_alert:telk_alert -R /etc/Telk-Alert-Suite
+	cp telk-alert.service /etc/systemd/system/
+	cp telk-alert-agent.service /etc/systemd/system
+	systemctl daemon-reload
+	rm -rf /etc/Telk-Alert-Suite/Telk-Alert/conf/es_conf.yaml
 	sleep 3
 	echo -e '\e[96mTelk-Alert updated...\e[0m'
 	echo ''
