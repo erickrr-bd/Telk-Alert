@@ -1,6 +1,8 @@
-# Telk-Alert v3.0
+# Telk-Alert v3.1
 
-Author: Erick Rodríguez erickrr.tbd93@gmail.com
+Author: Erick Rodríguez 
+
+Email: erodriguez@tekium.mx, erickrr.tbd93@gmail.com
 
 License: GPLv3
 
@@ -43,7 +45,7 @@ Characteristics:
 - Send the status of the Telk-Alert service to a Telegram channel.
 
 # Requirements
-- CentOS 8 (So far it has only been tested in this version)
+- CentOS 8 or Red Hat 8(So far it has only been tested in this version)
 - ElasticSearch 7.x 
 - Python 3.6
 - Python Libraries
