@@ -1,23 +1,18 @@
 from os import path
-import sys
+from sys import exit
 from glob import glob
-import threading
+from threading import Thread
 from modules.UtilsClass import Utils
 from modules.ElasticClass import Elastic
 
 """
-Class that allows managing alert rules.
+Class that manages the start of the application.
 """
 class TelkAlert:
 	"""
-	Property that stores an object of type Utils.
+	Property that stores an object of the Utils class.
 	"""
 	utils = None
-
-	"""
-	Property that stores an object of type Elastic.
-	"""
-	elastic = None
 
 	"""
 	Constructor for the Rules class.
@@ -27,7 +22,6 @@ class TelkAlert:
 	"""
 	def __init__(self):
 		self.utils = Utils()
-		self.elastic = Elastic()
 
 	"""
 	A method that reads all the alert rules created and creates the threads to perform ElasticSearch searches.
@@ -40,48 +34,40 @@ class TelkAlert:
 	KeyError -- A Python KeyError exception is what is raised when you try to access a key that isn’t in a dictionary (dict). 
 	"""
 	def startTelkAlert(self):
-		"""
-
-		
-		telk_alert_conf = self.utils.readFileYaml(self.utils.getPathTalert('conf') + '/es_conf.yaml')
-		if float(telk_alert_conf['es_version']) >= 7.0:
-			print("Telk-Alert v3.0\n")
-			print("@2021 Tekium. All rights reserved.\n")
-			print("Author: Erick Rodriguez erickrr.tbd93@gmail.com\n")
-			print("License: GPLv3\n")
-			print("\nTelk-Alert started...")
+		path_configuration_file = self.utils.getPathTelkAlert("conf") + "/telk_alert_conf.yaml"
+		if path.exists(path_configuration_file):
+			telk_alert_configuration = self.utils.readYamlFile(path_configuration_file, 'r')
 			try:
-				conn_es = self.elastic.getConnectionElastic(telk_alert_conf)
-				path_rules_folder = self.utils.getPathTalert(telk_alert_conf['rules_folder'])
-				list_alert_rules = self.getAllAlertRules(path_rules_folder)
-				print("ALERT RULES DATA\n")
-				self.logger.createLogTelkAlert(str(len(list_alert_rules)) + " alert rule(s) found in " + path_rules_folder, 2)
-				self.elastic.generateLogES(telk_alert_conf['writeback_index'], conn_es, self.elastic.createLogAction(str(len(list_alert_rules)) + " alert rule(s) found in " + path_rules_folder))
-				print(str(len(list_alert_rules)) + " alert rule(s) found in " + path_rules_folder + '\n')	
-				if len(list_alert_rules) != 0:
-					for alert_rule in list_alert_rules:
-						rule_yaml = self.utils.readFileYaml(path_rules_folder + '/' + alert_rule)
-						self.logger.createLogTelkAlert("Rule " + alert_rule + ' loaded and executed', 2)
-						self.elastic.generateLogES(telk_alert_conf['writeback_index'], conn_es, self.elastic.createLogRules(alert_rule, 'loaded and executed'))
-						print("Rule " + alert_rule + ' loaded and executed\n')
-						thread_rule = threading.Thread(target = self.elastic.searchRuleElastic, args = (conn_es, rule_yaml, telk_alert_conf,)).start()
+				if float(telk_alert_configuration['es_version']) >= 7.0 and float(telk_alert_configuration['es_version']) <= 7.16:
+					self.utils.createTelkAlertLog("Telk-Alert v3.1", 1)
+					self.utils.createTelkAlertLog("@2022 Tekium. All rights reserved.", 1)
+					self.utils.createTelkAlertLog("Author: Erick Rodriguez", 1)
+					self.utils.createTelkAlertLog("Email: erodriguez@tekium.mx, erickrr.tbd93@gmail.com", 1)
+					self.utils.createTelkAlertLog("License: GPLv3", 1)
+					self.utils.createTelkAlertLog("Telk-Alert started...", 1)
+					path_folder_rules = self.utils.getPathTelkAlert(telk_alert_configuration['name_folder_rules'])
+					list_all_alert_rules = self.getAllAlertRules(path_folder_rules)
+					if len(list_all_alert_rules) == 0:
+						self.utils.createTelkAlertLog("No alert rules found in directory: " + path_folder_rules, 2)
+					else:
+						elastic = Elastic(telk_alert_configuration)
+						self.utils.createTelkAlertLog(str(len(list_all_alert_rules)) + " alert rules found in directory: " + path_folder_rules, 1)
+						for alert_rule in list_all_alert_rules:
+							alert_rule_data = self.utils.readYamlFile(path_folder_rules + '/' + alert_rule, 'r')
+							self.utils.createTelkAlertLog(alert_rule + " loaded.", 1)
+							Thread(target = elastic.executionRule, args = (alert_rule_data, )).start()
 				else:
-					self.logger.createLogTelkAlert("No alert rule(s) found in " + telk_alert_conf['rules_folder'], 3)
-					self.elastic.generateLogES(telk_alert_conf['writeback_index'], conn_es, self.elastic.createLogAction("No alert rule(s) found in " + telk_alert_conf['rules_folder']))
-					print("No alert rule(s) found in " + telk_alert_conf['rules_folder'])	
-					sys.exit(1)
+					self.utils.createTelkAlertLog("ElasticSearch version not supported by Telk-Alert.", 3)
+					exit(1)
 			except KeyError as exception:
-				self.logger.createLogTelkAlert("Key Error: " + str(exception), 4)
-				print("\nKey Error: " + str(exception))
-				sys.exit(1)
-			except TypeError as exception:
-				self.logger.createLogTelkAlert(str(exception), 4)
-				print("\nType Error: " + str(exception))
-				sys.exit(1)
+				self.utils.createTelkAlertLog("Error starting Telk-Alert. For more information, see the logs.", 3)
+				self.utils.createTelkAlertLog("Key Error: " + str(exception), 3)
+				exit(1)
 		else:
-			self.logger.createLogTelkAlert("ElasticSearch version not supported by Telk-Alert", 4)
-			print("\nElasticSearch version not supported by Telk-Alert.")
-			sys.exit(1)
+			self.utils.createTelkAlertLog("Configuration file not found.", 3)
+			exit(1)
+		"""
+						thread_rule = threading.Thread(target = self.elastic.searchRuleElastic, args = (conn_es, rule_yaml, telk_alert_configuration,)).start()
 		"""
 
 	"""

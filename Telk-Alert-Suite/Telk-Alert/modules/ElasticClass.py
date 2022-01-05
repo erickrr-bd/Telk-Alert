@@ -1,55 +1,31 @@
-import sys
+from sys import exit
 import time
-import socket
-import requests
-import platform
 from datetime import datetime
-from modules.EmailClass import Email
 from modules.UtilsClass import Utils
 from ssl import create_default_context
-from modules.LoggerClass import Logger
-from modules.TelegramClass import Telegram
+#from modules.TelegramClass import Telegram
+from requests.exceptions import InvalidURL
 from elasticsearch_dsl import Q, Search, A
 from elasticsearch import Elasticsearch, RequestsHttpConnection, exceptions
 
 """
-Class that allows you to manage everything related to ElasticSearch.
+Class that manages everything related to ElasticSearch.
 """
 class Elastic:
 	"""
-	Property that stores the IP where Telk-Alert is working.
-	"""
-	host_ip = None
-
-	"""
-	Property that stores the name of the host where Telk-Alert is working.
-	"""
-	host_name = None
-
-	"""
-	Property where the operating system of the host where Telk-Alert is working is stored.
-	"""
-	host_os_name = None
-
-	"""
-	Property that stores an object of type Utils.
+	Property that stores an object of the Utils class.
 	"""
 	utils = None
 
 	"""
-	Property that stores an object of type Logger.
-	"""
-	logger = None
-
-	"""
 	Property that stores an object of type Telegram.
 	"""
-	telegram = None
+	#telegram = None
 
 	"""
-	Property that stores an object of type Email.
+	Property that stores the data of the Telk-Alert configuration file.
 	"""
-	email = None
+	telk_alert_configuration = None
 
 	"""
 	Constructor for the Elastic class.
@@ -57,109 +33,92 @@ class Elastic:
 	Parameters:
 	self -- An instantiated object of the Elastic class.
 	"""
-	def __init__(self):
+	def __init__(self, telk_alert_configuration):
 		self.utils = Utils()
-		self.logger = Logger()
-		self.telegram = Telegram()
-		self.email = Email()
-		self.host_name = socket.gethostname()
-		self.host_ip = socket.gethostbyname(self.host_name)
-		self.host_os_name = platform.linux_distribution()
+		self.telk_alert_configuration = telk_alert_configuration
+		#self.telegram = Telegram()
 
 	"""
-	Method that establishes the connection of Telk-Alert with ElasticSearch.
+	Method that creates a connection object with ElasticSearch.
 
 	Parameters:
 	self -- An instantiated object of the Elastic class.
-	telk_alert_conf -- List containing all the information in the Telk-Alert configuration file.
 
 	Return:
 	conn_es -- Object that contains the connection to ElasticSearch.
 
 	Exceptions:
 	KeyError -- A Python KeyError exception is what is raised when you try to access a key that isn’t in a dictionary (dict). 
-	exceptions.ConnectionError --  Error raised when there was an exception while talking to ES. 
+	exceptions.ConnectionError -- Error raised when there was an exception while talking to ES. 
 	exceptions.AuthenticationException -- Exception representing a 401 status code.
 	exceptions.AuthorizationException -- Exception representing a 403 status code.
-	requests.exceptions.InvalidURL -- The URL provided was somehow invalid
+	InvalidURL -- The URL provided was somehow invalid.
 	"""
-	def getConnectionElastic(self, telk_alert_conf):
+	def getConnectionElastic(self):
+		conn_es = None
 		try:
-			if (not telk_alert_conf['use_ssl'] == True) and (not telk_alert_conf['use_http_auth'] == True):
-				conn_es = Elasticsearch([telk_alert_conf['es_host']], 
-										port = telk_alert_conf['es_port'],
+			if(not self.telk_alert_configuration['use_ssl_tls'] == True) and (not self.telk_alert_configuration['use_http_authentication'] == True):
+				conn_es = Elasticsearch(self.telk_alert_configuration['es_host'],
+										port = self.telk_alert_configuration['es_port'],
 										connection_class = RequestsHttpConnection,
 										use_ssl = False)
-			if (not telk_alert_conf['use_ssl'] == True) and telk_alert_conf['use_http_auth'] == True:
-				conn_es = Elasticsearch([telk_alert_conf['es_host']], 
-										port = telk_alert_conf['es_port'],
+			if(not self.telk_alert_configuration['use_ssl_tls'] == True) and self.telk_alert_configuration['use_http_authentication'] == True:
+				conn_es = Elasticsearch(self.telk_alert_configuration['es_host'],
+										port = self.telk_alert_configuration['es_port'],
 										connection_class = RequestsHttpConnection,
-										http_auth = (self.utils.decryptAES(telk_alert_conf['http_auth_user']).decode('utf-8'), self.utils.decryptAES(telk_alert_conf['http_auth_pass']).decode('utf-8')),
+										http_auth = (self.utils.decryptAES(self.telk_alert_configuration['user_http_authentication']).decode('utf-8'), self.utils.decryptAES(self.telk_alert_configuration['password_http_authentication']).decode('utf-8')),
 										use_ssl = False)
-			if telk_alert_conf['use_ssl'] == True and (not telk_alert_conf['use_http_auth'] == True):
-				if not telk_alert_conf['valid_certificates'] == True:
-					conn_es = Elasticsearch([telk_alert_conf['es_host']], 
-											port = telk_alert_conf['es_port'],
+			if self.telk_alert_configuration['use_ssl_tls'] == True and (not self.telk_alert_configuration['use_http_authentication'] == True):
+				if not self.telk_alert_configuration['validate_certificate_ssl']:
+					conn_es = Elasticsearch(self.telk_alert_configuration['es_host'],
+											port = self.telk_alert_configuration['es_port'],
 											connection_class = RequestsHttpConnection,
 											use_ssl = True,
 											verify_certs = False,
 											ssl_show_warn = False)
 				else:
-					context = create_default_context(cafile = telk_alert_conf['path_cert'])
-					conn_es = Elasticsearch([telk_alert_conf['es_host']], 
-											port = telk_alert_conf['es_port'],
+					context = create_default_context(cafile = self.telk_alert_configuration['path_certificate_file'])
+					conn_es = Elasticsearch(self.telk_alert_configuration['es_host'],
+											port = self.telk_alert_configuration['es_port'],
 											connection_class = RequestsHttpConnection,
-											http_auth = (self.utils.decryptAES(telk_alert_conf['http_auth_user']).decode('utf-8'), self.utils.decryptAES(telk_alert_conf['http_auth_pass']).decode('utf-8')),
 											use_ssl = True,
 											verify_certs = True,
 											ssl_context = context)
-			if telk_alert_conf['use_ssl'] == True and telk_alert_conf['use_http_auth'] == True:
-				if not telk_alert_conf['valid_certificates'] == True:
-					conn_es = Elasticsearch([telk_alert_conf['es_host']], 
-											port = telk_alert_conf['es_port'],
+			if self.telk_alert_configuration['use_ssl_tls'] == True and self.telk_alert_configuration['use_http_authentication'] == True:
+				if not self.telk_alert_configuration['validate_certificate_ssl'] == True:
+					conn_es = Elasticsearch(self.telk_alert_configuration['es_host'],
+											port = self.telk_alert_configuration['es_port'],
 											connection_class = RequestsHttpConnection,
-											http_auth = (self.utils.decryptAES(telk_alert_conf['http_auth_user']).decode('utf-8'), self.utils.decryptAES(telk_alert_conf['http_auth_pass']).decode('utf-8')),
+											http_auth = (self.utils.decryptAES(self.telk_alert_configuration['user_http_authentication']).decode('utf-8'), self.utils.decryptAES(self.telk_alert_configuration['password_http_authentication']).decode('utf-8')),
 											use_ssl = True,
 											verify_certs = False,
 											ssl_show_warn = False)
 				else:
-					context = create_default_context(cafile = telk_alert_conf['path_cert'])
-					conn_es = Elasticsearch([telk_alert_conf['es_host']], 
-											port = telk_alert_conf['es_port'],
+					context = create_default_context(cafile = self.telk_alert_configuration['path_certificate_file'])
+					conn_es = Elasticsearch(self.telk_alert_configuration['es_host'],
+											port = self.telk_alert_configuration['es_port'],
 											connection_class = RequestsHttpConnection,
-											http_auth = (self.utils.decryptAES(telk_alert_conf['http_auth_user']).decode('utf-8'), self.utils.decryptAES(telk_alert_conf['http_auth_pass']).decode('utf-8')),
+											http_auth = (self.utils.decryptAES(self.telk_alert_configuration['user_http_authentication']).decode('utf-8'), self.utils.decryptAES(self.telk_alert_configuration['password_http_authentication']).decode('utf-8')),
 											use_ssl = True,
 											verify_certs = True,
 											ssl_context = context)
-			print("\nCONNECTION DATA\n")
-			print("Cluster name: " + conn_es.info()['cluster_name'])
-			print("ElasticSearch Version: " + conn_es.info()['version']['number'])
 			if not conn_es == None:
-				self.logger.createLogTelkAlert("Connection established to: " + telk_alert_conf['es_host'] + ':' + str(telk_alert_conf['es_port']), 2)
-				self.generateLogES(telk_alert_conf['writeback_index'], conn_es, self.createLogAction("Connection established to: " + telk_alert_conf['es_host'] + ':' + str(telk_alert_conf['es_port'])))
-				print("Connection established to: " + telk_alert_conf['es_host'] + ':' + str(telk_alert_conf['es_port']) + '\n')
-				return conn_es
-		except KeyError as exception:
-			self.logger.createLogTelkAlert("Key Error: " + str(exception), 4)
-			print("\nKey Error: " + str(exception))
-			sys.exit(1)
-		except exceptions.ConnectionError as exception:
-			self.logger.createLogTelkAlert(str(exception), 4)
-			print("\nFailed connection to: " + telk_alert_conf['es_host'] + ':' + str(telk_alert_conf['es_port']) + '. For more information see the application logs.')
-			sys.exit(1)
-		except exceptions.AuthenticationException as exception:
-			self.logger.createLogTelkAlert(str(exception), 4)
-			print("\nHTTP authentication failed. For more information see the application logs.")
-			sys.exit(1)
-		except exceptions.AuthorizationException as exception:
-			self.logger.createLogTelkAlert(str(exception), 4)
-			print("\nUnauthorized access. For more information see the application logs.")
-			sys.exit(1)
-		except requests.exceptions.InvalidURL as exception:
-			self.logger.createLogTelkAlert(str(exception), 4)
-			print(str(exception))
-			sys.exit(1)
+				self.utils.createTelkAlertLog("Established connection with: " + self.telk_alert_configuration['es_host'] + ':' + str(self.telk_alert_configuration['es_port']), 1)
+				self.utils.createTelkAlertLog("Cluster name: " + conn_es.info()['cluster_name'], 1)
+				self.utils.createTelkAlertLog("Elasticsearch version: " + conn_es.info()['version']['number'], 1)
+		except (KeyError, exceptions.ConnectionError, exceptions.AuthenticationException, exceptions.AuthorizationException, InvalidURL) as exception:
+			self.utils.createTelkAlertLog("Failed to connect to ElasticSearch. For more information, see the logs.", 3)
+			self.utils.createTelkAlertLog(exception, 3)
+			exit(1)
+		else:
+			return conn_es
 	
+	"""
+	"""
+	def executionRule(self, alert_rule_data):
+		conn_es = self.getConnectionElastic()
+		print("Hola2")
+
 	"""
 	Method that performs the search in ElasticSearch and in case of finding events, it sends the alert.
 
