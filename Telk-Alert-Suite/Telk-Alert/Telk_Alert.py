@@ -1,14 +1,14 @@
 #! /usr/bin/env python3
 
-from modules.RulesClass import Rules 
+from modules.TelkAlertClass import TelkAlert 
 
 """
-Rules type object.
+Property that stores an object of the TelkAlert class.
 """
-rules = Rules()
+telkalert = TelkAlert()
 
 """
 Main function of the application.
 """
 if __name__ == "__main__":
-	rules.readAllAlertRules()
+	telkalert.startTelkAlert()

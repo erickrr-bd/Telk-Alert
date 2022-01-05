@@ -1,24 +1,18 @@
-import os
+from os import path
 import sys
-import glob
+from glob import glob
 import threading
 from modules.UtilsClass import Utils
-from modules.LoggerClass import Logger
 from modules.ElasticClass import Elastic
 
 """
 Class that allows managing alert rules.
 """
-class Rules:
+class TelkAlert:
 	"""
 	Property that stores an object of type Utils.
 	"""
 	utils = None
-
-	"""
-	Property that stores an object of type Logger.
-	"""
-	logger = None
 
 	"""
 	Property that stores an object of type Elastic.
@@ -32,7 +26,6 @@ class Rules:
 	self -- An instantiated object of the Rules class.
 	"""
 	def __init__(self):
-		self.logger = Logger()
 		self.utils = Utils()
 		self.elastic = Elastic()
 
@@ -46,7 +39,10 @@ class Rules:
 	TypeError -- The TypeError is thrown when an operation or function is applied to an object of an inappropriate type.
 	KeyError -- A Python KeyError exception is what is raised when you try to access a key that isn’t in a dictionary (dict). 
 	"""
-	def readAllAlertRules(self):
+	def startTelkAlert(self):
+		"""
+
+		
 		telk_alert_conf = self.utils.readFileYaml(self.utils.getPathTalert('conf') + '/es_conf.yaml')
 		if float(telk_alert_conf['es_version']) >= 7.0:
 			print("Telk-Alert v3.0\n")
@@ -86,6 +82,7 @@ class Rules:
 			self.logger.createLogTelkAlert("ElasticSearch version not supported by Telk-Alert", 4)
 			print("\nElasticSearch version not supported by Telk-Alert.")
 			sys.exit(1)
+		"""
 
 	"""
 	Method that gets the names of all alert rules created in the directory.
@@ -98,5 +95,5 @@ class Rules:
 	list_alert_rules -- List with the names of the alert rules stored in the directory.
 	"""
 	def getAllAlertRules(self, path_rules_folder):
-		list_alert_rules = [os.path.basename(x) for x in glob.glob(path_rules_folder + '/*.yaml')]
-		return list_alert_rules
+		list_all_alert_rules = [path.basename(x) for x in glob(path_rules_folder + '/*.yaml')]
+		return list_all_alert_rules

@@ -1,28 +1,23 @@
-import os
-import sys
-import yaml
-import time
-import binascii
+from sys import exit
+from pwd import getpwnam
+from datetime import date
+from os import path, chown
 from hashlib import sha256
+from binascii import Error
 from base64 import b64decode
-from datetime import datetime
 from Crypto.Cipher import AES
+from yaml import safe_load, safe_dump
 from Crypto.Util.Padding import unpad
-from modules.LoggerClass import Logger
+from logging import getLogger, INFO, Formatter, FileHandler, StreamHandler
 
 """
 Class that allows you to manage the utilities that the application will use for its operation.
 """
 class Utils:
 	"""
-	Property that saves the passphrase that will be used for the decryption process.
+	Property that stores the passphrase that will be used for the encryption/decryption process.
 	"""
 	passphrase = None
-
-	"""
-	Property that stores an object of type Logger.
-	"""
-	logger = None
 
 	"""
 	Constructor for the Utils class.
@@ -31,74 +26,57 @@ class Utils:
 	self -- An instantiated object of the Utils class.
 	"""
 	def __init__(self):
-		self.logger = Logger()
 		self.passphrase = self.getPassphrase()
 
 	"""
-	Method that obtains the content of a file with the extension yaml.
+	Method that obtains and stores the content of a YAML file in a variable.
 
 	Parameters:
 	self -- An instantiated object of the Utils class.
-	file_yaml -- Yaml file path.
+	path_file_yaml -- YAML file path.
+	mode -- Mode in which the YAML file will be opened.
 
 	Return:
-	data_yaml -- Contents of the .yaml file stored in a list.
+	data_file_yaml -- Variable that stores the content of the YAML file.
 
 	Exceptions:
 	IOError -- It is an error raised when an input/output operation fails.
 	"""
-	def readFileYaml(self, file_yaml):
+	def readYamlFile(self, path_file_yaml, mode):
 		try:
-			with open(file_yaml, 'r') as file:
-				data_yaml = yaml.safe_load(file)
-			return data_yaml
+			with open(path_file_yaml, mode) as file_yaml:
+				data_file_yaml = safe_load(file_yaml)
 		except IOError as exception:
-			self.logger.createLogTelkAlert(str(exception), 4)
-			print("\nError reading YAML file. For more information see the application logs.")
-			sys.exit(1)
+			self.createTelkAlertLog("Error opening or reading the YAML file. For more information, see the logs.", 3)
+			self.createTelkAlertLog(exception, 3)
+			exit(1)
+		else:
+			return data_file_yaml
 
 	"""
-	Method that reads the HTML template to send the alert via email.
+	Method that defines a directory based on the main Telk-Alert directory.
 
 	Parameters:
 	self -- An instantiated object of the Utils class.
-	json_message -- String that contains all the data obtained during the search.
-	name_rule -- Name of the alert rule.
+	path_dir -- Directory that is added to the main Telk-Alert directory.
 
 	Return:
-	message -- Final message in HTML format.
+	path_final -- Defined final path.
 
 	Exceptions:
-	IOError -- It is an error raised when an input/output operation fails.
+	OSError -- This exception is raised when a system function returns a system-related error, including I/O failures such as “file not found” or “disk full” (not for illegal argument types or other incidental errors).
+	TypeError -- Raised when an operation or function is applied to an object of inappropriate type. The associated value is a string giving details about the type mismatch.
 	"""
-	def readTemplateEmail(self, json_message, name_rule):
+	def getPathTelkAlert(self, path_dir):
+		path_main = "/etc/Telk-Alert-Suite/Telk-Alert"
 		try:
-			template_email = open(self.getPathTalert('modules/template/temp_email.html'), 'r')
-			message = template_email.read()
-			message = message.replace('nameRule', name_rule)
-			message = message.replace('date', time.strftime("%c"))
-			message = message.replace('esjson', json_message)
-			template_email.close()
-			return message
-		except IOError as exception:
-			self.logger.createLogTelkAlert(str(exception), 4)
-			print("\nError reading the HTML template. For more information see the application logs.")
-			
-
-	"""
-	Method that creates a new route from the root path of Telk-Alert.
-
-	Parameters:
-	self -- An instantiated object of the Utils class.
-	path_dir -- Folder or directory that will be added to the source path of Telk-Alert.
-
-	Return:
-	path_final -- Final directory.
-	"""
-	def getPathTalert(self, path_dir):
-		path_root = '/etc/Telk-Alert-Suite/Telk-Alert'
-		path_final = os.path.join(path_root, path_dir)
-		return path_final
+			path_final = path.join(path_main, path_dir)
+		except (OSError, TypeError) as exception:
+			self.createTelkAlertLog("An error has occurred. For more information, see the logs.", 3)
+			self.createTelkAlertLog(exception, 3)
+			exit(1)
+		else:
+			return path_final
 
 	"""
 	Method that obtains the passphrase used for the process of encrypting and decrypting a file.
@@ -114,14 +92,15 @@ class Utils:
 	"""
 	def getPassphrase(self):
 		try:
-			file_key = open(self.getPathTalert('conf') + '/key','r')
+			file_key = open(self.getPathTelkAlert('conf') + '/key','r')
 			pass_key = file_key.read()
 			file_key.close()
-			return pass_key
 		except FileNotFoundError as exception:
-			self.logger.createLogTelkAlert(str(exception), 4)
-			print("\nKey File not found. For more information see the application logs.")	
-			sys.exit(1)
+			self.createTelkAlertLog("Error opening or reading the Key file. For more information, see the logs.", 3)
+			self.createTelkAlertLog(exception, 3)
+			exit(1)
+		else:
+			return pass_key
 
 	"""
 	Method that converts a date to milliseconds.
@@ -196,6 +175,26 @@ class Utils:
 			sys.exit(1)
 
 	"""
+	Method that changes an owner path, by telk_alert user and group.
+
+	Parameters:
+	self -- An instantiated object of the Utils class.
+	path_to_change -- Directory that will change owner.
+
+	Exceptions:
+	OSError -- This exception is raised when a system function returns a system-related error, including I/O failures such as “file not found” or “disk full” (not for illegal argument types or other incidental errors).
+	"""
+	def ownerChange(self, path_to_change):
+		try:
+			uid = getpwnam('telk_alert').pw_uid
+			gid = getpwnam('telk_alert').pw_gid
+			chown(path_to_change, uid, gid)
+		except OSError as exception:
+			self.createTelkAlertLog("Failed to change owner path. For more information, see the logs.", 3)
+			self.createTelkAlertLog(exception, 3)
+			exit(1)
+
+	"""
 	Method that decrypts a text string.
 
 	Parameters:
@@ -206,7 +205,7 @@ class Utils:
 	Character string with decrypted text.
 
 	Exceptions:
-	binascii.Error -- Is raised if were incorrectly padded or if there are non-alphabet characters present in the string. 
+	Error -- Is raised if were incorrectly padded or if there are non-alphabet characters present in the string. 
 	"""
 	def decryptAES(self, text_encrypt):
 		try:
@@ -214,8 +213,39 @@ class Utils:
 			text_encrypt = b64decode(text_encrypt)
 			IV = text_encrypt[:AES.block_size]
 			aes = AES.new(key, AES.MODE_CBC, IV)
+		except Error as exception:
+			self.createTelkAlertLog("Failed to decrypt the data. For more information, see the logs.", 3)
+			self.createTelkAlertLog(exception, 3)
+			exit(1)
+		else:
 			return unpad(aes.decrypt(text_encrypt[AES.block_size:]), AES.block_size)
-		except binascii.Error as exception:
-			self.logger.createLogTelkAlert(str(exception), 4)
-			print("\nDecryption failed. For more information see the application logs.")	
-			sys.exit(1)
+
+	"""
+	Method that writes the logs generated by the application in a file.
+
+	Parameters:
+	self -- An instantiated object of the Utils class.
+	message -- Message to be shown in the log.
+	type_log -- Type of log to write.
+	"""
+	def createTelkAlertLog(self, message, type_log):
+		name_log = '/var/log/Telk-Alert/telk-alert-log-' + str(date.today()) + '.log'
+		logger = getLogger('Telk_Alert_Log')
+		logger.setLevel(INFO)
+		fh = FileHandler(name_log)
+		ch = StreamHandler()
+		if (logger.hasHandlers()):
+   	 		logger.handlers.clear()
+		formatter = Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+		formatter_console = Formatter('%(levelname)s - %(message)s')
+		fh.setFormatter(formatter)
+		ch.setFormatter(formatter_console)
+		logger.addHandler(fh)
+		logger.addHandler(ch)
+		if type_log == 1:
+			logger.info(message)
+		if type_log == 2:
+			logger.warning(message)
+		if type_log == 3:
+			logger.error(message)
+		self.ownerChange(name_log)
