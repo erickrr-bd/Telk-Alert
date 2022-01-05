@@ -103,6 +103,38 @@ class Utils:
 			return pass_key
 
 	"""
+	Method that converts from a number of minutes, hours or days to seconds.
+
+	Parameters:
+	self -- An instantiated object of the Utils class.
+	unit_time -- Unit of time in which the quantity to be converted is expressed.
+	total_time -- Total time to convert.
+
+	Return:
+	total_seconds -- Total seconds resulting from the conversion.
+	"""
+	def convertTimeToSeconds(self, unit_time, total_time):
+		if unit_time == "minutes":
+			total_seconds = total_time * 60
+		elif unit_time == "hours":
+			total_seconds = total_time * 3600
+		elif unit_time == "days":
+			total_seconds = total_time * 86400
+		return total_seconds
+
+	"""
+	"""
+	def convertTimeToStringSearch(self, unit_time, total_time):
+		string_search = "now-"
+		if unit_time == "minutes":
+			string_search += str(total_time) + 'm'
+		elif unit_time == "hours":
+			string_search += str(total_time) + 'h'
+		elif unit_time == "days":
+			string_search += str(total_time) + 'd'
+		return string_search
+
+	"""
 	Method that converts a date to milliseconds.
 
 	Parameters:

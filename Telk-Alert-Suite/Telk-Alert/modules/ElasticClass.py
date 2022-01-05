@@ -1,5 +1,5 @@
 from sys import exit
-import time
+from time import sleep
 from datetime import datetime
 from modules.UtilsClass import Utils
 from ssl import create_default_context
@@ -117,7 +117,31 @@ class Elastic:
 	"""
 	def executionRule(self, alert_rule_data):
 		conn_es = self.getConnectionElastic()
-		print("Hola2")
+		try:
+			for unit_time in alert_rule_data['time_search']:
+				total_time_search_seconds = self.utils.convertTimeToSeconds(unit_time, alert_rule_data['time_search'][unit_time])
+			for unit_time in alert_rule_data['time_range']:
+				gte_search = self.utils.convertTimeToStringSearch(unit_time, alert_rule_data['time_range'][unit_time])
+			query_string_alert_rule = alert_rule_data['query_type'][0]['query_string']['query']
+			search_alert_rule_aux = Search(index = alert_rule_data['index_name']).using(conn_es)
+			search_alert_rule_aux = search_alert_rule_aux[0:10000]
+			query_string = Q("query_string", query = query_string_alert_rule)
+			while True:
+				if alert_rule_data['specific_fields_search'] == True:
+					search_alert_rule = search_alert_rule_aux.query(query_string).query('range', ** { '@timestamp' : { 'gte' : gte_search, 'lte' : "now" } }).source(alert_rule_data['fields_name'])
+				else:
+					search_alert_rule = search_alert_rule_aux.query(query_string).query('range', ** { '@timestamp' : { 'gte' : gte_search, 'lte' : "now" } }).source(fields = None)
+				result_search = search_alert_rule.execute()
+				total_events = 0
+				for hit in result_search['hits']['hits']:
+					print(hit['_source']['message'])
+					total_events += 1
+				sleep(total_time_search_seconds)
+		except KeyError as exception:
+			self.utils.createTelkAlertLog("Error executing alert rule. For more information, see the logs.", 3)
+			self.utils.createTelkAlertLog("Key Error: " + str(exception), 3)
+			exit(1)
+
 
 	"""
 	Method that performs the search in ElasticSearch and in case of finding events, it sends the alert.
@@ -276,118 +300,3 @@ class Elastic:
 			self.logger.createLogTelkAlert("Key error: " + str(exception), 4)
 			print("\nKey Error: " + str(exception))
 			sys.exit(1)
-
-	"""
-	Method that generates the JSON of the actions carried out in Telk-Alert that will be saved in ElasticSearch.
-
-	Parameters:
-	self -- An instantiated object of the Elastic class.
-	action -- Action performed.
-
-	Return:
-	log_json -- JSON object that contains the data that will be stored in ElasticSearch.
-	"""
-	def createLogAction(self, action):
-		log_json = {
-			'@timestamp' : datetime.utcnow(),
-			'TELK.host.name' : self.host_name,
-			'TELK.host.ip' : self.host_ip,
-			'TELK.host.os.name' : self.host_os_name,
-			'TELK.action' : action,
-			'TELK.log' : 'action_performed'
-		}
-		return log_json
-
-	"""
-	Method that generates the JSON of the alert rules created so far.
-
-	Parameters:
-	self -- An instantiated object of the Elastic class.
-	name_rule -- Name of the alert rule.
-	status_rule -- State in which the rule is.
-
-	Return:
-	log_json -- JSON object that contains the data that will be stored in ElasticSearch.
-	"""
-	def createLogRules(self, name_rule, status_rule):
-		log_json = {
-			'@timestamp' : datetime.utcnow(),
-			'TELK.host.name' : self.host_name,
-			'TELK.host.ip' : self.host_ip,
-			'TELK.host.os.name' : self.host_os_name,
-			'TELK.log' : 'alert_rules',
-			'RULE.name' : name_rule,
-			'RULE.status' : status_rule
-		}
-		return log_json
-
-	"""
-	Method that generates the JSON of the alerts sent to Telegram.
-
-	Parameters:
-	self -- An instantiated object of the Elastic class.
-	name_rule -- Name of the alert rule.
-	total_events -- Total events found in the search.
-	telegram_code -- HTTP code in response to the request made to Telegram.
-
-	Return:
-	log_json -- JSON object that contains the data that will be stored in ElasticSearch.
-	"""
-	def createLogAlertTelegram(self, name_rule, total_events, telegram_code):
-		telegram_res = ""
-		if telegram_code == 200:
-			telegram_res = "Success"
-		else:
-			telegram_res = "Failed"
-		log_json = {
-			'@timestamp' : datetime.utcnow(),
-			'TELK.host.name' : self.host_name,
-			'TELK.host.ip' : self.host_ip,
-			'TELK.host.os.name' : self.host_os_name,
-			'TELK.log' : 'send_telegram',
-			'RULE.name' : name_rule,
-			'ALERT.events.total' : total_events,
-			'ALERT.telegram.code': telegram_code,
-			'ALERT.telegram.res' : telegram_res 
-		}
-		return log_json
-
-	"""
-	Method that generates the JSON of alerts sent by email.
-
-	Parameters:
-	self -- An instantiated object of the Elastic class.
-	name_rule -- Name of the alert rule.
-	total_events -- Total events found in the search.
-	response -- Response obtained when sending the alert by email.
-
-	Return:
-	log_json -- JSON object that contains the data that will be stored in ElasticSearch.
-	"""
-	def createLogAlertEmail(self, name_rule, total_events, response):
-		if len(response) == 0:
-			response = "Success"
-		log_json = {
-			'@timestamp' : datetime.utcnow(),
-			'TELK.host.name' : self.host_name,
-			'TELK.host.ip' : self.host_ip,
-			'TELK.host.os.name' : self.host_os_name,
-			'TELK.log' : 'send_email',
-			'RULE.name' : name_rule,
-			'ALERT.events.total' : total_events,
-			'ALERT.email.res': str(response)
-		}
-		return log_json
-
-	"""
-	Method that creates the Telk-Alert log in ElasticSearch.
-
-	Parameters:
-	self -- An instantiated object of the Elastic class.
-	index_name -- Name of the index that will be created in ElasticSearch and where the Telk-Alert logs will be stored.
-	conn_es -- Object that contains the connection to ElasticSearch.
-	log_json -- JSON object that contains the data that will be stored in ElasticSearch.
-	"""
-	def generateLogES(self, index_name, conn_es, log_json):
-		index_name += "-" + datetime.now().strftime("%Y-%m-%d")
-		conn_es.index(index = index_name, body = log_json)
