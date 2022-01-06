@@ -15,22 +15,21 @@ class TelkAlert:
 	utils = None
 
 	"""
-	Constructor for the Rules class.
+	Constructor for the TelkAlert class.
 
 	Parameters:
-	self -- An instantiated object of the Rules class.
+	self -- An instantiated object of the TelkAlert class.
 	"""
 	def __init__(self):
 		self.utils = Utils()
 
 	"""
-	A method that reads all the alert rules created and creates the threads to perform ElasticSearch searches.
+	Method that starts the Telk-Alert application.
 
 	Parameters:
-	self -- An instantiated object of the Rules class.
+	self -- An instantiated object of the TelkAlert class.
 
 	Exceptions:
-	TypeError -- The TypeError is thrown when an operation or function is applied to an object of an inappropriate type.
 	KeyError -- A Python KeyError exception is what is raised when you try to access a key that isn’t in a dictionary (dict). 
 	"""
 	def startTelkAlert(self):
@@ -66,15 +65,12 @@ class TelkAlert:
 		else:
 			self.utils.createTelkAlertLog("Configuration file not found.", 3)
 			exit(1)
-		"""
-						thread_rule = threading.Thread(target = self.elastic.searchRuleElastic, args = (conn_es, rule_yaml, telk_alert_configuration,)).start()
-		"""
 
 	"""
 	Method that gets the names of all alert rules created in the directory.
 
 	Parameters:
-	self -- An instantiated object of the Rules class.
+	self -- An instantiated object of the TelkAlert class.
 	path_folder_rules -- Directory where all alert rules are stored.
 
 	Return:

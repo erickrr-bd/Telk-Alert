@@ -448,10 +448,10 @@ class Rules:
 				data_alert_rule['type_alert_send'] = option_type_alert_send
 			if flag_telegram_bot_token == 1:
 				telegram_bot_token = self.utils.encryptAES(self.form_dialog.getDataInputText("Enter the Telegram bot token:", self.utils.decryptAES(data_alert_rule['telegram_bot_token']).decode('utf-8')))
-				data_alert_rule = telegram_bot_token.decode('utf-8')
+				data_alert_rule['telegram_bot_token'] = telegram_bot_token.decode('utf-8')
 			if flag_telegram_chat_id == 1:
 				telegram_chat_id = self.utils.encryptAES(self.form_dialog.getDataInputText("Enter the Telegram channel identifier:", self.utils.decryptAES(data_alert_rule['telegram_chat_id']).decode('utf-8')))
-				data_alert_rule = telegram_chat_id.decode('utf-8')
+				data_alert_rule['telegram_chat_id'] = telegram_chat_id.decode('utf-8')
 			self.utils.createYamlFile(data_alert_rule, self.path_folder_rules + '/' + name_alert_rule, 'w')
 			hash_file_new = self.utils.getHashToFile(self.path_folder_rules + '/' + name_alert_rule)
 			if hash_file_actual == hash_file_new:

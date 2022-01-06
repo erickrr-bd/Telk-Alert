@@ -1,11 +1,9 @@
-import sys
-import time
-import pycurl
-from datetime import datetime
+from sys import exit
+from time import strftime
+from pycurl import Curl, HTTP_CODE
 from urllib.parse import urlencode
 from elasticsearch_dsl import utils
 from modules.UtilsClass import Utils
-from modules.LoggerClass import Logger
 
 """
 Class that allows you to manage the sending of alerts through Telegram.
@@ -17,18 +15,12 @@ class Telegram:
 	utils = Utils()
 
 	"""
-	Property that stores an object of type Logger.
-	"""
-	logger = Logger()
-
-	"""
 	Constructor for the Telegram class.
 
 	Parameters:
 	self -- An instantiated object of the Telegram class.
 	"""
 	def __init__(self):
-		self.logger = Logger()
 		self.utils = Utils()
 
 	"""
@@ -39,54 +31,50 @@ class Telegram:
 	telegram_chat_id -- Telegram channel identifier to which the letter will be sent.
 	telegram_bot_token -- Token of the Telegram bot that is the administrator of the Telegram channel to which the alerts will be sent.
 	message -- Message to be sent to the Telegram channel.
-
-	Return:
-	HTTP code.
 	"""
 	def sendTelegramAlert(self, telegram_chat_id, telegram_bot_token, message):
 		if len(message) > 4096:
 			message = "The size of the message in Telegram (4096) has been exceeded. Overall size: " + str(len(message))
-		c = pycurl.Curl()
+		c = Curl()
 		url = 'https://api.telegram.org/bot' + str(telegram_bot_token) + '/sendMessage'
 		c.setopt(c.URL, url)
 		data = { 'chat_id' : telegram_chat_id, 'text' : message }
 		pf = urlencode(data)
 		c.setopt(c.POSTFIELDS, pf)
 		c.perform_rs()
-		status_code = c.getinfo(pycurl.HTTP_CODE)
+		status_code = c.getinfo(HTTP_CODE)
 		c.close()
-		return int(status_code)
+		self.getStatusByTelegramCode(status_code)
 
 	"""
 	Method that generates the header of the message that will be sent by telegram.
 
 	Parameters:
 	self -- An instantiated object of the Telegram class.
-	rule_yaml -- List with all the data of the alert rule.
-	time_back -- Backward time in milliseconds of the alert rule.
+	alert_rule_data -- Object with the data corresponding to the alert rule.
 
 	Return: 
-	header -- Alert header in string.
+	header -- String corresponding to the header of the alert.
 
 	Exceptions:
 	KeyError -- A Python KeyError exception is what is raised when you try to access a key that isn’t in a dictionary (dict). 
 	"""
-	def getTelegramHeader(self, rule_yaml, time_back):
+	def getTelegramHeader(self, alert_rule_data):
 		try:
-			header = u'\u26A0\uFE0F' + " " + rule_yaml['name_rule'] +  " " + u'\u26A0\uFE0F' + '\n\n' + u'\U0001f6a6' +  " Alert level: " + rule_yaml['alert_level'] + "\n\n" +  u'\u23F0' + " Alert sent: " + time.strftime("%c") + "\n\n\n"
-			header += "At least " + str(rule_yaml['num_events']) + " event(s) ocurred between " + self.utils.convertMillisecondsToDate(self.utils.convertDateToMilliseconds(datetime.now()) - time_back) + " and " + self.utils.convertMillisecondsToDate(self.utils.convertDateToMilliseconds(datetime.now())) + "\n\n\n"
+			header = u'\u26A0\uFE0F' + " " + alert_rule_data['name_rule'] +  " " + u'\u26A0\uFE0F' + '\n\n' + u'\U0001f6a6' +  " Alert level: " + alert_rule_data['alert_level'] + "\n\n" +  u'\u23F0' + " Alert sent: " + strftime("%c") + "\n\n"
+			header += "At least " + str(alert_rule_data['num_events']) + " event(s) were found." + "\n\n"
 			return header
 		except KeyError as exception:
-			self.logger.createLogTelkAlert("Key Error: " + str(exception), 4)
-			print("\nKey Error: " + str(exception))
-			sys.exit(1)
+			self.utils.createTelkAlertLog("Error creating alert header. For more information, see the logs.", 3)
+			self.utils.createTelkAlertLog("Key Error: " + str(exception), 3)
+			exit(1)
 
 	"""
 	Method that generates the body of the message that will be sent by telegram.
 
 	Parameters:
 	self -- An instantiated object of the Telegram class.
-	hit -- Object that contains all the information found in the ElasticSearch search.
+	hit -- Object that contains the data referring to the event found.
 
 	Return: 
 	message -- Message with the parsed data, which will be sent to Telegram.
@@ -131,19 +119,13 @@ class Telegram:
 	Parameters:
 	self -- An instantiated object of the Telegram class.
 	telegram_code -- HTTP code in response to the request made to Telegram.
-	name_rule -- Name of the alert rule.
 	"""
-	def getStatusByTelegramCode(self, telegram_code, name_rule):
+	def getStatusByTelegramCode(self, telegram_code):
 		if telegram_code == 200:
-			self.logger.createLogTelkAlert("Alert sent. Name rule: " + name_rule, 2)
-			print("\nAlert sent. Name rule: " + name_rule)
-		if telegram_code == 400:
-			self.logger.createLogTelkAlert("Alert not sent. Bad request. Name rule: " + name_rule, 4)
-			print("Alert not sent. Bad request. Name rule: " + name_rule)
-		if telegram_code == 401:
-			self.logger.createLogTelkAlert("Alert not sent. Unauthorized. Name rule: " + name_rule, 4)
-			print("Alert not sent. Unauthorized. Name rule: " + name_rule)
-		if telegram_code == 404:
-			self.logger.createLogTelkAlert("Alert not sent. Not found. Name rule: " + name_rule, 4)
-			print("Alert not sent. Not found. Name rule: " + name_rule)
-			
+			self.utils.createTelkAlertLog("Telegram message sent.", 1)
+		elif telegram_code == 400:
+			self.utils.createTelkAlertLog("Telegram message not sent. Status: Bad request.", 3)
+		elif telegram_code == 401:
+			self.utils.createTelkAlertLog("Telegram message not sent. Status: Unauthorized.", 3)
+		elif telegram_code == 404:
+			self.utils.createTelkAlertLog("Telegram message not sent. Status: Not found.", 3)
