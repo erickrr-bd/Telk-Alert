@@ -275,29 +275,6 @@ class FormDialog:
 				self.mainMenu()
 
 	"""
-	Method that generates the interface for entering data type email address.
-
-	Parameters:
-	self -- An instantiated object of the FormDialog class.
-	text -- Text displayed on the interface.
-	initial_value -- Default value shown on the interface.
-
-	Return:
-	tag_inputbox -- The email address entered.
-	"""
-	def getDataEmail(self, text, initial_value):
-		email_reg_exp = re_compile(r'^[a-z0-9]+[\._]?[a-z0-9]+[@]\w+[.]\w+$' )
-		while True:
-			code_inputbox, tag_inputbox = self.d.inputbox(text = text, height = 10, width = 50, init = initial_value)
-			if code_inputbox == self.d.OK:
-				if(not self.utils.validateRegularExpression(email_reg_exp, tag_inputbox)):
-					self.d.msgbox(text = "\nInvalid data entered. Required value (email address).", height = 8, width = 50, title = "Error Message")
-				else:
-					return tag_inputbox
-			elif code_inputbox == self.d.CANCEL:
-				self.mainMenu()
-
-	"""
 	Method that generates the interface for entering data of the time type.
 
 	Parameters:
@@ -351,34 +328,22 @@ class FormDialog:
 	text -- Text that will be shown to the user.
 	list_to_elements -- List of elements displayed on the interface.
 	title -- Title displayed on the interface.
-	type_form -- Type of form, to define the validation to be performed.
 
 	Return:
 	tag_form -- Values entered in the form.
 	"""
-	def getForm(self, text, list_to_elements, title, type_form):
+	def getForm(self, text, list_to_elements, title):
 		while True:
 			code_form, tag_form = self.d.form(text = text, elements = list_to_elements, height = 15, width = 50, form_height = len(list_to_elements), title = title)
 			if code_form == self.d.OK:
-				if type_form == 1:
-					cont = 0
-					for tag in tag_form:
-						if tag == "":
-							cont += 1
-					if cont > 0:
-						self.d.msgbox(text = "\nThere should be no empty or null fields.", height = 7, width = 50, title = "Error Message")
-					else:
-						return tag_form
-				elif type_form == 2:
-					email_reg_exp = re_compile(r'^[a-z0-9]+[\._]?[a-z0-9]+[@]\w+[.]\w+$')
-					cont = 0
-					for tag in tag_form:
-						if(not self.utils.validateRegularExpression(email_reg_exp, tag)):
-							cont += 1
-					if cont > 0:
-						self.d.msgbox(text = "\nInvalid data entered. Required value (email address).", height = 7, width = 50, title = "Error Message")
-					else:
-						return tag_form
+				cont = 0
+				for tag in tag_form:
+					if tag == "":
+						cont += 1
+				if cont > 0:
+					self.d.msgbox(text = "\nThere should be no empty or null fields.", height = 7, width = 50, title = "Error Message")
+				else:
+					return tag_form
 			elif code_form == self.d.CANCEL:
 				self.mainMenu()
 

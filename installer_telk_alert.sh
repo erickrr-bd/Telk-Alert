@@ -87,12 +87,14 @@ elif [ $opc = "U" ] || [ $opc = "u" ]; then
 	echo -e '\e[96mStarting the Telk-Alert update...\e[0m'
 	echo ''
 	dir=$(sudo pwd)
+	systemctl stop telk-alert.service
+	systemctl stop telk-alert-agent.service
+	rm -rf /etc/Telk-Alert-Suite/Telk-Alert/conf/es_conf.yaml
 	cp -r Telk-Alert-Suite /etc/
 	chown telk_alert:telk_alert -R /etc/Telk-Alert-Suite
 	cp telk-alert.service /etc/systemd/system/
 	cp telk-alert-agent.service /etc/systemd/system
 	systemctl daemon-reload
-	rm -rf /etc/Telk-Alert-Suite/Telk-Alert/conf/es_conf.yaml
 	sleep 3
 	echo -e '\e[96mTelk-Alert updated...\e[0m'
 	echo ''

@@ -101,7 +101,7 @@ class Rules:
 			data_alert_rule.append(True)
 			total_fields_to_enter = self.form_dialog.getDataNumber("Enter the total number of field names to be defined:", "2")
 			list_to_fields = self.utils.generateListToForm(int(total_fields_to_enter), "Field")
-			list_fields_names = self.form_dialog.getForm("Enter the name of the fields:", list_to_fields, "Field Names", 1)
+			list_fields_names = self.form_dialog.getForm("Enter the name of the fields:", list_to_fields, "Field Names")
 			data_alert_rule.append(list_fields_names)
 		else:
 			data_alert_rule.append(False)
@@ -300,11 +300,11 @@ class Rules:
 						if int(option_specific_fields_update) == 1:
 							total_fields_to_enter = self.form_dialog.getDataNumber("Enter the total number of field names to be add:", "2")
 							list_to_fields = self.utils.generateListToForm(int(total_fields_to_enter), "Field")
-							list_fields_names = self.form_dialog.getForm("Enter the name of the fields:", list_to_fields, "Field Names", 1)
+							list_fields_names = self.form_dialog.getForm("Enter the name of the fields:", list_to_fields, "Field Names")
 							data_alert_rule['fields_name'].extend(list_fields_names)
 						elif int(option_specific_fields_update) == 2:
 							list_convert_to_form = self.utils.convertListToForm("Field", data_alert_rule['fields_name'])
-							list_fields_names = self.form_dialog.getForm("Enter the name of the fields:", list_convert_to_form, "Field Names", 1)
+							list_fields_names = self.form_dialog.getForm("Enter the name of the fields:", list_convert_to_form, "Field Names")
 							data_alert_rule['fields_name'] = list_fields_names
 						elif int(option_specific_fields_update) == 3:
 							list_specific_fields = self.utils.convertListToCheckOrRadioList(data_alert_rule['fields_name'], "Field")
@@ -317,7 +317,7 @@ class Rules:
 						data_alert_rule['specific_fields_search'] = True
 						total_fields_to_enter = self.form_dialog.getDataNumber("Enter the total number of field names to be defined:", "2")
 						list_to_fields = self.utils.generateListToForm(int(total_fields_to_enter), "Field")
-						list_fields_names = self.form_dialog.getForm("Enter the name of the fields:", list_to_fields, "Field Names", 1)
+						list_fields_names = self.form_dialog.getForm("Enter the name of the fields:", list_to_fields, "Field Names")
 						fields_name_json = { 'fields_name' : list_fields_names }
 						data_alert_rule.update(fields_name_json)
 			if flag_custom_rule == 1:
