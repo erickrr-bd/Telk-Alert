@@ -511,7 +511,6 @@ class Rules:
 			custom_rule_json = {'custom_rule' : False }
 			last_index += 1
 		data_json_alert_rule.update(custom_rule_json)
-		data_json_alert_rule.update(custom_rule_json)
 		aux_data_json = { 'type_alert_send' : data_alert_rule[last_index + 1], 'telegram_bot_token' : data_alert_rule[last_index + 2], 'telegram_chat_id' : data_alert_rule[last_index + 3] }
 		data_json_alert_rule.update(aux_data_json)
 		self.utils.createYamlFile(data_json_alert_rule, self.path_folder_rules + '/' + data_alert_rule[0] + '.yaml', 'w')
