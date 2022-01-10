@@ -10,7 +10,7 @@ Class that allows you to manage the sending of alerts through Telegram.
 """
 class Telegram:
 	"""
-	Property that stores an object of type Utils.
+	Property that stores an object of the Utils class.
 	"""
 	utils = Utils()
 
@@ -27,7 +27,7 @@ class Telegram:
 	Method that sends the alert to the telegram channel.
 
 	Parameters:
-	self -- Instance object.
+	self -- An instantiated object of the Telegram class.
 	telegram_chat_id -- Telegram channel identifier to which the letter will be sent.
 	telegram_bot_token -- Token of the Telegram bot that is the administrator of the Telegram channel to which the alerts will be sent.
 	message -- Message to be sent to the Telegram channel.
