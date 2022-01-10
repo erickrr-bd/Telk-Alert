@@ -8,7 +8,7 @@ Class that allows you to manage the sending of alerts through Telegram.
 """
 class Telegram:
 	"""
-	Property that stores an object of type Utils.
+	Property that stores an object of the Utils class.
 	"""
 	utils = None
 
@@ -25,7 +25,7 @@ class Telegram:
 	Method that sends the alert to the telegram channel.
 
 	Parameters:
-	self -- Instance object.
+	self -- An instantiated object of the Telegram class.
 	telegram_chat_id -- Telegram channel identifier to which the letter will be sent.
 	telegram_bot_token -- Token of the Telegram bot that is the administrator of the Telegram channel to which the alerts will be sent.
 	message -- Message to be sent to the Telegram channel.
@@ -74,13 +74,9 @@ class Telegram:
 	def getStatusByTelegramCode(self, telegram_code):
 		if telegram_code == 200:
 			self.utils.createTelkAlertAgentLog("Telegram message sent.", 1)
-			print("\nTelegram message sent.")	
 		elif telegram_code == 400:
 			self.utils.createTelkAlertAgentLog("Telegram message not sent. Status: Bad request.", 3)
-			print("\nTelegram message not sent. Status: Bad request.")
 		elif telegram_code == 401:
 			self.utils.createTelkAlertAgentLog("Telegram message not sent. Status: Unauthorized.", 3)
-			print("\nTelegram message not sent. Status: Unauthorized.")
 		elif telegram_code == 404:
 			self.utils.createTelkAlertAgentLog("Telegram message not sent. Status: Not found.", 3)
-			print("\nTelegram message not sent. Status: Not found.")

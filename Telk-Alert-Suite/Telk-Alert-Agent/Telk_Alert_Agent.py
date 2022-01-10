@@ -1,14 +1,14 @@
 #! /usr/bin/env python3
 
-from modules.ServiceClass import Service
+from modules.TelkAlertAgentClass import TelkAlertAgent
 
 """
-Service type object.
+Property that stores an object of the TelkAlertAgent class.
 """
-service = Service()
+tel_alert_agent = TelkAlertAgent()
 
 """
 Main function of the application
 """
 if __name__ == "__main__":
-	service.sendStatusTelkAlertService()
+	tel_alert_agent.startTelkAlertAgent()
