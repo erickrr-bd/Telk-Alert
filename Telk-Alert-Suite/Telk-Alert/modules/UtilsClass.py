@@ -123,6 +123,15 @@ class Utils:
 		return total_seconds
 
 	"""
+	Method that converts a quantity in minutes, hours or days into a string used to perform searches in ElasticSearch.
+
+	Parameters:
+	self -- An instantiated object of the Utils class.
+	unit_time -- Unit of time in which the quantity to be converted is expressed.
+	total_time -- Total time to convert.
+
+	Return:
+	string_search -- String obtained from the conversion.
 	"""
 	def convertTimeToStringSearch(self, unit_time, total_time):
 		string_search = "now-"

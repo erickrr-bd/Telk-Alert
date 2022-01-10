@@ -49,12 +49,13 @@ class TelkAlert:
 					if len(list_all_alert_rules) == 0:
 						self.utils.createTelkAlertLog("No alert rules found in directory: " + path_folder_rules, 2)
 					else:
-						elastic = Elastic(telk_alert_configuration)
+						elastic = Elastic()
+						conn_es = elastic.getConnectionElastic(telk_alert_configuration)
 						self.utils.createTelkAlertLog(str(len(list_all_alert_rules)) + " alert rules found in directory: " + path_folder_rules, 1)
 						for alert_rule in list_all_alert_rules:
 							alert_rule_data = self.utils.readYamlFile(path_folder_rules + '/' + alert_rule, 'r')
 							self.utils.createTelkAlertLog(alert_rule + " loaded.", 1)
-							Thread(target = elastic.executionRule, args = (alert_rule_data, )).start()
+							Thread(target = elastic.executionRule, args = (alert_rule_data, conn_es, )).start()
 				else:
 					self.utils.createTelkAlertLog("ElasticSearch version not supported by Telk-Alert.", 3)
 					exit(1)
