@@ -78,18 +78,17 @@ The installer performs the following actions on the computer:
 
 # Running
 
-- Run as service:
+- Run Telk-Alert as service:
 
-`systemctl start snap-rotate.service`
+`systemctl start telk-alert.service`
 
-- To execute manually, first you must go to the path /etc/Snap-Rotate-Suite/Snap-Rotate and execute using the following commands:
+- Run Telk-Alert-Agent as service:
 
-`python3 Snap_Rotate.py` or `./Snap_Rotate.py`
+`systemctl start telk-alert-agent.service`
 
+- To execute Telk-Alert-Tool, run the following command (it makes use of an alias):
 
-- To execute Snap-Rotate-Tool, first you must go to the path /etc/Snap-Rotate-Suite/Snap-Rotate-Tool and execute using the following commands:
-
-`python3 Snap_Rotate_Tool.py` or `./Snap_Rotate_Tool.py`
+`Telk-Alert-Tool`
 
 # Commercial Support
 ![Tekium](https://github.com/unmanarc/uAuditAnalyzer2/blob/master/art/tekium_slogo.jpeg)
