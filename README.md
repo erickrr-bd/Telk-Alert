@@ -61,12 +61,35 @@ Characteristics:
   - pyyaml
 
 # Installation
-To install or update Telk-Alert, you must run the installer_telk_alert.sh executable with administrator rights. The installer will perform the following actions:
+To install or update Telk-Alert you must run the script "installer_telk_alert.sh" for this you can use any of the following commands:
+
+`./installer_telk_alert.sh` or `sh installer_telk_alert.sh`
+
+The installer performs the following actions on the computer:
+
+- Download the libraries and packages necessary for the operation of Telk-Alert (if so indicated).
 - Copy and creation of directories and files necessary for the operation of Telk-Alert.
 - Creation of user and specific group for the operation of Telk-Alert.
 - It changes the owner of the files and directories necessary for the operation of Telk-Alert, assigning them to the user created for this purpose.
 - Creation of passphrase for the encryption and decryption of sensitive information, which is generated randomly, so it is unique for each installed Telk-Alert installation.
 - Creation of Telk-Alert and Telk-Alert-Agent services.
+- Creation of the alias for the execution of Telk-Alert-Tool.
+- Creation of the /var/log/Telk-Alert directory where the application logs are generated.
+
+# Running
+
+- Run as service:
+
+`systemctl start snap-rotate.service`
+
+- To execute manually, first you must go to the path /etc/Snap-Rotate-Suite/Snap-Rotate and execute using the following commands:
+
+`python3 Snap_Rotate.py` or `./Snap_Rotate.py`
+
+
+- To execute Snap-Rotate-Tool, first you must go to the path /etc/Snap-Rotate-Suite/Snap-Rotate-Tool and execute using the following commands:
+
+`python3 Snap_Rotate_Tool.py` or `./Snap_Rotate_Tool.py`
 
 # Commercial Support
 ![Tekium](https://github.com/unmanarc/uAuditAnalyzer2/blob/master/art/tekium_slogo.jpeg)
