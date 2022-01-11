@@ -6,7 +6,7 @@ Email: erodriguez@tekium.mx, erickrr.tbd93@gmail.com
 
 License: GPLv3
 
-Telk-Alert is a tool that through ElasticSearch (Query String) searches carried out every certain time, sends alerts to a Telegram channel or one or more email addresses in a timely manner, which translates into a constant and efficient monitoring of events stored in ElasticSearch.
+Telk-Alert is an application developed in Python, which is responsible for sending alerts via Telegram, based on searches in ElasticSearch using query string.
 
 # Applications
 ## Telk-Alert
