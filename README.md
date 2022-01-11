@@ -42,17 +42,21 @@ Characteristics:
 - Allows you to start, restart, stop and get the status of the Telk-Alert-Agent service.
 
 ## Telk-Alert-Agent
-Telk-Alert auxiliary tool that allows to validate the status of the Telk-Alert service and send an alert.
+Telk-Alert-Agent is an application that validates the status of the Telk-Alert service every minute and alerts in case it has stopped for any reason.
 
 Characteristics:
-- Validate the Telk-Alert service at two configurable hours of the day.
+- Validate the status of the Telk-Alert service every minute.
+- In case the service stops or fails for any reason, an alert every minute is sent until the service starts again.
+- Otherwise, that the service is working correctly, the alert is sent at two configurable hours of the day.
 - Send the status of the Telk-Alert service to a Telegram channel.
+- Generation of application logs.
 
 # Requirements
 - CentOS 8 or Red Hat 8(So far it has only been tested in this version)
 - ElasticSearch 7.x 
 - Python 3.6
 - Python Libraries
+  - elasticsearch
   - elasticsearch-dsl
   - requests
   - pycurl
