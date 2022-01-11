@@ -12,7 +12,7 @@ Telk-Alert is an application developed in Python, which is responsible for sendi
 ## Telk-Alert
 Application that allows data searches in ElasticSearch using defined rules, and when events are found, it allows sending alerts to the user with details about the event found.
 
-![Telk-Alert](https://github.com/erickrr-bd/Snap-Rotate/blob/master/screens/screen1.jpg)
+![Telk-Alert](https://github.com/erickrr-bd/Telk-Alert/blob/master/screens/screen2.jpg)
 
 Characteristics:
 - The connection with ElasticSearch can be done through HTTPS and HTTP authentication (It must be configured in ElasticSearch).
@@ -31,7 +31,7 @@ Characteristics:
 ## Telk-Alert-Tool
 Telk-Alert graphical tool that allows the user to define the configuration and alert rules that will be used for the operation of the application. These data are saved in files with the extension yaml.
 
-![Telk-Alert-Tool](https://github.com/erickrr-bd/Snap-Rotate/blob/master/screens/screen2.jpg)
+![Telk-Alert-Tool](https://github.com/erickrr-bd/Telk-Alert/blob/master/screens/screen1.jpg)
 
 Characteristics:
 - Allows you to create and modify the Telk-Alert connection settings.
