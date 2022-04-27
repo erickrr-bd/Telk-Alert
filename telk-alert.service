@@ -1,5 +1,5 @@
 [Unit]
-Description=Telk-Alert v3.1 Service
+Description=Telk-Alert v3.2
 After=networking.target
 StartLimitIntervalSec=0
 

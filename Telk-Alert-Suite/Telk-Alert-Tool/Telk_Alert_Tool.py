@@ -1,15 +1,15 @@
 #! /usr/bin/env python3
 
-from modules.FormClass import FormDialog
+from modules.Telk_Alert_Tool_Class import TelkAlertTool
 
 """
-FormDialog class object.
+Attribute that stores an object of the TelkAlertTool class.
 """
-form = FormDialog()
+telk_alert_tool = TelkAlertTool()
 
 """
 Main function of the application
 """
 if __name__ == "__main__":	
 	while True:
-		form.mainMenu()
+		telk_alert_tool.mainMenu()
