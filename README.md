@@ -1,4 +1,4 @@
-# Telk-Alert v3.1 (Tekium ELK - Alert)
+# Telk-Alert v3.2 (Tekium ELK - Alert)
 
 Author: Erick Rodríguez 
 
