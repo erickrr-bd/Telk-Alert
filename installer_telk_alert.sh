@@ -71,7 +71,7 @@ if [ $opc = "I" ] || [ $opc = "i" ]; then
 	echo ''
 	echo -e '\e[96mCreating passphrase...\e[0m'
 	passphrase=$(cat /dev/urandom | head -n 30 | md5sum | head -c 30)
-	cat << EOF > /etc/Inv-Alert-Suite/Inv-Alert/configuration/key 
+	cat << EOF > /etc/Telk-Alert-Suite/Telk-Alert/configuration/key 
 $passphrase
 EOF
 	chown telk_alert:telk_alert -R /etc/Telk-Alert-Suite

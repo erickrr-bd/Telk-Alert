@@ -9,11 +9,19 @@ from .Configuration_Class import Configuration
 Class that manages what is related to the interfaces and actions of Telk-Alert-Tool.
 """
 class TelkAlertTool:
-
+	"""
+	Attribute that stores an object of the libPyUtils class.
+	"""
 	__utils = None
 
+	"""
+	Attribute that stores an object of the libPyDialog class.
+	"""
 	__dialog = None
 
+	"""
+	Attribute that stores an object of the Constants class.
+	"""
 	__constants = None
 
 
@@ -64,5 +72,4 @@ class TelkAlertTool:
 		else:
 			option_configuration_true = self.__dialog.createRadioListDialog("Select a option:", 8, 50, self.__constants.OPTIONS_CONFIGURATION_TRUE, "Configuration Options")
 			if option_configuration_true == "Modify":
-				print("Modificar")
-				#configuration.modifyConfiguration()
+				configuration.modifyConfiguration()
