@@ -109,3 +109,51 @@ class Constants:
 	"""
 	OPTIONS_HTTP_AUTHENTICATION_DATA = [("Username", "Username for HTTP Authentication", 0),
 								 		("Password", "User password", 0)]
+
+	OPTIONS_ALERT_RULES_MENU = [("1", "Create new alert rule"),
+					 			("2", "Update alert rule"),
+					 			("3", "Delete alert rule(s)"),
+					 			("4", "Show all alert rules")]
+
+	OPTIONS_ALERT_RULE_LEVEL = [["Low", "Low level alert", 1],
+							 	["Medium", "Medium level alert", 0],
+							 	["High", "High level alert", 0]]
+
+	OPTIONS_ALERT_RULE_TYPE = [("Frequency", "Perform searches periodically", 1)]
+
+	OPTIONS_UNIT_TIME = [["minutes", "Time expressed in minutes", 1],
+					  	 ["hours", "Time expressed in hours", 0],
+					  	 ["days", "Time expressed in days", 0]]
+
+	OPTIONS_QUERY_TYPE = [("query_string", "Perform the search using a Query String", 1)]
+
+	OPTIONS_CUSTOM_RULE = [("Hostname", "Restrict by hostname", 0),
+					 	   ("Username", "Restrict by username", 0)]
+
+	OPTIONS_SEND_TYPE_ALERT = [["only", "A single alert with the total of events found", 1],
+						       ["multiple", "An alert for each event found", 0]]
+
+	"""
+	Options that are displayed to modify "Alert Rule".
+	"""
+	OPTIONS_FIELDS_UPDATE_ALERT_RULE = [("Name", "Alert rule name", 0),
+							  			("Level", "Alert rule level", 0),
+							  			("Index", "Index name or index pattern in ElastcSearch", 0),
+							  			("Number Events", "Number of events to which the alert is sent", 0),
+							  			("Time Search", "Time in which the search will be repeated", 0),
+							  			("Time Range", "Time range in which events will be searched", 0),
+							  			("Query String", "Query string for event search", 0),
+							  			("Fields Option", "Enables or disables the use of fields option", 0),
+							  			("Custom Rule", "Enable or disable the use of custom rule", 0),
+							  			("Shipping Type", "How the alert will be sent", 0),
+							  			("Bot Token", "Telegram Bot Token", 0),
+							  			("Chat ID", "Telegram channel identifier", 0)]
+	
+	OPTIONS_USE_FIELDS_OPTION_FALSE = [("Enable", "Enables the use of specific fields", 0)]
+
+	OPTIONS_USE_FIELDS_OPTION_TRUE = [("Disable", "Disable the use of specific fields", 0),
+								      ("Data", "Modify configured data", 0)]
+
+	OPTIONS_USE_FIELDS_OPTION_UPDATE = [("1", "Add New Field(s)"),
+									   	("2", "Modify Field(s)"),
+									   	("3", "Remove Field(s)")]
