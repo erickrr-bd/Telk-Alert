@@ -1,6 +1,6 @@
 #! /usr/bin/env python3
 
-from modules.TelkAlertClass import TelkAlert 
+from modules.Telk_Alert_Class import TelkAlert 
 
 """
 Property that stores an object of the TelkAlert class.

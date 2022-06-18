@@ -190,9 +190,8 @@ class AlertRules:
 				if "Query String" in options_fields_to_update:
 					query_string = self.__dialog.createInputBoxDialog("Enter the query string:", 8, 50, data_alert_rule['query_type'][0]['query_string']['query'])
 					data_alert_rule["query_type"] = [{'query_string' : {'query' : query_string}}]
-				if "Fields Option" in options_fields_to_update:
-					if data_alert_rule["use_fields_option"] == True:
-						
+				#if "Fields Option" in options_fields_to_update:
+				#	if data_alert_rule["use_fields_option"] == True:		
 				self.__utils.createYamlFile(data_alert_rule, self.__folder_alert_rules_path + '/' + alert_rule_to_modify)
 				hash_alert_rule_new = self.__utils.getHashFunctionToFile(self.__folder_alert_rules_path + '/' + alert_rule_to_modify)
 				if hash_alert_rule_new == hash_alert_rule_actual:
