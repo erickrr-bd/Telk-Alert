@@ -17,6 +17,9 @@ class TelkAlert:
 
 
 	def __init__(self):
+		"""
+		Method that corresponds to the constructor of the class.
+		"""
 		self.__logger = libPyLog()
 		self.__utils = libPyUtils()
 		self.__constants = Constants()
@@ -24,6 +27,9 @@ class TelkAlert:
 
 
 	def startTelkAlert(self):
+		"""
+		Method that starts the Telk-Alert application
+		"""
 		try:
 			if path.exists(self.__constants.PATH_FILE_CONFIGURATION):
 				data_configuration = self.__utils.readYamlFile(self.__constants.PATH_FILE_CONFIGURATION)
@@ -48,7 +54,7 @@ class TelkAlert:
 						for alert_rule in list_all_alert_rules:
 							self.__logger.generateApplicationLog(alert_rule[:-5] + " loaded", 1, "__start", use_stream_handler = True)
 							data_alert_rule = self.__utils.readYamlFile(path_alert_rules_folder + '/' + alert_rule)
-							Thread(target = self.__startAlertRule, args = (conn_es, data_alert_rule, )).start()
+							Thread(name = alert_rule,target = self.__startAlertRule, args = (conn_es, data_alert_rule, )).start()
 					else:
 						self.__logger.generateApplicationLog("No alert rules found in: " + path_alert_rules_folder, 1, "__start", use_stream_handler = True)
 			else:
@@ -61,5 +67,16 @@ class TelkAlert:
 			self.__logger.generateApplicationLog(exception, 3, "__start", use_file_handler = True, name_file_log = self.__constants.NAME_FILE_LOG, user = self.__constants.USER, group = self.__constants.GROUP)
 			self.__logger.generateApplicationLog("Error connecting with ElasticSearch. For more information, see the logs.", 3, "__connection", use_stream_handler = True)
 
+
 	def __startAlertRule(self, conn_es, data_alert_rule):
-		print("Hola")
+		"""
+		"""
+		try:
+			for unit_time in data_alert_rule["time_search"]:
+				time_search_in_seconds = self.__utils.convertTimeToSeconds(unit_time, data_alert_rule["time_search"][unit_time])
+			print(time_search_in_seconds)
+			for unit_time in data_alert_rule["time_range"]:
+				date_math_time_range = self.__utils.convertTimeToDateMath(unit_time, data_alert_rule["time_range"][unit_time])
+			print(date_math_time_range)
+		except KeyError as exception:
+			print("Error")
