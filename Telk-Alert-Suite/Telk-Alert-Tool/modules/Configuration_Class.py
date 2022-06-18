@@ -40,11 +40,11 @@ class Configuration:
 
 		:arg action_to_cancel: Method to be called when the user chooses the cancel option.
 		"""
+		self.__logger = libPyLog()
 		self.__utils = libPyUtils()
 		self.__constants = Constants()
 		self.__action_to_cancel = action_to_cancel
 		self.__dialog = libPyDialog(self.__constants.BACKTITLE, action_to_cancel)
-		self.__logger = libPyLog(self.__constants.NAME_FILE_LOG, self.__constants.NAME_LOG, self.__constants.USER, self.__constants.GROUP)
 
 
 	def createConfiguration(self):
@@ -83,11 +83,11 @@ class Configuration:
 				data_configuration.append(False)
 			self.__createFileYamlConfiguration(data_configuration)
 			if path.exists(self.__constants.PATH_FILE_CONFIGURATION):
-				self.__logger.createApplicationLog("Configuration file created", 1)
+				self.__logger.generateApplicationLog("Configuration file created", 1, "__configuration", use_file_handler = True, name_file_log = self.__constants.NAME_FILE_LOG, user = self.__constants.USER, group = self.__constants.GROUP)
 				self.__dialog.createMessageDialog("\nConfiguration file created.", 7, 50, "Notification Message")
 			self.__action_to_cancel()
 		except (FileNotFoundError, IOError, OSError) as exception:
-			self.__logger.createApplicationLog(exception, 3)
+			self.__logger.generateApplicationLog(exception, 3, "__configuration", use_file_handler = True, name_file_log = self.__constants.NAME_FILE_LOG, user = self.__constants.USER, group = self.__constants.GROUP)
 			self.__dialog.createMessageDialog("\nError creating, opening or reading the file. For more information, see the logs.", 8, 50, "Error Message")
 			self.__action_to_cancel()
 
@@ -176,15 +176,15 @@ class Configuration:
 			if hash_file_configuration_original == hash_file_configuration_new:
 				self.__dialog.createMessageDialog("\nConfiguration file not modified.", 7, 50, "Notification Message")
 			else:
-				self.__logger.createApplicationLog("Modified configuration file", 2)
+				self.__logger.generateApplicationLog("Modified configuration file", 2, "__configuration", use_file_handler = True, name_file_log = self.__constants.NAME_FILE_LOG, user = self.__constants.USER, group = self.__constants.GROUP)
 				self.__dialog.createMessageDialog("\nModified configuration file.", 7, 50, "Notification Message")
 			self.__action_to_cancel()
 		except KeyError as exception:
-			self.__logger.createApplicationLog("Key Error: " + str(exception), 3)
+			self.__logger.generateApplicationLog("Key Error: " + str(exception), 3, "__configuration", use_file_handler = True, name_file_log = self.__constants.NAME_FILE_LOG, user = self.__constants.USER, group = self.__constants.GROUP)
 			self.__dialog.createMessageDialog("\nKey Error: " + str(exception), 7, 50, "Error Message")
 			self.__action_to_cancel()
 		except (IOError, FileNotFoundError, OSError) as exception:
-			self.__logger.createApplicationLog(exception, 3)
+			self.__logger.generateApplicationLog(exception, 3, "__configuration", use_file_handler = True, name_file_log = self.__constants.NAME_FILE_LOG,user = self.__constants.USER, group = self.__constants.GROUP)
 			self.__dialog.createMessageDialog("\n", 8, 50, "Error Message")
 			self.__action_to_cancel()
 
