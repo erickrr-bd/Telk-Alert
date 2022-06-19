@@ -45,13 +45,13 @@ class AlertRules:
 
 		:arg action_to_cancel: Method to be called when the user chooses the cancel option.
 		"""
+		self.__logger = libPyLog()
 		self.__utils = libPyUtils()
 		self.__constants = Constants()
 		self.__action_to_cancel = action_to_cancel
 		self.__dialog = libPyDialog(self.__constants.BACKTITLE, action_to_cancel)
 		name_folder_rules = self.__utils.readYamlFile(self.__constants.PATH_FILE_CONFIGURATION)['name_folder_rules']
 		self.__folder_alert_rules_path = self.__constants.PATH_BASE_TELK_ALERT + '/' + name_folder_rules
-		self.__logger = libPyLog(self.__constants.NAME_FILE_LOG, self.__constants.NAME_LOG, self.__constants.USER, self.__constants.GROUP)
 
 
 	def createNewAlertRule(self):
@@ -124,11 +124,11 @@ class AlertRules:
 			data_alert_rule.append(telegram_chat_id.decode('utf-8'))
 			self.__createFileYamlAlertRule(data_alert_rule)
 			if path.exists(self.__folder_alert_rules_path + '/' + alert_rule_name + ".yaml"):
-				self.__logger.createApplicationLog("Alert rule created: " + alert_rule_name, 1)
+				self.__logger.generateApplicationLog("Alert rule created: " + alert_rule_name, 1, "__alertRule", use_file_handler = True, name_file_log = self.__constants.NAME_FILE_LOG, user = self.__constants.USER, group = self.__constants.GROUP)
 				self.__dialog.createMessageDialog("\nAlert rule created: " + alert_rule_name, 7, 50, "Notification Message")
 			self.__action_to_cancel()
 		except (OSError, IOError, FileNotFoundError, ValueError) as exception:
-			self.__logger.createApplicationLog(exception, 3)
+			self.__logger.generateApplicationLog(exception, 3, "__alertRule", use_file_handler = True, name_file_log = self.__constants.NAME_FILE_LOG, user = self.__constants.USER, group = self.__constants.GROUP)
 			self.__dialog.createMessageDialog("\nError creating the alert rule. For more information, see the logs.", 8, 50, "Error Message")
 			self.__action_to_cancel()
 
