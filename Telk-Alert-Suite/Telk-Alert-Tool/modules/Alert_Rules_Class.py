@@ -237,6 +237,26 @@ class AlertRules:
 			self.__action_to_cancel()
 
 
+	def showAllAlertRules(self):
+		"""
+		Method that displays all alert rules created so far.
+		"""
+		try:
+			list_all_alert_rules = self.__utils.getListOfAllYamlFilesInFolder(self.__folder_alert_rules_path)
+			if list_all_alert_rules:
+				message_to_display = "\nAlert rules:\n"
+				for alert_rule in list_all_alert_rules:
+					message_to_display += "\n- " + alert_rule[:-5]
+				self.__dialog.createScrollBoxDialog(message_to_display, 18, 50, "Show Alert Rules")
+			else:
+				self.__dialog.createMessageDialog("\nNo alert rules found.", 7, 50, "Notification Message")
+			self.__action_to_cancel()
+		except (OSError, FileNotFoundError) as exception:
+			self.__dialog.createMessageDialog("\nError to show all alert rules. For more information, see the logs.", 8, 50, "Error Message")
+			self.__logger.generateApplicationLog(exception, 3, "__showAlertRules", use_file_handler = True, name_file_log = self.__constants.NAME_FILE_LOG, user = self.__constants.USER, group = self.__constants.GROUP)
+			self.__action_to_cancel()
+
+
 	def __createFileYamlAlertRule(self, data_alert_rule):
 		"""
 		Method that creates the YAML file corresponding to the new alert rule.
