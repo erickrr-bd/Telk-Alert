@@ -149,11 +149,20 @@ class Constants:
 							  			("Bot Token", "Telegram Bot Token", 0),
 							  			("Chat ID", "Telegram channel identifier", 0)]
 	
-	OPTIONS_USE_FIELDS_OPTION_FALSE = [("Enable", "Enables the use of specific fields", 0)]
+	"""
+	Options that are displayed when "use fields" option is false.
+	"""
+	OPTIONS_USE_FIELDS_OPTION_FALSE = [("Enable", "Enables the use fields option", 0)]
 
-	OPTIONS_USE_FIELDS_OPTION_TRUE = [("Disable", "Disable the use of specific fields", 0),
+	"""
+	Options that are displayed when "use fields" option is true.
+	"""
+	OPTIONS_USE_FIELDS_OPTION_TRUE = [("Disable", "Disable the use fields option", 0),
 								      ("Data", "Modify configured data", 0)]
 
+	"""
+	Options that are displayed when "use fields" option is modify.
+	"""
 	OPTIONS_USE_FIELDS_OPTION_UPDATE = [("1", "Add New Field(s)"),
 									   	("2", "Modify Field(s)"),
 									   	("3", "Remove Field(s)")]

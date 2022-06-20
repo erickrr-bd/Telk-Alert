@@ -135,13 +135,14 @@ class AlertRules:
 
 	def modifyAlertRule(self):
 		"""
+		Method tha modifies one or more values in a specific alert rule.
 		"""
 		try:
-			list_all_alert_rules = self.__utils.getListOfAllFilesYamlInFolder(self.__folder_alert_rules_path)
+			list_all_alert_rules = self.__utils.getListOfAllYamlFilesInFolder(self.__folder_alert_rules_path)
 			if list_all_alert_rules:
 				flag_rename_alert_rule = 0
 				list_alert_rules_to_modify = self.__utils.convertListToDialogList(list_all_alert_rules, "Alert Rule")
-				alert_rule_to_modify = self.__dialog.createRadioListDialog("Select a option:", 10, 50, list_alert_rules_to_modify, "Alert Rules")
+				alert_rule_to_modify = self.__dialog.createRadioListDialog("Select a option:", 18, 70, list_alert_rules_to_modify, "Alert Rules")
 				options_fields_to_update = self.__dialog.createCheckListDialog("Select one or more options:", 18, 70, self.__constants.OPTIONS_FIELDS_UPDATE_ALERT_RULE, "Fields")
 				data_alert_rule = self.__utils.readYamlFile(self.__folder_alert_rules_path + '/' + alert_rule_to_modify)
 				hash_alert_rule_actual = self.__utils.getHashFunctionToFile(self.__folder_alert_rules_path + '/' + alert_rule_to_modify)
@@ -190,25 +191,54 @@ class AlertRules:
 				if "Query String" in options_fields_to_update:
 					query_string = self.__dialog.createInputBoxDialog("Enter the query string:", 8, 50, data_alert_rule['query_type'][0]['query_string']['query'])
 					data_alert_rule["query_type"] = [{'query_string' : {'query' : query_string}}]
-				#if "Fields Option" in options_fields_to_update:
-				#	if data_alert_rule["use_fields_option"] == True:		
+				if "Fields Option" in options_fields_to_update:
+					if data_alert_rule["use_fields_option"] == True:
+						option_use_fields_true = self.__dialog.createRadioListDialog("Select a option:", 10, 50, self.__constants.OPTIONS_USE_FIELDS_OPTION_TRUE, "Use Fields Option")
+						if option_use_fields_true == "Disable":
+							data_alert_rule["use_fields_option"] = False
+							del data_alert_rule["fields_name"]
+						elif option_use_fields_true == "Data":
+							option_use_fields_update = self.__dialog.createMenuDialog("Select a option:", 10, 50, self.__constants.OPTIONS_USE_FIELDS_OPTION_UPDATE, "Use Fields Option Menu")
+							if option_use_fields_update == "1":
+								number_of_fields_to_enter = self.__dialog.createInputBoxToNumberDialog("Enter the total of fields to be define:", 8, 50, "3")
+								list_to_form_dialog = self.__utils.createListToDialogForm(int(number_of_fields_to_enter), "Field")
+								list_all_fields = self.__dialog.createFormDialog("Enter the field's names:", list_to_form_dialog, 15, 50, "Fields Form")
+								data_alert_rule["fields_name"].extend(list_all_fields)
+							elif option_use_fields_update == "2":
+								list_to_form_dialog = self.__utils.convertListToDialogForm(data_alert_rule["fields_name"], "Field")
+								list_all_fields = self.__dialog.createFormDialog("Enter the field's names:", list_to_form_dialog, 15, 50, "Fields Form")
+								data_alert_rule["fields_name"] = list_all_fields
+							elif option_use_fields_update == "3":
+								list_to_dialog = self.__utils.convertListToDialogList(data_alert_rule["fields_name"], "Field")
+								options_fields_remove = self.__dialog.createCheckListDialog("Select one or more options:", 14, 50, list_to_dialog, "Remove Fields")
+								for option in options_fields_remove:
+									data_alert_rule["fields_name"].remove(option)
+					else:
+						option_use_fields_false = self.__dialog.createRadioListDialog("Select a option:", 8, 50, self.__constants.OPTIONS_USE_FIELDS_OPTION_FALSE, "Use Fields Option")
+						if option_use_fields_false == "Enable":
+							data_alert_rule["use_fields_option"] = True
+							number_of_fields_to_enter = self.__dialog.createInputBoxToNumberDialog("Enter the total of fields to be define:", 8, 50, "3")
+							list_to_form_dialog = self.__utils.createListToDialogForm(int(number_of_fields_to_enter), "Field")
+							list_all_fields = self.__dialog.createFormDialog("Enter the field's names:", list_to_form_dialog, 15, 50, "Fields Form")
+							fields_name_json = {"fields_name" : list_all_fields}
+							data_alert_rule.update(fields_name_json)
 				self.__utils.createYamlFile(data_alert_rule, self.__folder_alert_rules_path + '/' + alert_rule_to_modify)
 				hash_alert_rule_new = self.__utils.getHashFunctionToFile(self.__folder_alert_rules_path + '/' + alert_rule_to_modify)
 				if hash_alert_rule_new == hash_alert_rule_actual:
 					self.__dialog.createMessageDialog("\nAlert rule not modified: " + alert_rule_to_modify, 8, 50, "Notification Message")
-				else:
-					self.__logger.createApplicationLog("Alert rule modified: " + alert_rule_to_modify, 2)
+				else:	
 					self.__dialog.createMessageDialog("\nAlert rule modified: " + alert_rule_to_modify, 8, 50, "Notification Message")
+					self.__logger.generateApplicationLog("Alert rule modified: " + alert_rule_to_modify, 2, "__modifyAlertRule", use_file_handler = True, name_file_log = self.__constants.NAME_FILE_LOG, user = self.__constants.USER, group = self.__constants.GROUP)
 			else:
 				self.__dialog.createMessageDialog("\nNo alert rules found.", 7, 50, "Notification Message")
 			self.__action_to_cancel()
 		except KeyError as exception:
-			self.__logger.createApplicationLog("Key Error: " + str(exception), 3)
 			self.__dialog.createMessageDialog("\nKey Error: " + str(exception), 7, 50, "Error Message")
+			self.__logger.generateApplicationLog("Key Error: " + str(exception), 3, "__modifyAlertRule", use_file_handler = True, name_file_log = self.__constants.NAME_FILE_LOG, user = self.__constants.USER, group = self.__constants.GROUP)
 			self.__action_to_cancel()
 		except (OSError, FileNotFoundError, IOError) as exception:
-			self.__logger.createApplicationLog(exception, 3)
 			self.__dialog.createMessageDialog("\nError to modify the alert rule. For more information, see the logs.", 8, 50, "Error Message")
+			self.__logger.generateApplicationLog(exception, 3, "__modifyAlertRule", use_file_handler = True, name_file_log = self.__constants.NAME_FILE_LOG, user = self.__constants.USER, group = self.__constants.GROUP)
 			self.__action_to_cancel()
 
 
