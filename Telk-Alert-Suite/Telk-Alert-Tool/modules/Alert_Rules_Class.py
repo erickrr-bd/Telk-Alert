@@ -212,6 +212,31 @@ class AlertRules:
 			self.__action_to_cancel()
 
 
+	def deleteAlertRules(self):
+		"""
+		Method that delete one or more alert rules.
+		"""
+		try:
+			list_all_alert_rules = self.__utils.getListOfAllYamlFilesInFolder(self.__folder_alert_rules_path)
+			if list_all_alert_rules:
+				list_alert_rules_to_delete = self.__utils.convertListToDialogList(list_all_alert_rules, "Alert Rule")
+				alert_rules_to_delete= self.__dialog.createCheckListDialog("Select one or more options:", 10, 50, list_alert_rules_to_delete, "Alert Rules")
+				confirmation_delete_alert_rules = self.__dialog.createYesOrNoDialog("\nAre you sure to delete the following alert rules?\n\n** This action cannot be undone.", 10, 50, "Delete Alert Rules")
+				if confirmation_delete_alert_rules == "ok":
+					message_to_display = "\nAlert rules removed:\n"
+					for alert_rule in alert_rules_to_delete:
+						self.__utils.deleteFile(self.__folder_alert_rules_path + '/' + alert_rule)
+						message_to_display += "\n- " + alert_rule
+					self.__dialog.createScrollBoxDialog(message_to_display, 14, 50, "Delete Alert Rules")
+			else:
+				self.__dialog.createMessageDialog("\nNo alert rules found.", 7, 50, "Notification Message")
+			self.__action_to_cancel()
+		except (OSError, FileNotFoundError) as exception:
+			self.__dialog.createMessageDialog("\nError to delete one or more alert rules. For more information, see the logs.", 8, 50, "Error Message")
+			self.__logger.generateApplicationLog(exception, 3, "__deleteAlertRules", use_file_handler = True, name_file_log = self.__constants.NAME_FILE_LOG, user = self.__constants.USER, group = self.__constants.GROUP)
+			self.__action_to_cancel()
+
+
 	def __createFileYamlAlertRule(self, data_alert_rule):
 		"""
 		Method that creates the YAML file corresponding to the new alert rule.

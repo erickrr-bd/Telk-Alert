@@ -84,6 +84,8 @@ class TelkAlertTool:
 			alert_rules.createNewAlertRule()
 		elif option == 2:
 			alert_rules.modifyAlertRule()
+		elif option == 3:
+			alert_rules.deleteAlertRules()
 
 
 	def __defineConfiguration(self):
