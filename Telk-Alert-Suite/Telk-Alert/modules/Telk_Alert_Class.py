@@ -7,16 +7,33 @@ from libPyUtils import libPyUtils
 from libPyTelegram import libPyTelegram
 from .Constants_Class import Constants
 
+"""
+Class that manages the operation of Telk-Alert.
+"""
 class TelkAlert:
-
+	"""
+	Attribute that stores an object of the libPyUtils class.
+	"""
 	__utils = None
 
+	"""
+	Attribute that stores an object of the libPyLog class.
+	"""
 	__logger = None
 
+	"""
+	Attribute that stores an object of the libPyTelegram class.
+	"""
 	__telegram = None
 
+	"""
+	Attribute that stores an object of the Constants class.
+	"""
 	__constants = None
 
+	"""
+	Attribute that stores an object of the libPyElk class.
+	"""
 	__elasticsearch = None
 
 
@@ -33,7 +50,7 @@ class TelkAlert:
 
 	def startTelkAlert(self):
 		"""
-		Method that starts the Telk-Alert application
+		Method that starts the Telk-Alert application.
 		"""
 		try:
 			if path.exists(self.__constants.PATH_FILE_CONFIGURATION):
@@ -59,22 +76,27 @@ class TelkAlert:
 						for alert_rule in list_all_alert_rules:
 							self.__logger.generateApplicationLog(alert_rule[:-5] + " loaded", 1, "__start", use_stream_handler = True)
 							data_alert_rule = self.__utils.readYamlFile(path_alert_rules_folder + '/' + alert_rule)
-							Thread(name = alert_rule[:-5],target = self.__startAlertRule, args = (conn_es, data_alert_rule, )).start()
+							Thread(name = alert_rule[:-5], target = self.__startAlertRule, args = (conn_es, data_alert_rule, )).start()
 					else:
 						self.__logger.generateApplicationLog("No alert rules found in: " + path_alert_rules_folder, 1, "__start", use_stream_handler = True)
 			else:
 				self.__logger.generateApplicationLog("Configuration file not found", 3, "Configuration", use_stream_handler = True)
 		except KeyError  as exception:
-			print("Error 2")
+			self.__logger.generateApplicationLog("Key Error: " + str(exception), 3, "__start", use_stream_handler = True, use_file_handler = True, name_file_log = self.__constants.NAME_FILE_LOG, user = self.__constants.USER, group = self.__constants.GROUP)
 		except (OSError, IOError, FileNotFoundError) as exception:
-			print("Error")
-		except (self.__elasticsearch.exceptions.AuthenticationException, self.__elasticsearch.exceptions.ConnectionError, self.__elasticsearch.exceptions.AuthorizationException, self.__elasticsearch.exceptions.RequestError) as exception:
+			self.__logger.generateApplicationLog("Error to found, open or read a file or directory. For more information, see the logs.", 3, "__start", use_stream_handler = True)
 			self.__logger.generateApplicationLog(exception, 3, "__start", use_file_handler = True, name_file_log = self.__constants.NAME_FILE_LOG, user = self.__constants.USER, group = self.__constants.GROUP)
+		except (self.__elasticsearch.exceptions.AuthenticationException, self.__elasticsearch.exceptions.ConnectionError, self.__elasticsearch.exceptions.AuthorizationException, self.__elasticsearch.exceptions.RequestError) as exception:
 			self.__logger.generateApplicationLog("Error connecting with ElasticSearch. For more information, see the logs.", 3, "__connection", use_stream_handler = True)
+			self.__logger.generateApplicationLog(exception, 3, "__start", use_file_handler = True, name_file_log = self.__constants.NAME_FILE_LOG, user = self.__constants.USER, group = self.__constants.GROUP)	
 
 
 	def __startAlertRule(self, conn_es, data_alert_rule):
 		"""
+		Method that starts the alert rule's search
+
+		:arg conn_es: Object that contains a connection to ElasticSearch.
+		:arg data_alert_rule: bject that contains the data of the alert rule.
 		"""
 		try:
 			for unit_time in data_alert_rule["time_search"]:
@@ -97,11 +119,22 @@ class TelkAlert:
 								self.__sendOnlyAlertRule(result_search, data_alert_rule, telegram_bot_token, telegram_chat_id, len(result_search))
 					else:
 						self.__logger.generateApplicationLog("No events found", 1, "__" + data_alert_rule["alert_rule_name"], use_stream_handler = True)
+				else:
+					print("No custom rule")
 				sleep(time_search_in_seconds)
 		except KeyError as exception:
-			print("Error")
+			self.__logger.generateApplicationLog("Key Error: " + str(exception), 3, "__" + data_alert_rule["alert_rule_name"], use_stream_handler = True, use_file_handler = True, name_file_log = self.__constants.NAME_FILE_LOG, user = self.__constants.USER, group = self.__constants.GROUP)
+
 
 	def __sendMultipleAlertRule(self, result_search, data_alert_rule, telegram_bot_token, telegram_chat_id):
+		"""
+		Method that sends an alert for each event found.
+
+		:arg result_search: Object that contains the result data of the ElasticSearch search.
+		:arg data_alert_rule: Object that contains the data of the alert rule.
+		:arg telegram_bot_token: Telegram Bot Token.
+		:arg telegram_chat_id: Telegram channel identifier where the alert will be send.
+		"""
 		try:
 			for hit in result_search:
 				message_header = u'\u26A0\uFE0F' + " " + data_alert_rule["alert_rule_name"] +  " " + u'\u26A0\uFE0F' + '\n\n' + u'\U0001f6a6' +  " Alert level: " + data_alert_rule["alert_rule_level"] + "\n\n" +  u'\u23F0' + " Alert sent: " + strftime("%c") + "\n\n"
@@ -110,12 +143,22 @@ class TelkAlert:
 				response_status_code = self.__telegram.sendMessageTelegram(telegram_bot_token, telegram_chat_id, message_to_send)
 				self.__createLogByTelegramCode(response_status_code, data_alert_rule["alert_rule_name"])
 		except KeyError as exception:
-			print("KeyError")
+			self.__logger.generateApplicationLog("Key Error: " + str(exception), 3, "__" + data_alert_rule["alert_rule_name"], use_stream_handler = True, use_file_handler = True, name_file_log = self.__constants.NAME_FILE_LOG, user = self.__constants.USER, group = self.__constants.GROUP)
+
 
 	def __sendOnlyAlertRule(self, result_search, data_alert_rule, telegram_bot_token, telegram_chat_id, total_events):
+		"""
+		Method that sends only an alert for all events found.
+
+		:arg result_search: Object that contains the result data of the ElasticSearch search.
+		:arg data_alert_rule: Object that contains the data of the alert rule.
+		:arg telegram_bot_token: Telegram Bot Token.
+		:arg telegram_chat_id: Telegram channel identifier where the alert will be send.
+		:arg total_events: Total of events found in the search.
+		"""
 		try:
 			message_header = u'\u26A0\uFE0F' + " " + data_alert_rule["alert_rule_name"] +  " " + u'\u26A0\uFE0F' + '\n\n' + u'\U0001f6a6' +  " Alert level: " + data_alert_rule["alert_rule_level"] + "\n\n" +  u'\u23F0' + " Alert sent: " + strftime("%c") + "\n\n"
-			message_header += "At least " + str(data_alert_rule["number_events_found_by_alert"]) + " event(s) were found." + "\n\n"
+			message_header += "At least " + str(data_alert_rule["number_events_found_by_alert"]) + " event(s) were found." + "\n\nFOUND EVENT:\n\n"
 			for hit in result_search:
 				message_to_send = message_header + self.__elasticsearch.generateTelegramMessagewithElasticData(hit)
 				break
@@ -123,14 +166,15 @@ class TelkAlert:
 			response_status_code = self.__telegram.sendMessageTelegram(telegram_bot_token, telegram_chat_id, message_to_send)
 			self.__createLogByTelegramCode(response_status_code, data_alert_rule["alert_rule_name"])
 		except KeyError as exception:
-			print("Error")
+			self.__logger.generateApplicationLog("Key Error: " + str(exception), 3, "__" + data_alert_rule["alert_rule_name"], use_stream_handler = True, use_file_handler = True, name_file_log = self.__constants.NAME_FILE_LOG, user = self.__constants.USER, group = self.__constants.GROUP)
 
 
 	def __createLogByTelegramCode(self, response_status_code, alert_rule_name):
 		"""
 		Method that creates a log based on the HTTP code received as a response.
 
-		:arg response_http_code: HTTP code received in the response when sending the alert to Telegram.
+		:arg response_status_code: HTTP code received in the response when sending the alert to Telegram.
+		:arg alert_rule_name: Name of the alert rule from which the alert was sent.
 		"""
 		if response_status_code == 200:
 			self.__logger.generateApplicationLog("Telegram message sent.", 1, "__" + alert_rule_name, use_stream_handler = True)
