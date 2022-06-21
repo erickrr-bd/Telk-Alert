@@ -1,6 +1,7 @@
 from os import path
 from sys import exit
 from libPyUtils import libPyUtils
+from .Service_Class import Service
 from libPyDialog import libPyDialog
 from .Constants_Class import Constants
 from .Alert_Rules_Class import AlertRules
@@ -55,6 +56,18 @@ class TelkAlertTool:
 			self.mainMenu()
 
 
+	def __serviceMenu(self):
+		"""
+		Method that shows the "Service" menu of the application.
+		"""
+		if path.exists(self.__constants.PATH_FILE_CONFIGURATION):
+			option_service_menu = self.__dialog.createMenuDialog("Select a option:", 12, 50, self.__constants.OPTIONS_SERVICE_MENU, "Service Menu")
+			self.__switchServiceMenu(int(option_service_menu))
+		else:
+			self.__dialog.createMessageDialog("\nConfiguration file not found.", 7, 50, "Notification Message")
+			self.mainMenu()
+
+
 	def __switchMainMenu(self, option):
 		"""
 		Method that executes a certain action based on the number of the option chosen in the Main menu.
@@ -90,6 +103,23 @@ class TelkAlertTool:
 			alert_rules.deleteAlertRules()
 		elif option == 5:
 			alert_rules.showAllAlertRules()
+
+
+	def __switchServiceMenu(self, option):
+		"""
+		Method that executes a certain action based on the number of the option chosen in the "Service" menu.
+
+		:arg option: Option number.
+		"""
+		service = Service(self.mainMenu)
+		if option == 1:
+			service.startTelkAlertService()
+		elif option == 2:
+			service.restartTelkAlertService()
+		elif option == 3:
+			service.stopTelkAlertService()
+		elif option == 4:
+			service.getStatusTelkAlertService()
 
 
 	def __defineConfiguration(self):

@@ -209,3 +209,11 @@ class Constants:
 	"""
 	OPTIONS_RESTRICTION_UPDATE = [("Field", "Name of the field in the index", 0),
 								  ("Events", "Number of events", 0)]
+
+	"""
+	Options displayed in the "Service" menu.
+	"""
+	OPTIONS_SERVICE_MENU = [("1", "Start Service"),
+					  		("2", "Restart Service"),
+					  		("3", "Stop Service"),
+					  		("4", "Service Status")]
