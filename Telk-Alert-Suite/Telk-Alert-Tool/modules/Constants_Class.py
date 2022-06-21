@@ -166,3 +166,42 @@ class Constants:
 	OPTIONS_USE_FIELDS_OPTION_UPDATE = [("1", "Add New Field(s)"),
 									   	("2", "Modify Field(s)"),
 									   	("3", "Remove Field(s)")]
+
+	"""
+	Options that are displayed when "use custom rule" option is false.
+	"""
+	OPTIONS_USE_CUSTOM_RULE_OPTION_FALSE = [("Enable", "Enable the use of a custom rule", 0)]
+
+	"""
+	Options that are displayed when "use custom rule" option is true.
+	"""
+	OPTIONS_USE_CUSTOM_RULE_OPTION_TRUE = [("Disable", "Disable the use of a custom rule", 0),
+								 		   ("Data", "Modify configured data", 0)]
+
+	"""
+	Options that are displayed when "restriction by hostname" option is false.
+	"""
+	OPTIONS_RESTRICTION_BY_HOSTNAME_FALSE = [("Enable", "Enable restriction by hostname", 0)]
+
+	"""
+	Options that are displayed when "restriction by hostname" option is true.
+	"""
+	OPTIONS_RESTRICTION_BY_HOSTNAME_TRUE = [("Disable", "Disable hostname restriction", 0),
+								 		    ("Data", "Modify configured data", 0)]
+
+	"""
+	Options that are displayed when "restriction by username" option is false.
+	"""
+	OPTIONS_RESTRICTION_BY_USERNAME_FALSE = [("Enable", "Enable restriction by username", 0)]
+
+	"""
+	Options that are displayed when "restriction by username" option is true.
+	"""
+	OPTIONS_RESTRICTION_BY_USERNAME_TRUE = [("Disable", "Disable restriction by username", 0),
+								 		    ("Data", "Modify configured data", 0)]
+	
+	"""
+	Options that are displayed when "restriction by hostname and by username" option is modify.
+	"""
+	OPTIONS_RESTRICTION_UPDATE = [("Field", "Name of the field in the index", 0),
+								  ("Events", "Number of events", 0)]

@@ -222,6 +222,96 @@ class AlertRules:
 							list_all_fields = self.__dialog.createFormDialog("Enter the field's names:", list_to_form_dialog, 15, 50, "Fields Form")
 							fields_name_json = {"fields_name" : list_all_fields}
 							data_alert_rule.update(fields_name_json)
+				if "Custom Rule" in options_fields_to_update:
+					if data_alert_rule["use_custom_rule_option"] == True:
+						option_use_custom_rule_true = self.__dialog.createRadioListDialog("Select a option:", 10, 55, self.__constants.OPTIONS_USE_CUSTOM_RULE_OPTION_TRUE, "Use Custom Rule Option")
+						if option_use_custom_rule_true == "Disable":
+							data_alert_rule["use_custom_rule_option"] = False
+							if "restriction_by_hostname" in data_alert_rule:
+								if data_alert_rule["restriction_by_hostname"] == True:
+									del data_alert_rule["field_name_hostname"]
+									del data_alert_rule["number_total_events_by_hostname"]
+								del data_alert_rule["restriction_by_hostname"]
+							if "restriction_by_username" in data_alert_rule:
+								if data_alert_rule["restriction_by_username"] == True:
+									del data_alert_rule["field_name_username"]
+									del data_alert_rule["number_total_events_by_username"]
+								del data_alert_rule["restriction_by_username"]
+						elif option_use_custom_rule_true == "Data":
+							options_use_custom_rule_modify = self.__dialog.createCheckListDialog("Select one or more options:", 10, 50, self.__constants.OPTIONS_CUSTOM_RULE, "Custom Rule Options")
+							if "Hostname" in options_use_custom_rule_modify:
+								if "restriction_by_hostname" in data_alert_rule:
+									if data_alert_rule["restriction_by_hostname"] == True:
+										option_restriction_by_hostname_true = self.__dialog.createRadioListDialog("Select a option:", 10, 50, self.__constants.OPTIONS_RESTRICTION_BY_HOSTNAME_TRUE, "Restriction By Hostname")
+										if option_restriction_by_hostname_true == "Disable":
+											if data_alert_rule["restriction_by_username"] == True:
+												data_alert_rule["restriction_by_hostname"] = False
+												del data_alert_rule["field_name_hostname"]
+												del data_alert_rule["number_total_events_by_hostname"]
+											else:
+												self.__dialog.createMessageDialog("\nThere must be at least one restriction enabled.", 7, 50, "Notification Message")
+										elif option_restriction_by_hostname_true == "Data":
+											options_restriction_by_hostname_modify = self.__dialog.createCheckListDialog("Select one or more options:", 10, 50, self.__constants.OPTIONS_RESTRICTION_UPDATE, "Restriction By Hostname")
+											if "Field" in options_restriction_by_hostname_modify:
+												field_name_hostname = self.__dialog.createInputBoxDialog("Enter the field's name in the index that corresponds the hostname:", 8, 50, data_alert_rule["field_name_hostname"])
+												data_alert_rule["field_name_hostname"] = field_name_hostname
+											if "Events" in options_restriction_by_hostname_modify:
+												number_total_events_by_hostname = self.__dialog.createInputBoxToNumberDialog("Enter the total of events by hostname for the alert rule:", 8, 50, str(data_alert_rule["number_total_events_by_hostname"]))
+												data_alert_rule["number_total_events_by_hostname"] = int(number_total_events_by_hostname)
+									else:
+										option_restriction_by_hostname_false = self.__dialog.createRadioListDialog("Select a option:", 8, 50, self.__constants.OPTIONS_RESTRICTION_BY_HOSTNAME_FALSE, "Restriction By Hostname")
+										if option_restriction_by_hostname_false == "Enable":
+											data_alert_rule["restriction_by_hostname"] = True
+											field_name_hostname = self.__dialog.createInputBoxDialog("Enter the field's name in the index that corresponds the hostname:", 8, 50, "host.hostname")
+											number_total_events_by_hostname = self.__dialog.createInputBoxToNumberDialog("Enter the total of events by hostname for the alert rule:", 8, 50, "5")
+											restriction_by_hostname_json = {"field_name_hostname" : field_name_hostname, "number_total_events_by_hostname" : int(number_total_events_by_hostname)}
+											data_alert_rule.update(restriction_by_hostname_json)
+							if "Username" in options_use_custom_rule_modify:
+								if "restriction_by_username" in data_alert_rule:
+									if data_alert_rule["restriction_by_username"] == True:
+										option_restriction_by_username_true = self.__dialog.createRadioListDialog("select a option:", 10, 50, self.__constants.OPTIONS_RESTRICTION_BY_USERNAME_TRUE, "Restriction By Username")
+										if option_restriction_by_username_true == "Disable":
+											if data_alert_rule["restriction_by_hostname"] == True:
+												data_alert_rule["restriction_by_username"] = False
+												del data_alert_rule["field_name_username"]
+												del data_alert_rule["number_total_events_by_username"]
+											else:
+												self.__dialog.createMessageDialog("\nThere must be at least one restriction enabled.", 7, 50, "Notification Message")
+										elif option_restriction_by_username_true == "Data":
+											options_restriction_by_username_modify = self.__dialog.createCheckListDialog("Select one or more options:", 10, 50, self.__constants.OPTIONS_RESTRICTION_UPDATE, "Restriction By Username")
+											if "Field" in options_restriction_by_username_modify:
+												field_name_username = self.__dialog.createInputBoxDialog("Enter the field's name in the index that corresponds the username:", 8, 50, data_alert_rule["field_name_username"])
+												data_alert_rule["field_name_username"] = field_name_username
+											if "Events" in options_restriction_by_username_modify:
+												number_total_events_by_username = self.__dialog.createInputBoxToNumberDialog("Enter the total of events by username for the alert rule:", 8, 50, str(data_alert_rule["number_total_events_by_username"]))
+												data_alert_rule["number_total_events_by_username"] = int(number_total_events_by_username)
+									else:
+										option_restriction_by_username_false = self.__dialog.createRadioListDialog("select a option:", 10, 50, self.__constants.OPTIONS_RESTRICTION_BY_USERNAME_FALSE, "Restriction By Username")
+										if option_restriction_by_username_false == "Enable":
+											data_alert_rule["restriction_by_username"] = True
+											field_name_username = self.__dialog.createInputBoxDialog("Enter the field's name in the index that corresponds the username", 8, 50, "winlog.username")
+											number_total_events_by_username = self.__dialog.createInputBoxToNumberDialog("Enter the total of events by username for the alert rule", 8, 50, "5")
+											restriction_by_username_json = {"field_name_username" : field_name_username, "number_total_events_by_username" : int(number_total_events_by_username)}
+											data_alert_rule.update(restriction_by_username_json)
+					else:
+						option_use_custom_rule_false = self.__dialog.createRadioListDialog("Select a option:", 8, 50, self.__constants.OPTIONS_USE_CUSTOM_RULE_OPTION_FALSE, "Use Custom Rule Option")
+						if option_use_custom_rule_false == "Enable":
+							data_alert_rule["use_custom_rule_option"] = True
+							options_custom_rule_option = self.__dialog.createCheckListDialog("Select one or more options:", 10, 50, self.__constants.OPTIONS_CUSTOM_RULE, "Custom Rule Options")
+							if "Hostname" in options_custom_rule_option:
+								field_name_hostname = self.__dialog.createInputBoxDialog("Enter the field's name in the index that corresponds the hostname:", 8, 50, "host.hostname")
+								number_total_events_by_hostname = self.__dialog.createInputBoxToNumberDialog("Enter the total of events by hostname for the alert rule:", 8, 50, "5")
+								restriction_by_hostname_json = {'restriction_by_hostname' : True, 'field_name_hostname' : field_name_hostname, 'number_total_events_by_hostname' : int(number_total_events_by_hostname)}
+							else:
+								restriction_by_hostname_json = {'restriction_by_hostname' : False}
+							if "Username" in options_custom_rule_option:
+								field_name_username = self.__dialog.createInputBoxDialog("Enter the field's name in the index that corresponds the username", 8, 50, "winlog.username")
+								number_total_events_by_username = self.__dialog.createInputBoxToNumberDialog("Enter the total of events by username for the alert rule", 8, 50, "5")
+								restriction_by_username_json = {'restriction_by_username' : True, 'field_name_username' : field_name_username, 'number_total_events_by_username' : int(number_total_events_by_username)}
+							else:
+								restriction_by_username_json = {'restriction_by_username' : False}
+							data_alert_rule.update(restriction_by_hostname_json)
+							data_alert_rule.update(restriction_by_username_json)
 				self.__utils.createYamlFile(data_alert_rule, self.__folder_alert_rules_path + '/' + alert_rule_to_modify)
 				hash_alert_rule_new = self.__utils.getHashFunctionToFile(self.__folder_alert_rules_path + '/' + alert_rule_to_modify)
 				if hash_alert_rule_new == hash_alert_rule_actual:
