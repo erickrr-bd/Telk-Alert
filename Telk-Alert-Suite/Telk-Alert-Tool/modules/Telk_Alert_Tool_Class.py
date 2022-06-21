@@ -5,6 +5,7 @@ from .Service_Class import Service
 from libPyDialog import libPyDialog
 from .Constants_Class import Constants
 from .Alert_Rules_Class import AlertRules
+from .Agent_Service_Class import AgentService
 from .Configuration_Class import Configuration
 from .Agent_Configuration_Class import AgentConfiguration
 
@@ -77,6 +78,14 @@ class TelkAlertTool:
 		self.__switchTelkAlertAgentMenu(int(option_telk_alert_agent_menu))
 
 
+	def __serviceAgentMenu(self):
+		"""
+		Method that shows the "Telk-Alert-Agent Service" menu.
+		"""
+		option_service_agent_menu = self.__dialog.createMenuDialog("Select a option:", 12, 50, self.__constants.OPTIONS_SERVICE_MENU, "Telk-Alert-Agent Service Menu")
+		self.__switchAgentServiceMenu(int(option_service_agent_menu))
+
+
 	def __switchMainMenu(self, option):
 		"""
 		Method that executes a certain action based on the number of the option chosen in the Main menu.
@@ -142,6 +151,25 @@ class TelkAlertTool:
 		service = Service(self.mainMenu)
 		if option == 1:
 			self.__defineAgentConfiguration()
+		elif option == 2:
+			self.__serviceAgentMenu()
+
+
+	def __switchAgentServiceMenu(self, option):
+		"""
+		Method that executes a certain action based on the number of the option chosen in the "Telk-Alert-Agent Service" menu.
+
+		:arg option: Option number.
+		"""
+		agent_service = AgentService(self.mainMenu)
+		if option == 1:
+			agent_service.startTelkAlertAgentService()
+		elif option == 2:
+			agent_service.restartTelkAlertAgentService()
+		elif option == 3:
+			agent_service.stopTelkAlertAgentService()
+		elif option == 4:
+			agent_service.getStatusTelkAlertAgentService()
 
 
 	def __defineConfiguration(self):
