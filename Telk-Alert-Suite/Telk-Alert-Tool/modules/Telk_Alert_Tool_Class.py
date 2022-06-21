@@ -81,7 +81,9 @@ class TelkAlertTool:
 		elif option == 3:
 			self.__serviceMenu()
 		elif option == 4:
-			self.__showApplicationAbout()
+			print("Hola")
+		elif option == 5:
+			self.__showAboutApplication()
 		elif option == 6:
 			exit(1)
 
@@ -135,3 +137,12 @@ class TelkAlertTool:
 			option_configuration_true = self.__dialog.createRadioListDialog("Select a option:", 8, 50, self.__constants.OPTIONS_CONFIGURATION_TRUE, "Configuration Options")
 			if option_configuration_true == "Modify":
 				configuration.modifyConfiguration()
+
+
+	def __showAboutApplication(self):
+		"""
+		Method that displays a message on the screen with information about the application.
+		"""
+		message_to_display = "\nCopyright@2022 Tekium. All rights reserved.\nTelk-Alert v3.2\nAuthor: Erick Rodríguez\nEmail: erickrr.tbd93@gmail.com, erodriguez@tekium.mx\n" + "License: GPLv3\n\nEasy alerting with ElasticSearch and Python."
+		self.__dialog.createScrollBoxDialog(message_to_display, 12, 60, "About")
+		self.mainMenu()
