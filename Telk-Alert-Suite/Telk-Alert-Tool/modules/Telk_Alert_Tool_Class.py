@@ -171,7 +171,7 @@ class TelkAlertTool:
 		else:
 			option_configuration_true = self.__dialog.createRadioListDialog("Select a option:", 8, 50, self.__constants.OPTIONS_CONFIGURATION_TRUE, "Configuration Options")
 			if option_configuration_true == "Modify":
-				configuration.modifyConfiguration()
+				agent_configuration.modifyAgentConfiguration()
 
 
 	def __showAboutApplication(self):

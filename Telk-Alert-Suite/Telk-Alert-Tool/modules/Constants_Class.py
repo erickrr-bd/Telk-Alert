@@ -228,3 +228,11 @@ class Constants:
 	"""
 	OPTIONS_TELK_ALERT_AGENT_MENU = [("1", "Configuration"),
 					  				 ("2", "Telk-Alert Agent Service")]
+
+	"""
+	Options that are shown when a value is going to be modified in the Telk-Alert-Agent configuration.
+	"""
+	OPTIONS_FIELDS_AGENT_UPDATE = [("First Time", "First time the service is validated", 0),
+							       ("Second Time", "Second time the service is validated", 0),
+							       ("Bot Token", "Telegram bot token", 0),
+							       ("Chat ID", "Telegram chat id", 0)]
