@@ -85,8 +85,10 @@ class TelkAlertTool:
 		elif option == 2:
 			alert_rules.modifyAlertRule()
 		elif option == 3:
-			alert_rules.deleteAlertRules()
+			alert_rules.showAlertRuleData()
 		elif option == 4:
+			alert_rules.deleteAlertRules()
+		elif option == 5:
 			alert_rules.showAllAlertRules()
 
 

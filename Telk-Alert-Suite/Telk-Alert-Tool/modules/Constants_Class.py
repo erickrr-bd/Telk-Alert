@@ -110,10 +110,14 @@ class Constants:
 	OPTIONS_HTTP_AUTHENTICATION_DATA = [("Username", "Username for HTTP Authentication", 0),
 								 		("Password", "User password", 0)]
 
+	"""
+	Options displayed in the "Alert Rules" menu.
+	"""
 	OPTIONS_ALERT_RULES_MENU = [("1", "Create new alert rule"),
 					 			("2", "Update alert rule"),
-					 			("3", "Delete alert rule(s)"),
-					 			("4", "Show all alert rules")]
+					 			("3", "Alert Rule Data"),
+					 			("4", "Delete alert rule(s)"),
+					 			("5", "Show all alert rules")]
 
 	OPTIONS_ALERT_RULE_LEVEL = [["Low", "Low level alert", 1],
 							 	["Medium", "Medium level alert", 0],

@@ -128,8 +128,8 @@ class AlertRules:
 				self.__dialog.createMessageDialog("\nAlert rule created: " + alert_rule_name, 7, 50, "Notification Message")
 			self.__action_to_cancel()
 		except (OSError, IOError, FileNotFoundError, ValueError) as exception:
-			self.__logger.generateApplicationLog(exception, 3, "__alertRule", use_file_handler = True, name_file_log = self.__constants.NAME_FILE_LOG, user = self.__constants.USER, group = self.__constants.GROUP)
 			self.__dialog.createMessageDialog("\nError creating the alert rule. For more information, see the logs.", 8, 50, "Error Message")
+			self.__logger.generateApplicationLog(exception, 3, "__createAlertRule", use_file_handler = True, name_file_log = self.__constants.NAME_FILE_LOG, user = self.__constants.USER, group = self.__constants.GROUP)
 			self.__action_to_cancel()
 
 
@@ -348,6 +348,27 @@ class AlertRules:
 			self.__action_to_cancel()
 
 
+	def showAlertRuleData(self):
+		"""
+		Method that shows the data of a specific alert rule.
+		"""
+		try:
+			list_all_alert_rules = self.__utils.getListOfAllYamlFilesInFolder(self.__folder_alert_rules_path)
+			if list_all_alert_rules:
+				list_alert_rules_to_show = self.__utils.convertListToDialogList(list_all_alert_rules, "Alert Rule")
+				alert_rule_to_show = self.__dialog.createRadioListDialog("Select a option:", 18, 70, list_alert_rules_to_show, "Alert Rules")
+				data_alert_rule = self.__utils.convertDataYamlFileToString(self.__folder_alert_rules_path + '/' + alert_rule_to_show)
+				message_to_display = '\n' + alert_rule_to_show[:-5] + "\n\n" + data_alert_rule
+				self.__dialog.createScrollBoxDialog(message_to_display, 18, 70, "Alert Rule Data")
+			else:
+				self.__dialog.createMessageDialog("\nNo alert rules found.", 7, 50, "Notification Message")
+			self.__action_to_cancel()
+		except (OSError, FileNotFoundError) as exception:
+			self.__dialog.createMessageDialog("\nError to show the data of the alert rule. For more information, see the logs.", 8, 50, "Error Message")
+			self.__logger.generateApplicationLog(exception, 3, "__showDataAlertRule", use_file_handler = True, name_file_log = self.__constants.NAME_FILE_LOG, user = self.__constants.USER, group = self.__constants.GROUP)
+			self.__action_to_cancel()
+
+
 	def deleteAlertRules(self):
 		"""
 		Method that delete one or more alert rules.
@@ -356,7 +377,7 @@ class AlertRules:
 			list_all_alert_rules = self.__utils.getListOfAllYamlFilesInFolder(self.__folder_alert_rules_path)
 			if list_all_alert_rules:
 				list_alert_rules_to_delete = self.__utils.convertListToDialogList(list_all_alert_rules, "Alert Rule")
-				alert_rules_to_delete= self.__dialog.createCheckListDialog("Select one or more options:", 10, 50, list_alert_rules_to_delete, "Alert Rules")
+				alert_rules_to_delete = self.__dialog.createCheckListDialog("Select one or more options:", 18, 70, list_alert_rules_to_delete, "Alert Rules")
 				confirmation_delete_alert_rules = self.__dialog.createYesOrNoDialog("\nAre you sure to delete the following alert rules?\n\n** This action cannot be undone.", 10, 50, "Delete Alert Rules")
 				if confirmation_delete_alert_rules == "ok":
 					message_to_display = "\nAlert rules removed:\n"
