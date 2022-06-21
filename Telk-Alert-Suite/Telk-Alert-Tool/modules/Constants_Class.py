@@ -124,21 +124,39 @@ class Constants:
 					 			("4", "Delete alert rule(s)"),
 					 			("5", "Show all alert rules")]
 
+	"""
+	Options that are displayed to select a Alert rule's level.
+	"""
 	OPTIONS_ALERT_RULE_LEVEL = [["Low", "Low level alert", 1],
 							 	["Medium", "Medium level alert", 0],
 							 	["High", "High level alert", 0]]
 
+	"""
+	Options that are displayed to select a Alert rule's type.
+	"""
 	OPTIONS_ALERT_RULE_TYPE = [("Frequency", "Perform searches periodically", 1)]
 
+	"""
+	Options that are displayed to select an unit time.
+	"""
 	OPTIONS_UNIT_TIME = [["minutes", "Time expressed in minutes", 1],
 					  	 ["hours", "Time expressed in hours", 0],
 					  	 ["days", "Time expressed in days", 0]]
 
+	"""
+	Options that are displayed to select a Alert rule's query type.
+	"""
 	OPTIONS_QUERY_TYPE = [("query_string", "Perform the search using a Query String", 1)]
 
+	"""
+	Options that are displayed to select a value when "User Custom Rule" option is enabled.
+	"""
 	OPTIONS_CUSTOM_RULE = [("Hostname", "Restrict by hostname", 0),
 					 	   ("Username", "Restrict by username", 0)]
 
+	"""
+	Options that are displayed to select a Alert rule's send type.
+	"""
 	OPTIONS_SEND_TYPE_ALERT = [["only", "A single alert with the total of events found", 1],
 						       ["multiple", "An alert for each event found", 0]]
 

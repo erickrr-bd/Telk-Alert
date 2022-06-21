@@ -40,7 +40,7 @@ class TelkAlertTool:
 
 	def mainMenu(self):
 		"""
-		Method that shows the main menu of the application.
+		Method that shows the "Main" menu.
 		"""
 		option_main_menu = self.__dialog.createMenuDialog("Select a option:", 14, 50, self.__constants.OPTIONS_MAIN_MENU, "Main Menu")
 		self.__switchMainMenu(int(option_main_menu))
@@ -48,7 +48,7 @@ class TelkAlertTool:
 
 	def __alertRulesMenu(self):
 		"""
-		Method that shows the alert rules menu of the application.
+		Method that shows the "Alert RUles" menu.
 		"""
 		if path.exists(self.__constants.PATH_FILE_CONFIGURATION):
 			option_alert_rules_menu = self.__dialog.createMenuDialog("Select a option:", 12, 50, self.__constants.OPTIONS_ALERT_RULES_MENU, "Alert Rules Menu")
@@ -60,7 +60,7 @@ class TelkAlertTool:
 
 	def __serviceMenu(self):
 		"""
-		Method that shows the "Service" menu of the application.
+		Method that shows the "Service" menu.
 		"""
 		if path.exists(self.__constants.PATH_FILE_CONFIGURATION):
 			option_service_menu = self.__dialog.createMenuDialog("Select a option:", 12, 50, self.__constants.OPTIONS_SERVICE_MENU, "Service Menu")
@@ -88,7 +88,7 @@ class TelkAlertTool:
 
 	def __switchMainMenu(self, option):
 		"""
-		Method that executes a certain action based on the number of the option chosen in the Main menu.
+		Method that executes a certain action based on the number of the option chosen in the "Main" menu.
 
 		:arg option: Option number.
 		"""
@@ -108,7 +108,7 @@ class TelkAlertTool:
 
 	def __switchAlertRulesMenu(self, option):
 		"""
-		Method that executes a certain action based on the number of the option chosen in the Alert Rules menu.
+		Method that executes a certain action based on the number of the option chosen in the "Alert Rules" menu.
 
 		:arg option: Option number.
 		"""
@@ -189,7 +189,7 @@ class TelkAlertTool:
 
 	def __defineAgentConfiguration(self):
 		"""
-		Method that defines the action to perform on the Telk-Alert configuration (create or modify).
+		Method that defines the action to perform on the Telk-Alert-Agent configuration (create or modify).
 		"""
 		agent_configuration = AgentConfiguration(self.mainMenu)
 		if not path.exists(self.__constants.PATH_FILE_AGENT_CONFIGURATION):
