@@ -1,9 +1,9 @@
 #! /usr/bin/env python3
 
-from modules.TelkAlertAgentClass import TelkAlertAgent
+from modules.Telk_Alert_Agent_Class import TelkAlertAgent
 
 """
-Property that stores an object of the TelkAlertAgent class.
+Attribute that stores an object of the TelkAlertAgent class.
 """
 tel_alert_agent = TelkAlertAgent()
 
