@@ -18,6 +18,11 @@ class Constants:
 	PATH_FILE_CONFIGURATION = "/etc/Telk-Alert-Suite/Telk-Alert/configuration/telk_alert_conf.yaml"
 
 	"""
+	Absolute path of the Telk-Alert-Agent configuration file.
+	"""
+	PATH_FILE_AGENT_CONFIGURATION = "/etc/Telk-Alert-Suite/Telk-Alert-Agent/configuration/telk_alert_agent_conf.yaml"
+
+	"""
 	Absolute path of the file where the key for the encryption/decryption process is stored.
 	"""
 	PATH_KEY_FILE = "/etc/Telk-Alert-Suite/Telk-Alert/configuration/key"
@@ -217,3 +222,9 @@ class Constants:
 					  		("2", "Restart Service"),
 					  		("3", "Stop Service"),
 					  		("4", "Service Status")]
+
+	"""
+	Options displayed in the "Telk-Alert-Agent" menu.
+	"""
+	OPTIONS_TELK_ALERT_AGENT_MENU = [("1", "Configuration"),
+					  				 ("2", "Telk-Alert Agent Service")]
