@@ -312,6 +312,22 @@ class AlertRules:
 								restriction_by_username_json = {'restriction_by_username' : False}
 							data_alert_rule.update(restriction_by_hostname_json)
 							data_alert_rule.update(restriction_by_username_json)
+				if "Shipping Type" in options_fields_to_update:
+					for option in self.__constants.OPTIONS_SEND_TYPE_ALERT:
+						if option[0] == data_alert_rule["send_type_alert_rule"]:
+							option[2] = 1
+						else:
+							option[2] = 0
+					option_send_type_alert_rule = self.__dialog.createRadioListDialog("Select a option:", 10, 50, self.__constants.OPTIONS_SEND_TYPE_ALERT, "Alert Sending Type Options")
+					data_alert_rule["send_type_alert_rule"] = option_send_type_alert_rule
+				if "Bot Token" in options_fields_to_update:
+					passphrase = self.__utils.getPassphraseKeyFile(self.__constants.PATH_KEY_FILE)
+					telegram_bot_token = self.__utils.encryptDataWithAES(self.__dialog.createInputBoxDialog("Enter the Telegram bot token:", 8, 50, self.__utils.decryptDataWithAES(data_alert_rule["telegram_bot_token"], passphrase).decode("utf-8")), passphrase)
+					data_alert_rule["telegram_bot_token"] = telegram_bot_token.decode("utf-8")
+				if "Chat ID" in options_fields_to_update:
+					passphrase = self.__utils.getPassphraseKeyFile(self.__constants.PATH_KEY_FILE)
+					telegram_chat_id = self.__utils.encryptDataWithAES(self.__dialog.createInputBoxDialog("Enter the Telegram channel identifier:", 8, 50, self.__utils.decryptDataWithAES(data_alert_rule["telegram_chat_id"], passphrase).decode("utf-8")), passphrase)
+					data_alert_rule["telegram_chat_id"] = telegram_chat_id.decode("utf-8")
 				self.__utils.createYamlFile(data_alert_rule, self.__folder_alert_rules_path + '/' + alert_rule_to_modify)
 				hash_alert_rule_new = self.__utils.getHashFunctionToFile(self.__folder_alert_rules_path + '/' + alert_rule_to_modify)
 				if hash_alert_rule_new == hash_alert_rule_actual:
