@@ -3,7 +3,7 @@
 from modules.Telk_Alert_Class import TelkAlert 
 
 """
-Property that stores an object of the TelkAlert class.
+Attribute that stores an object of the TelkAlert class.
 """
 telkalert = TelkAlert()
 
