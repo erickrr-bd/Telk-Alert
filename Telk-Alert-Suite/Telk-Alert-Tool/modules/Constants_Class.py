@@ -23,6 +23,11 @@ class Constants:
 	PATH_FILE_AGENT_CONFIGURATION = "/etc/Telk-Alert-Suite/Telk-Alert-Agent/configuration/telk_alert_agent_conf.yaml"
 
 	"""
+	Absolute path of the Telk-Alert-Report configuration file.
+	"""
+	PATH_FILE_REPORT_CONFIGURATION = "/etc/Telk-Alert-Suite/Telk-Alert-Report/configuration/telk_alert_report_conf.yaml"
+
+	"""
 	Absolute path of the file where the key for the encryption/decryption process is stored.
 	"""
 	PATH_KEY_FILE = "/etc/Telk-Alert-Suite/Telk-Alert/configuration/key"
@@ -54,8 +59,9 @@ class Constants:
 					     ("2", "Alert Rules"),
 					     ("3", "Telk-Alert Service"),
 					     ("4", "Telk-Alert Agent"),
-					     ("5", "About"),
-					     ("6", "Exit")]
+					     ("5", "Telk-Alert Report"),
+					     ("6", "About"),
+					     ("7", "Exit")]
 
 	"""
 	Options that are shown when the configuration file does not exist.
@@ -254,3 +260,16 @@ class Constants:
 							       ("Second Time", "Second time the service is validated", 0),
 							       ("Bot Token", "Telegram bot token", 0),
 							       ("Chat ID", "Telegram chat id", 0)]
+
+	"""
+	Options displayed in the "Telk-Alert-Report" menu.
+	"""
+	OPTIONS_TELK_ALERT_REPORT_MENU = [("1", "Configuration"),
+					  				 ("2", "Telk-Alert Report Service")]
+
+	"""
+	Options that are shown when a value is going to be modified in the Telk-Alert-Report configuration.
+	"""
+	OPTIONS_FIELDS_REPORT_UPDATE = [("Execution Time", "Time of obtaining the report", 0),
+							        ("Bot Token", "Telegram bot token", 0),
+							        ("Chat ID", "Telegram chat id", 0)]

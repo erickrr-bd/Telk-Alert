@@ -8,6 +8,7 @@ from .Alert_Rules_Class import AlertRules
 from .Agent_Service_Class import AgentService
 from .Configuration_Class import Configuration
 from .Agent_Configuration_Class import AgentConfiguration
+from .Report_Configuration_Class import ReportConfiguration
 
 """
 Class that manages what is related to the interfaces and actions of Telk-Alert-Tool.
@@ -86,6 +87,14 @@ class TelkAlertTool:
 		self.__switchAgentServiceMenu(int(option_service_agent_menu))
 
 
+	def __TelkAlertReportMenu(self):
+		"""
+		Method that shows the "Telk-Alert-Report" menu.
+		"""
+		option_telk_alert_report_menu = self.__dialog.createMenuDialog("Select a option:", 10, 50, self.__constants.OPTIONS_TELK_ALERT_REPORT_MENU, "Telk-Alert-Report Menu")
+		self.__switchTelkAlertReportMenu(int(option_telk_alert_report_menu))
+
+
 	def __switchMainMenu(self, option):
 		"""
 		Method that executes a certain action based on the number of the option chosen in the "Main" menu.
@@ -101,8 +110,10 @@ class TelkAlertTool:
 		elif option == 4:
 			self.__TelkAlertAgentMenu()
 		elif option == 5:
-			self.__showAboutApplication()
+			self.__TelkAlertReportMenu()
 		elif option == 6:
+			self.__showAboutApplication()
+		elif option == 7:
 			exit(1)
 
 
@@ -172,6 +183,19 @@ class TelkAlertTool:
 			agent_service.getStatusTelkAlertAgentService()
 
 
+	def __switchTelkAlertReportMenu(self, option):
+		"""
+		Method that executes a certain action based on the number of the option chosen in the "Telk-Alert-Report" menu.
+
+		:arg option: Option number.
+		"""
+		service = Service(self.mainMenu)
+		if option == 1:
+			self.__defineTelkAlertReportConfiguration()
+		elif option == 2:
+			self.__serviceAgentMenu()
+
+
 	def __defineConfiguration(self):
 		"""
 		Method that defines the action to perform on the Telk-Alert configuration (create or modify).
@@ -200,6 +224,21 @@ class TelkAlertTool:
 			option_configuration_true = self.__dialog.createRadioListDialog("Select a option:", 8, 50, self.__constants.OPTIONS_CONFIGURATION_TRUE, "Configuration Options")
 			if option_configuration_true == "Modify":
 				agent_configuration.modifyAgentConfiguration()
+
+
+	def __defineTelkAlertReportConfiguration(self):
+		"""
+		Method that defines the action to perform on the Telk-Alert-Report configuration (create or modify).
+		"""
+		report_configuration = ReportConfiguration(self.mainMenu)
+		if not path.exists(self.__constants.PATH_FILE_REPORT_CONFIGURATION):
+			option_configuration_false = self.__dialog.createRadioListDialog("Select a option:", 8, 50, self.__constants.OPTIONS_CONFIGURATION_FALSE, "Configuration Options")
+			if option_configuration_false == "Create":
+				report_configuration.createReportConfiguration()
+		else:
+			option_configuration_true = self.__dialog.createRadioListDialog("Select a option:", 8, 50, self.__constants.OPTIONS_CONFIGURATION_TRUE, "Configuration Options")
+			if option_configuration_true == "Modify":
+				report_configuration.modifyReportConfiguration()
 
 
 	def __showAboutApplication(self):

@@ -59,9 +59,9 @@ class AgentConfiguration:
 			time_agent_second_execution = self.__dialog.createTimeDialog("Select the second time of service validation:", 2, 50, -1, -1)
 			data_agent_configuration.append(str(time_agent_second_execution[0]) + ':' + str(time_agent_second_execution[1]))
 			telegram_bot_token = self.__utils.encryptDataWithAES(self.__dialog.createInputBoxDialog("Enter the Telegram bot token:", 8, 50, "751988420:AAHrzn7RXWxVQQNha0tQUzyouE5lUcPde1g"), passphrase)
-			data_agent_configuration.append(telegram_bot_token.decode('utf-8'))
+			data_agent_configuration.append(telegram_bot_token.decode("utf-8"))
 			telegram_chat_id = self.__utils.encryptDataWithAES(self.__dialog.createInputBoxDialog("Enter the Telegram channel identifier:", 8, 50, "-1002365478941"), passphrase)
-			data_agent_configuration.append(telegram_chat_id.decode('utf-8'))
+			data_agent_configuration.append(telegram_chat_id.decode("utf-8"))
 			self.__createFileYamlAgentConfiguration(data_agent_configuration)
 			if path.exists(self.__constants.PATH_FILE_AGENT_CONFIGURATION):
 				self.__dialog.createMessageDialog("\nAgent Configuration File Created.", 7, 50, "Notification Message")
@@ -121,10 +121,10 @@ class AgentConfiguration:
 
 		:arg data_agent_configuration: Data to be stored in the configuration file.
 		"""
-		data_agent_configuration_json = {'time_agent_first_execution': data_agent_configuration[0],
-								   		 'time_agent_second_execution': data_agent_configuration[1],
-								   		 'telegram_bot_token': data_agent_configuration[2],
-								   		 'telegram_chat_id': data_agent_configuration[3]}
+		data_agent_configuration_json = {"time_agent_first_execution": data_agent_configuration[0],
+								   		 "time_agent_second_execution": data_agent_configuration[1],
+								   		 "telegram_bot_token": data_agent_configuration[2],
+								   		 "telegram_chat_id": data_agent_configuration[3]}
 
 		self.__utils.createYamlFile(data_agent_configuration_json, self.__constants.PATH_FILE_AGENT_CONFIGURATION)
 		self.__utils.changeOwnerToPath(self.__constants.PATH_FILE_AGENT_CONFIGURATION, self.__constants.USER, self.__constants.GROUP)
