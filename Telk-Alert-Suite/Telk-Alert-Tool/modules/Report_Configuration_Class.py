@@ -53,7 +53,40 @@ class ReportConfiguration:
 		"""
 		data_report_configuration = []
 		try:
+			es_host = self.__dialog.createInputBoxToIPDialog("Enter the ElasticSearch IP address:", 8, 50, "localhost")
+			data_report_configuration.append(es_host)
+			es_port = self.__dialog.createInputBoxToPortDialog("Enter the ElasticSearch listening port:", 8, 50, "9200")
+			data_report_configuration.append(es_port)
+			use_ssl_tls = self.__dialog.createYesOrNoDialog("\nDo you require Inv-Alert to communicate with ElasticSearch using the SSL/TLS protocol?", 8, 50, "SSL/TLS Connection")
+			if use_ssl_tls == "ok":
+				data_report_configuration.append(True)
+				validate_certificate_ssl = self.__dialog.createYesOrNoDialog("\nDo you require Telk-Alert-Report to validate the SSL certificate?", 8, 50, "Certificate Validation")
+				if validate_certificate_ssl == "ok":
+					data_report_configuration.append(True)
+					path_certificate_file = self.__dialog.createFileDialog("/etc/Telk-Alert-Suite/Telk-Alert", 8, 50, "Select the CA certificate:", ".pem")
+					data_report_configuration.append(path_certificate_file)
+				else:
+					data_report_configuration.append(False)
+			else:
+				data_report_configuration.append(False)
 			passphrase = self.__utils.getPassphraseKeyFile(self.__constants.PATH_KEY_FILE)
+			use_http_authentication = self.__dialog.createYesOrNoDialog("\nIs the use of HTTP authentication required to connect to ElasticSearch?", 8, 50, "HTTP Authentication")
+			if use_http_authentication == "ok":
+				data_report_configuration.append(True)
+				user_http_authentication = self.__utils.encryptDataWithAES(self.__dialog.createInputBoxDialog("Enter the username for HTTP authentication:", 8, 50, "user_http"), passphrase)
+				data_report_configuration.append(user_http_authentication.decode("utf-8"))
+				password_http_authentication = self.__utils.encryptDataWithAES(self.__dialog.createPasswordBoxDialog("Enter the user's password for HTTP authentication:", 8, 50, "password", True), passphrase)
+				data_report_configuration.append(password_http_authentication.decode("utf-8"))
+			else:
+				data_report_configuration.append(False)
+			path_alert_rules_folder = self.__dialog.createFolderDialog("/etc/Telk-Alert-Suite/Telk-Alert", 8, 50, "Select the path where the alert rules are located:")
+			data_report_configuration.append(path_alert_rules_folder)
+			list_all_alert_rules = self.__utils.getListOfAllYamlFilesInFolder(path_alert_rules_folder)
+			alert_rules_to_exclude = []
+			if list_all_alert_rules:
+				list_alert_rules_to_exclude = self.__utils.convertListToDialogList(list_all_alert_rules, "Alert Rule")
+				alert_rules_to_exclude = self.__dialog.createCheckListDialog("Select one or more options:", 16, 70, list_alert_rules_to_exclude, "Exclude Alert Rules")
+			data_report_configuration.append(alert_rules_to_exclude)
 			time_report_execution = self.__dialog.createTimeDialog("Select the time to get the report:", 2, 50, -1, -1)
 			data_report_configuration.append(str(time_report_execution[0]) + ':' + str(time_report_execution[1]))
 			telegram_bot_token = self.__utils.encryptDataWithAES(self.__dialog.createInputBoxDialog("Enter the Telegram bot token:", 8, 50, "751988420:AAHrzn7RXWxVQQNha0tQUzyouE5lUcPde1g"), passphrase)
@@ -115,9 +148,29 @@ class ReportConfiguration:
 
 		:arg data_report_configuration: Data to be stored in the configuration file.
 		"""
-		data_report_configuration_json = {"time_report_execution": data_report_configuration[0],
-								   		 "telegram_bot_token": data_report_configuration[1],
-								   		 "telegram_chat_id": data_report_configuration[2]}
+		data_report_configuration_json = {"es_host" : data_report_configuration[0],
+								   		  "es_port" : int(data_report_configuration[1]),
+								   		  "use_ssl_tls" : data_report_configuration[2]}
+		
+		if data_report_configuration[2] == True:
+			if data_report_configuration[3] == True:
+				validate_certificate_ssl_json = {"validate_certificate_ssl" : data_report_configuration[3] , "path_certificate_file" : data_report_configuration[4]}
+				last_index = 4
+			else:
+				validate_certificate_ssl_json = {"validate_certificate_ssl" : data_report_configuration[3]}
+				last_index = 3
+			data_report_configuration_json.update(validate_certificate_ssl_json)
+		else:
+			last_index = 2
+		if data_report_configuration[last_index + 1] == True:
+			http_authentication_json = {"use_http_authentication" : data_report_configuration[last_index + 1], "user_http_authentication" : data_report_configuration[last_index + 2], "password_http_authentication" : data_report_configuration[last_index + 3]}
+			last_index += 3
+		else:
+			http_authentication_json = {"use_http_authentication" : data_report_configuration[last_index + 1]}
+			last_index += 1
+		data_report_configuration_json.update(http_authentication_json)
+		aux_data_json = {"path_alert_rules_folder" : data_report_configuration[last_index + 1], "alert_rules_to_exclude" : data_report_configuration[last_index + 2], "time_report_execution" : data_report_configuration[last_index + 3], "telegram_bot_token" : data_report_configuration[last_index + 4], "telegram_chat_id" : data_report_configuration[last_index + 5]}
+		data_report_configuration_json.update(aux_data_json)
 
 		self.__utils.createYamlFile(data_report_configuration_json, self.__constants.PATH_FILE_REPORT_CONFIGURATION)
 		self.__utils.changeOwnerToPath(self.__constants.PATH_FILE_REPORT_CONFIGURATION, self.__constants.USER, self.__constants.GROUP)
