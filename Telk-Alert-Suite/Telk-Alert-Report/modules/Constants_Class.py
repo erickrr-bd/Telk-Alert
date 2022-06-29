@@ -3,16 +3,6 @@ Class that manages all the constant variables of the application.
 """
 class Constants:
 	"""
-	Absolute path of Telk-Alert.
-	"""
-	PATH_BASE_TELK_ALERT = "/etc/Telk-Alert-Suite/Telk-Alert"
-
-	"""
-	Absolute path of the Telk-Alert configuration file.
-	"""
-	PATH_FILE_CONFIGURATION = "/etc/Telk-Alert-Suite/Telk-Alert/configuration/telk_alert_conf.yaml"
-
-	"""
 	Absolute path of the Telk-Alert-Report configuration file.
 	"""
 	PATH_FILE_REPORT_CONFIGURATION = "/etc/Telk-Alert-Suite/Telk-Alert-Report/configuration/telk_alert_report_conf.yaml"
