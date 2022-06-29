@@ -82,11 +82,14 @@ class ReportConfiguration:
 			path_alert_rules_folder = self.__dialog.createFolderDialog("/etc/Telk-Alert-Suite/Telk-Alert", 8, 50, "Select the path where the alert rules are located:")
 			data_report_configuration.append(path_alert_rules_folder)
 			list_all_alert_rules = self.__utils.getListOfAllYamlFilesInFolder(path_alert_rules_folder)
-			alert_rules_to_exclude = []
 			if list_all_alert_rules:
-				list_alert_rules_to_exclude = self.__utils.convertListToDialogList(list_all_alert_rules, "Alert Rule")
-				alert_rules_to_exclude = self.__dialog.createCheckListDialog("Select one or more options:", 16, 70, list_alert_rules_to_exclude, "Exclude Alert Rules")
-			data_report_configuration.append(alert_rules_to_exclude)
+				exclude_alert_rules = self.__dialog.createYesOrNoDialog("\nIDo you want to exclude one or more alert rules from report generation?", 8, 50, "Exclude Alert Rules")
+				if exclude_alert_rules == "ok":
+					list_alert_rules_to_exclude = self.__utils.convertListToDialogList(list_all_alert_rules, "Alert Rule")
+					alert_rules_to_exclude = self.__dialog.createCheckListDialog("Select one or more options:", 16, 70, list_alert_rules_to_exclude, "Exclude Alert Rules")
+					for alert_rule in alert_rules_to_exclude:
+						list_all_alert_rules.remove(alert_rule)
+			data_report_configuration.append(list_all_alert_rules)
 			time_report_execution = self.__dialog.createTimeDialog("Select the time to get the report:", 2, 50, -1, -1)
 			data_report_configuration.append(str(time_report_execution[0]) + ':' + str(time_report_execution[1]))
 			telegram_bot_token = self.__utils.encryptDataWithAES(self.__dialog.createInputBoxDialog("Enter the Telegram bot token:", 8, 50, "751988420:AAHrzn7RXWxVQQNha0tQUzyouE5lUcPde1g"), passphrase)
@@ -169,7 +172,7 @@ class ReportConfiguration:
 			http_authentication_json = {"use_http_authentication" : data_report_configuration[last_index + 1]}
 			last_index += 1
 		data_report_configuration_json.update(http_authentication_json)
-		aux_data_json = {"path_alert_rules_folder" : data_report_configuration[last_index + 1], "alert_rules_to_exclude" : data_report_configuration[last_index + 2], "time_report_execution" : data_report_configuration[last_index + 3], "telegram_bot_token" : data_report_configuration[last_index + 4], "telegram_chat_id" : data_report_configuration[last_index + 5]}
+		aux_data_json = {"path_alert_rules_folder" : data_report_configuration[last_index + 1], "list_all_alert_rules" : data_report_configuration[last_index + 2], "time_report_execution" : data_report_configuration[last_index + 3], "telegram_bot_token" : data_report_configuration[last_index + 4], "telegram_chat_id" : data_report_configuration[last_index + 5]}
 		data_report_configuration_json.update(aux_data_json)
 
 		self.__utils.createYamlFile(data_report_configuration_json, self.__constants.PATH_FILE_REPORT_CONFIGURATION)
