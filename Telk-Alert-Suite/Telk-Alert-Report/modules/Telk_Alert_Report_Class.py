@@ -1,5 +1,6 @@
 from sys import exit
 from threading import Thread
+from datetime import datetime
 from libPyLog import libPyLog
 from libPyElk import libPyElk
 from time import sleep, strftime
@@ -11,15 +12,29 @@ from libPyTelegram import libPyTelegram
 Class that manages the operation of Telk-Alert-Report.
 """
 class TelkAlertReport:
-
+	"""
+	Attribute that stores an object of the libPyUtils class.
+	"""
 	__utils = None
 
+	"""
+	Attribute that stores an object of the libPyLog class.
+	"""
 	__logger = None
 
+	"""
+	Attribute that stores an object of the libPyTelegram class.
+	"""
 	__telegram = None
 
+	"""
+	Attribute that stores an object of the Constants class.
+	"""
 	__constants = None
 
+	"""
+	Attribute that stores an object of the libPyElk class.
+	"""
 	__elasticsearch = None
 
 
@@ -54,10 +69,11 @@ class TelkAlertReport:
 				self.__logger.generateApplicationLog("Established connection with: " + data_report_configuration["es_host"] + ':' + str(data_report_configuration["es_port"]), 1, "__connection" , use_stream_handler = True)
 				self.__logger.generateApplicationLog("Elasticsearch Cluster Name: " + conn_es.info()["cluster_name"], 1, "__connection", use_stream_handler = True)
 				self.__logger.generateApplicationLog("Elasticsearch Version: " + conn_es.info()["version"]["number"], 1, "__connection", use_stream_handler = True)
+				time_report_execution = data_report_configuration["time_report_execution"].split(':')
 				for alert_rule in data_report_configuration["list_all_alert_rules"]:
 					self.__logger.generateApplicationLog(alert_rule[:-5] + " loaded", 1, "__alertRule", use_stream_handler = True)
 					data_alert_rule = self.__utils.readYamlFile(data_report_configuration["path_alert_rules_folder"] + '/' + alert_rule)
-					Thread(name = alert_rule[:-5], target = self.__getAlertRuleReport, args = (conn_es, data_alert_rule, )).start()
+					Thread(name = alert_rule[:-5], target = self.__getAlertRuleReport, args = (conn_es, data_alert_rule, time_report_execution, )).start()
 		except KeyError as exception:
 			self.__logger.generateApplicationLog("Key Error: " + str(exception), 3, "__start", use_stream_handler = True, use_file_handler = True, name_file_log  = self.__constants.NAME_FILE_LOG, user = self.__constants.USER, group = self.__constants.GROUP)
 			exit(1)
@@ -71,8 +87,13 @@ class TelkAlertReport:
 			exit(1)
 
 
-	def __getAlertRuleReport(self, conn_es, data_alert_rule):
+	def __getAlertRuleReport(self, conn_es, data_alert_rule, time_report_execution):
 		"""
+		Object that contains a connection to ElasticSearch.
+
+		:arg conn_es (object): Object that contains a connection to ElasticSearch.
+		:arg data_alert_rule (dict): Object that contains the data of the alert rule.
+		:arg time_report_execution (array): Arrya with the time at which the report of the alert rules will be obtained.
 		"""
 		try:
 			search_in_elastic = self.__elasticsearch.createSearchObject(conn_es, data_alert_rule["index_pattern_name"])
@@ -86,33 +107,37 @@ class TelkAlertReport:
 				if "message" in data_alert_rule["fields_name"]:
 					data_alert_rule["fields_name"].remove("message")
 			#End block
-			if data_alert_rule["use_fields_option"] == True:
-				result_search = self.__elasticsearch.executeSearchQueryString(search_in_elastic, "now-1d/d", "now/d", query_string_alert_rule, data_alert_rule["use_fields_option"], fields = data_alert_rule["fields_name"])
-			else:
-				result_search = self.__elasticsearch.executeSearchQueryString(search_in_elastic, "now-1d/d", "now/d", query_string_alert_rule, data_alert_rule["use_fields_option"])
-			if result_search:
-				self.__logger.generateApplicationLog("Events found: " + str(len(result_search)), 1, "__" + data_alert_rule["alert_rule_name"], use_stream_handler = True)
-				for hit in result_search:
-					headers_table = self.__elasticsearch.getFieldsofElasticData(hit)
-					data_table = self.__elasticsearch.generateArraywithElasticData(hit)
-				self.__utils.createFileWithTable(path_table_file, data_table, headers_table)
-				self.__utils.changeOwnerToPath(path_table_file, self.__constants.USER, self.__constants.GROUP)
-				message_to_send = u'\u26A0\uFE0F' + " " + data_alert_rule["alert_rule_name"] +  " " + u'\u26A0\uFE0F' + '\n\n' + u'\U0001f6a6' +  " Alert level: " + data_alert_rule["alert_rule_level"] + "\n\n" +  u'\u23F0' + " Alert sent: " + strftime("%c") + "\n\n"
-				message_to_send += "TOTAL EVENTS FOUND: " + str(len(result_search))
-				response_status_code = self.__telegram.sendFileMessageTelegram(telegram_bot_token, telegram_chat_id, message_to_send.encode("utf-8"), path_table_file)
-				self.__createLogByTelegramCode(response_status_code, data_alert_rule["alert_rule_name"])
-			else:
-				self.__logger.generateApplicationLog("No events found", 1, "__" + data_alert_rule["alert_rule_name"], use_stream_handler = True)
+			while True:
+				now = datetime.now()
+				if(now.hour == int(time_report_execution[0]) and now.minute == int(time_report_execution[1])):
+					if data_alert_rule["use_fields_option"] == True:
+						result_search = self.__elasticsearch.executeSearchQueryString(search_in_elastic, "now-1d/d", "now/d", query_string_alert_rule, data_alert_rule["use_fields_option"], fields = data_alert_rule["fields_name"])
+					else:
+						result_search = self.__elasticsearch.executeSearchQueryString(search_in_elastic, "now-1d/d", "now/d", query_string_alert_rule, data_alert_rule["use_fields_option"])
+					if result_search:
+						self.__logger.generateApplicationLog("Events found: " + str(len(result_search)), 1, "__" + data_alert_rule["alert_rule_name"], use_stream_handler = True)
+						for hit in result_search:
+							headers_table = self.__elasticsearch.getFieldsofElasticData(hit)
+							data_table = self.__elasticsearch.generateArraywithElasticData(hit)
+						self.__utils.createFileWithTable(path_table_file, data_table, headers_table)
+						self.__utils.changeOwnerToPath(path_table_file, self.__constants.USER, self.__constants.GROUP)
+						message_to_send = u'\u26A0\uFE0F' + " " + data_alert_rule["alert_rule_name"] +  " " + u'\u26A0\uFE0F' + '\n\n' + u'\U0001f6a6' +  " Alert level: " + data_alert_rule["alert_rule_level"] + "\n\n" +  u'\u23F0' + " Report sent: " + strftime("%c") + "\n\n"
+						message_to_send += "TOTAL EVENTS FOUND: " + str(len(result_search))
+						response_status_code = self.__telegram.sendFileMessageTelegram(telegram_bot_token, telegram_chat_id, message_to_send.encode("utf-8"), path_table_file)
+						self.__createLogByTelegramCode(response_status_code, data_alert_rule["alert_rule_name"])
+					else:
+						self.__logger.generateApplicationLog("No events found", 1, "__" + data_alert_rule["alert_rule_name"], use_stream_handler = True)
+				sleep(60)
 		except KeyError as exception:
-			self.__logger.generateApplicationLog("Key Error: " + str(exception), 3, "__start", use_stream_handler = True, use_file_handler = True, name_file_log  = self.__constants.NAME_FILE_LOG, user = self.__constants.USER, group = self.__constants.GROUP)
+			self.__logger.generateApplicationLog("Key Error: " + str(exception), 3, "__" + data_alert_rule["alert_rule_name"], use_stream_handler = True, use_file_handler = True, name_file_log  = self.__constants.NAME_FILE_LOG, user = self.__constants.USER, group = self.__constants.GROUP)
 			exit(1)
 		except (OSError, FileNotFoundError) as exception:
-			self.__logger.generateApplicationLog("Error to open or read a file. For more information, see the logs.", 3, "__start", use_stream_handler = True)
-			self.__logger.generateApplicationLog(exception, 3, "__start", use_file_handler = True, name_file_log  = self.__constants.NAME_FILE_LOG, user = self.__constants.USER, group = self.__constants.GROUP)
+			self.__logger.generateApplicationLog("Error to found, open or create a file or directory. For more information, see the logs.", 3, "__" + data_alert_rule["alert_rule_name"], use_stream_handler = True)
+			self.__logger.generateApplicationLog(exception, 3, "__" + data_alert_rule["alert_rule_name"], use_file_handler = True, name_file_log  = self.__constants.NAME_FILE_LOG, user = self.__constants.USER, group = self.__constants.GROUP)
 			exit(1)
 		except (self.__elasticsearch.exceptions.AuthenticationException, self.__elasticsearch.exceptions.ConnectionError, self.__elasticsearch.exceptions.AuthorizationException, self.__elasticsearch.exceptions.RequestError, self.__elasticsearch.exceptions.ConnectionTimeout) as exception:
-			self.__logger.generateApplicationLog("Error connecting with ElasticSearch. For more information, see the logs.", 3, "__connection", use_stream_handler = True)
-			self.__logger.generateApplicationLog(exception, 3, "__connection", use_file_handler = True, name_file_log = self.__constants.NAME_FILE_LOG, user = self.__constants.USER, group = self.__constants.GROUP)
+			self.__logger.generateApplicationLog("Error performing an action in ElasticSearch. For more information, see the logs.", 3, "__" + data_alert_rule["alert_rule_name"], use_stream_handler = True)
+			self.__logger.generateApplicationLog(exception, 3, "__" + data_alert_rule["alert_rule_name"], use_file_handler = True, name_file_log = self.__constants.NAME_FILE_LOG, user = self.__constants.USER, group = self.__constants.GROUP)
 			exit(1)
 
 
@@ -120,8 +145,8 @@ class TelkAlertReport:
 		"""
 		Method that creates a log based on the HTTP code received as a response.
 
-		:arg response_status_code: HTTP code received in the response when sending the alert to Telegram.
-		:arg alert_rule_name: Name of the alert rule from which the alert was sent.
+		:arg response_status_code (integer): HTTP code received in the response when sending the alert to Telegram.
+		:arg alert_rule_name (string): Name of the alert rule from which the alert was sent.
 		"""
 		if response_status_code == 200:
 			self.__logger.generateApplicationLog("Telegram message sent.", 1, "__" + alert_rule_name, use_stream_handler = True, use_file_handler = True, name_file_log = self.__constants.NAME_FILE_LOG, user = self.__constants.USER, group = self.__constants.GROUP)

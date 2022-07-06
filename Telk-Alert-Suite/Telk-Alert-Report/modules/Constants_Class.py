@@ -8,7 +8,7 @@ class Constants:
 	PATH_FILE_REPORT_CONFIGURATION = "/etc/Telk-Alert-Suite/Telk-Alert-Report/configuration/telk_alert_report_conf.yaml"
 
 	"""
-	Absolute path of the file where the key for the encryption/decryption process is stored.
+	Absolute path where the files with the data tables that will be sent via Telegram will be saved.
 	"""
 	PATH_TABLE_FILES = "/etc/Telk-Alert-Suite/Telk-Alert-Report/files"
 
