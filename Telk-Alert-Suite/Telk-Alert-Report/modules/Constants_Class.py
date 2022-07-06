@@ -10,12 +10,17 @@ class Constants:
 	"""
 	Absolute path of the file where the key for the encryption/decryption process is stored.
 	"""
+	PATH_TABLE_FILES = "/etc/Telk-Alert-Suite/Telk-Alert-Report/files"
+
+	"""
+	Absolute path of the file where the key for the encryption/decryption process is stored.
+	"""
 	PATH_KEY_FILE = "/etc/Telk-Alert-Suite/Telk-Alert/configuration/key"
 
 	"""
 	Absolute path of the application logs.
 	"""
-	NAME_FILE_LOG = "/var/log/Telk-Alert/telk-alert-log-"
+	NAME_FILE_LOG = "/var/log/Telk-Alert/telk-alert-report-log-"
 
 	"""
 	Name of the user created for the operation of the application.
