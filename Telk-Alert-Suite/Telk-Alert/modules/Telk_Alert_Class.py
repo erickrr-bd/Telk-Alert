@@ -4,8 +4,8 @@ from libPyElk import libPyElk
 from libPyLog import libPyLog
 from time import sleep, strftime
 from libPyUtils import libPyUtils
-from libPyTelegram import libPyTelegram
 from .Constants_Class import Constants
+from libPyTelegram import libPyTelegram
 
 """
 Class that manages the operation of Telk-Alert.
@@ -95,8 +95,8 @@ class TelkAlert:
 		"""
 		Method that starts the alert rule's search
 
-		:arg conn_es: Object that contains a connection to ElasticSearch.
-		:arg data_alert_rule: bject that contains the data of the alert rule.
+		:arg conn_es (object): Object that contains a connection to ElasticSearch.
+		:arg data_alert_rule (dict): Object that contains the data of the alert rule.
 		"""
 		try:
 			for unit_time in data_alert_rule["time_search"]:
@@ -160,10 +160,10 @@ class TelkAlert:
 		"""
 		Method that sends an alert for each event found.
 
-		:arg result_search: Object that contains the result data of the ElasticSearch search.
-		:arg data_alert_rule: Object that contains the data of the alert rule.
-		:arg telegram_bot_token: Telegram Bot Token.
-		:arg telegram_chat_id: Telegram channel identifier where the alert will be send.
+		:arg result_search (object): Object that contains the result data of the ElasticSearch search.
+		:arg data_alert_rule (dict): Object that contains the data of the alert rule.
+		:arg telegram_bot_token (string): Telegram Bot Token.
+		:arg telegram_chat_id (string): Telegram channel identifier where the alert will be send.
 		"""
 		try:
 			message_header = u'\u26A0\uFE0F' + " " + data_alert_rule["alert_rule_name"] +  " " + u'\u26A0\uFE0F' + '\n\n' + u'\U0001f6a6' +  " Alert level: " + data_alert_rule["alert_rule_level"] + "\n\n" +  u'\u23F0' + " Alert sent: " + strftime("%c") + "\n\n"
@@ -181,11 +181,11 @@ class TelkAlert:
 		"""
 		Method that sends only an alert for all events found.
 
-		:arg result_search: Object that contains the result data of the ElasticSearch search.
-		:arg data_alert_rule: Object that contains the data of the alert rule.
-		:arg telegram_bot_token: Telegram Bot Token.
-		:arg telegram_chat_id: Telegram channel identifier where the alert will be send.
-		:arg total_events: Total of events found in the search.
+		:arg result_search (object): Object that contains the result data of the ElasticSearch search.
+		:arg data_alert_rule (dict): Object that contains the data of the alert rule.
+		:arg telegram_bot_token (string): Telegram Bot Token.
+		:arg telegram_chat_id (string): Telegram channel identifier where the alert will be send.
+		:arg total_events (integer): Total of events found in the search.
 		"""
 		try:
 			message_header = u'\u26A0\uFE0F' + " " + data_alert_rule["alert_rule_name"] +  " " + u'\u26A0\uFE0F' + '\n\n' + u'\U0001f6a6' +  " Alert level: " + data_alert_rule["alert_rule_level"] + "\n\n" +  u'\u23F0' + " Alert sent: " + strftime("%c") + "\n\n"
@@ -205,8 +205,8 @@ class TelkAlert:
 		"""
 		Method that creates a log based on the HTTP code received as a response.
 
-		:arg response_status_code: HTTP code received in the response when sending the alert to Telegram.
-		:arg alert_rule_name: Name of the alert rule from which the alert was sent.
+		:arg response_status_code (integer): HTTP code received in the response when sending the alert to Telegram.
+		:arg alert_rule_name (string): Name of the alert rule from which the alert was sent.
 		"""
 		if response_status_code == 200:
 			self.__logger.generateApplicationLog("Telegram message sent.", 1, "__" + alert_rule_name, use_stream_handler = True, use_file_handler = True, name_file_log = self.__constants.NAME_FILE_LOG, user = self.__constants.USER, group = self.__constants.GROUP)
