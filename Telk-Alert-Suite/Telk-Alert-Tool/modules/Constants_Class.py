@@ -5,7 +5,7 @@ class Constants:
 	"""
 	Title that is shown in the background of the application.
 	"""
-	BACKTITLE = "TELK-ALERT-TOOL"
+	BACKTITLE = "TELK-ALERT-TOOL v3.3 by Erick Rodriguez"
 
 	"""
 	Absolute path of Telk-Alert.
@@ -15,17 +15,12 @@ class Constants:
 	"""
 	Absolute path of the Telk-Alert configuration file.
 	"""
-	PATH_FILE_CONFIGURATION = "/etc/Telk-Alert-Suite/Telk-Alert/configuration/telk_alert_conf.yaml"
+	PATH_TELK_ALERT_CONFIGURATION_FILE = "/etc/Telk-Alert-Suite/Telk-Alert/configuration/telk_alert_conf.yaml"
 
 	"""
 	Absolute path of the Telk-Alert-Agent configuration file.
 	"""
 	PATH_FILE_AGENT_CONFIGURATION = "/etc/Telk-Alert-Suite/Telk-Alert-Agent/configuration/telk_alert_agent_conf.yaml"
-
-	"""
-	Absolute path of the Telk-Alert-Report configuration file.
-	"""
-	PATH_FILE_REPORT_CONFIGURATION = "/etc/Telk-Alert-Suite/Telk-Alert-Report/configuration/telk_alert_report_conf.yaml"
 
 	"""
 	Absolute path of the file where the key for the encryption/decryption process is stored.
@@ -36,11 +31,6 @@ class Constants:
 	Absolute path of the application logs.
 	"""
 	NAME_FILE_LOG = "/var/log/Telk-Alert/telk-alert-tool-log-"
-
-	"""
-	Name of the application logs.
-	"""
-	NAME_LOG = "TELK_ALERT_TOOL_LOG"
 
 	"""
 	Name of the user created for the operation of the application.
@@ -71,7 +61,14 @@ class Constants:
 	"""
 	Options that are shown when the configuration file exists.
 	"""
-	OPTIONS_CONFIGURATION_TRUE = [("Modify", "Modify the configuration file", 0)]
+	OPTIONS_CONFIGURATION_TRUE = [("Modify", "Modify the configuration file", 0),
+								  ("Show", "Show configuration data", 0)]
+
+	"""
+	Options that are displayed to select an authentication method.
+	"""
+	OPTIONS_AUTHENTICATION_METHOD = [("HTTP Authentication", "Use HTTP Authentication", 0),
+								     ("API Key", "Use API Key", 0)]
 
 	"""
 	Options that are shown when a value is going to be modified in the Telk-Alert configuration.

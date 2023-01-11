@@ -6,10 +6,10 @@ from libPyDialog import libPyDialog
 from .Constants_Class import Constants
 from .Alert_Rules_Class import AlertRules
 from .Agent_Service_Class import AgentService
-from .Configuration_Class import Configuration
 from .Report_Service_Class import ReportService
 from .Agent_Configuration_Class import AgentConfiguration
 from .Report_Configuration_Class import ReportConfiguration
+from .Telk_Alert_Configuration_Class import TelkAlertConfiguration
 
 """
 Class that manages what is related to the interfaces and actions of Telk-Alert-Tool.
@@ -111,7 +111,7 @@ class TelkAlertTool:
 		:arg option: Option number.
 		"""
 		if option == 1:
-			self.__defineConfiguration()
+			self.__defineTelkAlertConfiguration()
 		elif option == 2:
 			self.__alertRulesMenu()
 		elif option == 3:
@@ -220,19 +220,21 @@ class TelkAlertTool:
 			report_service.getStatusTelkAlertReportService()
 
 
-	def __defineConfiguration(self):
+	def __defineTelkAlertConfiguration(self):
 		"""
 		Method that defines the action to perform on the Telk-Alert configuration (create or modify).
 		"""
-		configuration = Configuration(self.mainMenu)
-		if not path.exists(self.__constants.PATH_FILE_CONFIGURATION):
-			option_configuration_false = self.__dialog.createRadioListDialog("Select a option:", 8, 50, self.__constants.OPTIONS_CONFIGURATION_FALSE, "Configuration Options")
+		telk_alert_configuration = TelkAlertConfiguration(self.mainMenu)
+		if not path.exists(self.__constants.PATH_TELK_ALERT_CONFIGURATION_FILE):
+			option_configuration_false = self.__dialog.createRadioListDialog("Select a option:", 8, 50, self.__constants.OPTIONS_CONFIGURATION_FALSE, "Telk-ALert Configuration Options")
 			if option_configuration_false == "Create":
-				configuration.createConfiguration()
+				telk_alert_configuration.createConfiguration()
 		else:
-			option_configuration_true = self.__dialog.createRadioListDialog("Select a option:", 8, 50, self.__constants.OPTIONS_CONFIGURATION_TRUE, "Configuration Options")
+			option_configuration_true = self.__dialog.createRadioListDialog("Select a option:", 8, 50, self.__constants.OPTIONS_CONFIGURATION_TRUE, "Telk-Alert Configuration Options")
 			if option_configuration_true == "Modify":
-				configuration.modifyConfiguration()
+				telk_alert_configuration.modifyConfiguration()
+			elif option_configuration_true == "Show":
+				print("Show")
 
 
 	def __defineAgentConfiguration(self):

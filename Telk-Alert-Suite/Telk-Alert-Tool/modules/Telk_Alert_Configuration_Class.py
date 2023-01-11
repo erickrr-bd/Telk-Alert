@@ -7,32 +7,7 @@ from .Constants_Class import Constants
 """
 Class that manages what is related to the configuration of Telk-Alert.
 """
-class Configuration:
-	"""
-	Attribute that stores an object of the libPyUtils class.
-	"""
-	__utils = None
-	
-	"""
-	Attribute that stores an object of the libPyDialog class.
-	"""
-	__dialog = None
-
-	"""
-	Attribute that stores an object of the libPyLog class.
-	"""
-	__logger = None
-
-	"""
-	Attribute that stores an object of the Constants class.
-	"""
-	__constants = None
-
-	"""
-	Attribute that stores the method to be called when the user chooses the cancel option.
-	"""
-	__action_to_cancel = None
-
+class TelkAlertConfiguration:
 
 	def __init__(self, action_to_cancel):
 		"""
@@ -51,44 +26,57 @@ class Configuration:
 		"""
 		Method that collects the information for the creation of the Telk-Alert configuration file.
 		"""
-		data_configuration = []
+		telk_alert_data = []
 		try:
-			es_host = self.__dialog.createInputBoxToIPDialog("Enter the ElasticSearch IP address:", 8, 50, "localhost")
-			data_configuration.append(es_host)
+			number_master_nodes_es = self.__dialog.createInputBoxToNumberDialog("Enter the total number of master nodes to enter:", 9, 50, "1")
+			list_to_form_dialog = self.__utils.createListToDialogForm(int(number_master_nodes_es), "IP Address")
+			es_hosts = self.__dialog.createFormDialog("Enter IP addresses of the ElasticSearch master nodes:", list_to_form_dialog, 15, 50, "ElasticSearch Hosts")
+			telk_alert_data.append(es_hosts)
 			es_port = self.__dialog.createInputBoxToPortDialog("Enter the ElasticSearch listening port:", 8, 50, "9200")
-			data_configuration.append(es_port)
-			name_folder_rules = self.__dialog.createFolderOrFileNameDialog("Enter the name of the directory where the alert rules will be saved:", 10, 50, "folder_alert_rules")
-			data_configuration.append(name_folder_rules)
-			use_ssl_tls = self.__dialog.createYesOrNoDialog("\nDo you require Inv-Alert to communicate with ElasticSearch using the SSL/TLS protocol?", 8, 50, "SSL/TLS Connection")
+			telk_alert_data.append(es_port)
+			folder_rules_name = self.__dialog.createFolderOrFileNameDialog("Enter the folder's name where the alert rules will be stored:", 9, 50, "folder_alert_rules")
+			telk_alert_data.append(folder_rules_name)
+			use_ssl_tls = self.__dialog.createYesOrNoDialog("\nDo you require that Telk-Alert communicates with ElasticSearch using the SSL/TLS protocol?", 8, 50, "SSL/TLS Connection")
 			if use_ssl_tls == "ok":
-				data_configuration.append(True)
-				validate_certificate_ssl = self.__dialog.createYesOrNoDialog("\nDo you require Inv-Alert to validate the SSL certificate?", 8, 50, "Certificate Validation")
-				if validate_certificate_ssl == "ok":
-					data_configuration.append(True)
-					path_certificate_file = self.__dialog.createFileDialog("/etc", 8, 50, "Select the CA certificate:", ".pem")
-					data_configuration.append(path_certificate_file)
+				telk_alert_data.append(True)
+				verificate_certificate_ssl = self.__dialog.createYesOrNoDialog("\nDo you require that Telk-Alert verificates the SSL certificate?", 8, 50, "Certificate Verification")
+				if verificate_certificate_ssl == "ok":
+					telk_alert_data.append(True)
+					path_certificate_file = self.__dialog.createFileDialog("/etc/Telk-Alert-Suite/Telk-Alert/configuration", 8, 50, "Select the CA certificate:", ".pem")
+					telk_alert_data.append(path_certificate_file)
 				else:
-					data_configuration.append(False)
+					telk_alert_data.append(False)
 			else:
-				data_configuration.append(False)
-			use_http_authentication = self.__dialog.createYesOrNoDialog("\nIs the use of HTTP authentication required to connect to ElasticSearch?", 8, 50, "HTTP Authentication")
-			if use_http_authentication == "ok":
+				telk_alert_data.append(False)
+			use_authentication_method = self.__dialog.createYesOrNoDialog("\nDo you require that Telk-Alert uses an authentication method (HTTP Authentication or API Key) to connect with ElasticSearch?", 9, 50, "Authentication Method")
+			if use_authentication_method == "ok":
 				passphrase = self.__utils.getPassphraseKeyFile(self.__constants.PATH_KEY_FILE)
-				data_configuration.append(True)
-				user_http_authentication = self.__utils.encryptDataWithAES(self.__dialog.createInputBoxDialog("Enter the username for HTTP authentication:", 8, 50, "user_http"), passphrase)
-				data_configuration.append(user_http_authentication.decode('utf-8'))
-				password_http_authentication = self.__utils.encryptDataWithAES(self.__dialog.createPasswordBoxDialog("Enter the user's password for HTTP authentication:", 8, 50, "password", True), passphrase)
-				data_configuration.append(password_http_authentication.decode('utf-8'))
+				telk_alert_data.append(True)
+				option_authentication_method = self.__dialog.createRadioListDialog("Select a option:", 9, 55, self.__constants.OPTIONS_AUTHENTICATION_METHOD, "Authentication Method")
+				telk_alert_data.append(option_authentication_method)
+				if option_authentication_method == "HTTP Authentication":
+					user_http_authentication = self.__utils.encryptDataWithAES(self.__dialog.createInputBoxDialog("Enter the username for HTTP authentication:", 8, 50, "user_http"), passphrase)
+					telk_alert_data.append(user_http_authentication.decode("utf-8"))
+					password_http_authentication = self.__utils.encryptDataWithAES(self.__dialog.createPasswordBoxDialog("Enter the user's password for HTTP authentication:", 9, 50, "password", True), passphrase)
+					telk_alert_data.append(password_http_authentication.decode("utf-8"))
+				elif option_authentication_method == "API Key":
+					api_key_id = self.__utils.encryptDataWithAES(self.__dialog.createInputBoxDialog("Enter the API Key Identifier:", 8, 50, "VuaCfGcBCdbkQm-e5aOx"), passphrase)
+					telk_alert_data.append(api_key_id.decode("utf-8"))
+					api_key = self.__utils.encryptDataWithAES(self.__dialog.createInputBoxDialog("Enter the API Key:", 8, 50, "ui2lp2axTNmsyakw9tvNnw"), passphrase)
+					telk_alert_data.append(api_key.decode("utf-8"))
 			else:
-				data_configuration.append(False)
-			self.__createFileYamlConfiguration(data_configuration)
-			if path.exists(self.__constants.PATH_FILE_CONFIGURATION):
-				self.__dialog.createMessageDialog("\nConfiguration file created.", 7, 50, "Notification Message")
-				self.__logger.generateApplicationLog("Configuration file created", 1, "__configuration", use_file_handler = True, name_file_log = self.__constants.NAME_FILE_LOG, user = self.__constants.USER, group = self.__constants.GROUP)
-			self.__action_to_cancel()
-		except (FileNotFoundError, IOError, OSError) as exception:
-			self.__dialog.createMessageDialog("\nError creating, opening or reading the file. For more information, see the logs.", 8, 50, "Error Message")
-			self.__logger.generateApplicationLog(exception, 3, "__configuration", use_file_handler = True, name_file_log = self.__constants.NAME_FILE_LOG, user = self.__constants.USER, group = self.__constants.GROUP)
+				telk_alert_data.append(False)
+			self.__createYamlFileConfiguration(telk_alert_data)
+			if path.exists(self.__constants.PATH_TELK_ALERT_CONFIGURATION_FILE):
+				self.__dialog.createMessageDialog("\nTelk-Alert configuration file created.", 7, 50, "Notification Message")
+				self.__logger.generateApplicationLog("Telk-Alert configuration file created", 1, "__createConfiguration", use_file_handler = True, name_file_log = self.__constants.NAME_FILE_LOG, user = self.__constants.USER, group = self.__constants.GROUP)
+		except ValueError as exception:
+			self.__dialog.createMessageDialog("\nIncorrect data. For more information, see the logs.", 7, 50, "Error Message")
+			self.__logger.generateApplicationLog(exception, 3, "__createConfiguration", use_file_handler = True, name_file_log = self.__constants.NAME_FILE_LOG, user = self.__constants.USER, group = self.__constants.GROUP)
+		except (FileNotFoundError, OSError) as exception:
+			self.__dialog.createMessageDialog("\nI/O Error. For more information, see the logs.", 7, 50, "Error Message")
+			self.__logger.generateApplicationLog(exception, 3, "__createConfiguration", use_file_handler = True, name_file_log = self.__constants.NAME_FILE_LOG, user = self.__constants.USER, group = self.__constants.GROUP)
+		finally:
 			self.__action_to_cancel()
 
 
@@ -189,33 +177,41 @@ class Configuration:
 			self.__action_to_cancel()
 
 
-	def __createFileYamlConfiguration(self, data_configuration):
+	def __createYamlFileConfiguration(self, telk_alert_data):
 		""" 	
 		Method that creates the YAML file corresponding to the Telk-Alert configuration.
 
-		:arg data_configuration: Data to be stored in the configuration file.
+		:arg telk_alert_data: Data to be stored in the configuration file.
 		"""
-		data_configuration_json = {'es_host': data_configuration[0],
-								   'es_port': int(data_configuration[1]),
-								   'name_folder_rules': data_configuration[2],
-								   'use_ssl_tls': data_configuration[3]}
-		if data_configuration[3] == True:
-			if data_configuration[4] == True:
-				validate_certificate_ssl_json = { 'validate_certificate_ssl' : data_configuration[4] , 'path_certificate_file' : data_configuration[5] }
+		telk_alert_data_json = {
+			"es_hosts" : telk_alert_data[0],
+			"es_port" : int(telk_alert_data[1]),
+			"folder_rules_name" : telk_alert_data[2],
+			"use_ssl_tls" : telk_alert_data[3]
+		}
+
+		if telk_alert_data[3] == True:
+			if telk_alert_data[4] == True:
+				verificate_certificate_ssl_json = {"verificate_certificate_ssl" : telk_alert_data[4], "path_certificate_file" : telk_alert_data[5]}
 				last_index = 5
 			else:
-				validate_certificate_ssl_json = { 'validate_certificate_ssl' : data_configuration[4] }
+				verificate_certificate_ssl_json = {"verificate_certificate_ssl" : telk_alert_data[4]}
 				last_index = 4
-			data_configuration_json.update(validate_certificate_ssl_json)
+			telk_alert_data_json.update(verificate_certificate_ssl_json)
 		else:
 			last_index = 3
-		if data_configuration[last_index + 1] == True:
-			http_authentication_json = { 'use_http_authentication' : data_configuration[last_index + 1], 'user_http_authentication' : data_configuration[last_index + 2], 'password_http_authentication' : data_configuration[last_index + 3] }
+		if telk_alert_data[last_index + 1] == True:
+			if telk_alert_data[last_index + 2] == "HTTP Authentication":
+				http_authentication_json = {"use_authentication_method" : telk_alert_data[last_index + 1], "authentication_method" : telk_alert_data[last_index + 2], "user_http_authentication" : telk_alert_data[last_index + 3], "password_http_authentication" : telk_alert_data[last_index + 4]}
+				telk_alert_data_json.update(http_authentication_json)
+			elif telk_alert_data[last_index + 2] == "API Key":
+				api_key_json = {"use_authentication_method" : telk_alert_data[last_index + 1], "authentication_method" : telk_alert_data[last_index + 2], "api_key_id" : telk_alert_data[last_index + 3], "api_key" : telk_alert_data[last_index + 4]}
+				telk_alert_data_json.update(api_key_json)
 		else:
-			http_authentication_json = { 'use_http_authentication' : data_configuration[last_index + 1] }
-		data_configuration_json.update(http_authentication_json)
+			authentication_method_json = {"use_authentication_method" : telk_alert_data[last_index + 1]}
+			telk_alert_data_json.update(authentication_method_json)
 
-		self.__utils.createYamlFile(data_configuration_json, self.__constants.PATH_FILE_CONFIGURATION)
-		self.__utils.createNewFolder(self.__constants.PATH_BASE_TELK_ALERT + '/' + data_configuration[2])
-		self.__utils.changeOwnerToPath(self.__constants.PATH_FILE_CONFIGURATION, self.__constants.USER, self.__constants.GROUP)
-		self.__utils.changeOwnerToPath(self.__constants.PATH_BASE_TELK_ALERT + '/' + data_configuration[2], self.__constants.USER, self.__constants.GROUP)
+		self.__utils.createYamlFile(telk_alert_data_json, self.__constants.PATH_TELK_ALERT_CONFIGURATION_FILE)
+		self.__utils.createNewFolder(self.__constants.PATH_BASE_TELK_ALERT + '/' + telk_alert_data[2])
+		self.__utils.changeOwnerToPath(self.__constants.PATH_TELK_ALERT_CONFIGURATION_FILE, self.__constants.USER, self.__constants.GROUP)
+		self.__utils.changeOwnerToPath(self.__constants.PATH_BASE_TELK_ALERT + '/' + telk_alert_data[2], self.__constants.USER, self.__constants.GROUP)
