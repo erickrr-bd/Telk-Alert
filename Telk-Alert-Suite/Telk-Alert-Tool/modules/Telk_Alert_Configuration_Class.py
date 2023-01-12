@@ -190,7 +190,7 @@ class TelkAlertConfiguration:
 								password_http_authentication = self.__utils.encryptDataWithAES(self.__dialog.createPasswordBoxDialog("Enter the user's password for HTTP authentication:", 8, 50, "password", True), passphrase)
 								del telk_alert_data["api_key_id"]
 								del telk_alert_data["api_key"]
-								telk_alert_data["authentication_method"] = "HTTP authentication"
+								telk_alert_data["authentication_method"] = "HTTP Authentication"
 								http_authentication_json = {"user_http_authentication" : user_http_authentication.decode("utf-8"), "password_http_authentication" : password_http_authentication.decode("utf-8")}
 								telk_alert_data.update(http_authentication_json)
 					elif option_authentication_true == "Disable":
@@ -211,7 +211,7 @@ class TelkAlertConfiguration:
 							passphrase = self.__utils.getPassphraseKeyFile(self.__constants.PATH_KEY_FILE)
 							user_http_authentication = self.__utils.encryptDataWithAES(self.__dialog.createInputBoxDialog("Enter the username for HTTP authentication:", 8, 50, "user_http"), passphrase)
 							password_http_authentication = self.__utils.encryptDataWithAES(self.__dialog.createPasswordBoxDialog("Enter the user's password for HTTP authentication:", 8, 50, "password", True), passphrase)
-							http_authentication_json = {"authentication_method" : "HTTP authentication", "user_http_authentication" : user_http_authentication.decode("utf-8"), "password_http_authentication" : password_http_authentication.decode("utf-8")}
+							http_authentication_json = {"authentication_method" : "HTTP Authentication", "user_http_authentication" : user_http_authentication.decode("utf-8"), "password_http_authentication" : password_http_authentication.decode("utf-8")}
 							telk_alert_data.update(http_authentication_json)
 						elif option_authentication_method == "API Key":
 							passphrase = self.__utils.getPassphraseKeyFile(self.__constants.PATH_KEY_FILE)

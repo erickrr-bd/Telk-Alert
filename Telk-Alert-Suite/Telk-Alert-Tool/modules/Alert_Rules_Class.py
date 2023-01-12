@@ -8,36 +8,6 @@ from .Constants_Class import Constants
 Class that manages what is related with the alert rules.
 """
 class AlertRules:
-	"""
-	Attribute that stores an object of the libPyUtils class.
-	"""
-	__utils = None
-
-	"""
-	Attribute that stores an object of the libPyDialog class.
-	"""
-	__dialog = None
-
-	"""
-	Attribute that stores an object of the libPyLog class.
-	"""
-	__logger = None
-
-	"""
-	Attribute that stores an object of the Constants class.
-	"""
-	__constants = None
-
-	"""
-	Attribute that stores the method to be called when the user chooses the cancel option.
-	"""
-	__action_to_cancel = None
-
-	"""
-	Attribute that stores the absolute path of the folder where the alert rules are saved.
-	"""
-	__folder_alert_rules_path = None
-
 
 	def __init__(self, action_to_cancel):
 		"""
@@ -50,8 +20,8 @@ class AlertRules:
 		self.__constants = Constants()
 		self.__action_to_cancel = action_to_cancel
 		self.__dialog = libPyDialog(self.__constants.BACKTITLE, action_to_cancel)
-		name_folder_rules = self.__utils.readYamlFile(self.__constants.PATH_FILE_CONFIGURATION)['name_folder_rules']
-		self.__folder_alert_rules_path = self.__constants.PATH_BASE_TELK_ALERT + '/' + name_folder_rules
+		folder_rules_name = self.__utils.readYamlFile(self.__constants.PATH_TELK_ALERT_CONFIGURATION_FILE)["folder_rules_name"]
+		self.__folder_alert_rules_path = self.__constants.PATH_BASE_TELK_ALERT + '/' + folder_rules_name
 
 
 	def createNewAlertRule(self):

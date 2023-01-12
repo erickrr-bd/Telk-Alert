@@ -121,18 +121,18 @@ class Constants:
 								   	      ("Disable", "Disable authentication method", 0)]
 
 	"""
-	Options that are displayed when authentication is disabled.
+	Options displayed when "Use authentication method" option is disabled.
 	"""
 	OPTIONS_AUTHENTICATION_FALSE = [("Enable", "Enable authentication", 0)]
 
 	"""
-	Options that are displayed when the HTTP authentication credentials are to be modified.
+	Options displayed when the HTTP authentication credentials will be modified.
 	"""
 	OPTIONS_HTTP_AUTHENTICATION_DATA = [("Username", "Username for HTTP Authentication", 0),
 								 		("Password", "User password", 0)]
 
 	"""
-	Options that are displayed when the API Key credentials are to be modified.
+	Options displayed when the API Key credentials will be modified.
 	"""
 	OPTIONS_API_KEY_DATA = [("API Key ID", "API Key Identifier", 0),
 							("Api Key", "API Key", 0)]
