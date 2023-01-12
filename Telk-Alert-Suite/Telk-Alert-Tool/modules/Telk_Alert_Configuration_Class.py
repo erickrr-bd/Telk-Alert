@@ -84,96 +84,173 @@ class TelkAlertConfiguration:
 		"""
 		Method that allows to modify one or more values in the Telk-Alert configuration file.
 		"""
-		options_fields_update = self.__dialog.createCheckListDialog("Select one or more options:", 12, 70, self.__constants.OPTIONS_FIELDS_UPDATE, "Configuration Fields")
+		options_configuration_telk_alert_update = self.__dialog.createCheckListDialog("Select one or more options:", 12, 70, self.__constants.OPTIONS_CONFIGURATION_TELK_ALERT_UPDATE, "Telk-Alert Configuration Fields")
 		try:
-			data_configuration = self.__utils.readYamlFile(self.__constants.PATH_FILE_CONFIGURATION)
-			hash_file_configuration_original = self.__utils.getHashFunctionToFile(self.__constants.PATH_FILE_CONFIGURATION)
-			if "Host" in options_fields_update:
-				es_host = self.__dialog.createInputBoxToIPDialog("Enter the ElasticSearch IP address:", 8, 50, data_configuration['es_host'])
-				data_configuration['es_host'] = es_host
-			if "Port" in options_fields_update:
-				es_port = self.__dialog.createInputBoxToPortDialog("Enter the ElasticSearch listening port:", 8, 50, data_configuration['es_port'])
-				data_configuration['es_port'] = int(es_port)
-			if "Folder" in options_fields_update:
-				name_folder_rules = self.__dialog.createFolderOrFileNameDialog("Enter the name of the directory where the alert rules will be saved:", 10, 50, data_configuration['name_folder_rules'])
-				if not data_configuration['name_folder_rules'] == name_folder_rules:
-					self.__utils.renameFileOrFolder(self.__constants.PATH_BASE_TELK_ALERT + '/' + data_configuration['name_folder_rules'], self.__constants.PATH_BASE_TELK_ALERT + '/' + name_folder_rules)
-					data_configuration['name_folder_rules'] = name_folder_rules
-			if 'SSL/TLS' in options_fields_update:
-				if data_configuration['use_ssl_tls'] == True:
+			telk_alert_data = self.__utils.readYamlFile(self.__constants.PATH_TELK_ALERT_CONFIGURATION_FILE)
+			hash_file_configuration_original = self.__utils.getHashFunctionToFile(self.__constants.PATH_TELK_ALERT_CONFIGURATION_FILE)
+			if "Host" in options_configuration_telk_alert_update:
+				option_es_hosts_update = self.__dialog.createMenuDialog("Select a option:", 10, 50, self.__constants.OPTIONS_ES_HOSTS_UPDATE, "ELasticSearch Hosts Menu")
+				if option_es_hosts_update == "1":
+					number_master_nodes_es = self.__dialog.createInputBoxToNumberDialog("Enter the total number of master nodes to enter:", 9, 50, "1")
+					list_to_form_dialog = self.__utils.createListToDialogForm(int(number_master_nodes_es), "IP Address")
+					es_hosts = self.__dialog.createFormDialog("Enter IP addresses of the ElasticSearch master nodes:", list_to_form_dialog, 15, 50, "Add ElasticSearch Hosts")
+					telk_alert_data["es_hosts"].extend(es_hosts)
+				elif option_es_hosts_update == "2":
+					list_to_form_dialog = self.__utils.convertListToDialogForm(telk_alert_data["es_hosts"], "IP Address")
+					es_hosts = self.__dialog.createFormDialog("Enter IP addresses of the ElasticSearch master nodes:", list_to_form_dialog, 15, 50, "Update ElasticSearch Hosts")
+					telk_alert_data["es_hosts"] = es_hosts
+				elif option_es_hosts_update == "3":
+					list_to_dialog = self.__utils.convertListToDialogList(telk_alert_data["es_hosts"], "IP Address")
+					options_remove_es_hosts = self.__dialog.createCheckListDialog("Select one or more options:", 15, 50, list_to_dialog, "Remove ElasticSearch Hosts")
+					for option in options_remove_es_hosts:
+						telk_alert_data["es_hosts"].remove(option)
+			if "Port" in options_configuration_telk_alert_update:
+				es_port = self.__dialog.createInputBoxToPortDialog("Enter the ElasticSearch listening port:", 8, 50, str(telk_alert_data['es_port']))
+				telk_alert_data['es_port'] = int(es_port)
+			if "Folder" in options_configuration_telk_alert_update:
+				folder_rules_name = self.__dialog.createFolderOrFileNameDialog("Enter the folder's name where the alert rules will be stored:", 9, 50, telk_alert_data["folder_rules_name"])
+				if not telk_alert_data["folder_rules_name"] == folder_rules_name:
+					self.__utils.renameFileOrFolder(self.__constants.PATH_BASE_TELK_ALERT + '/' + telk_alert_data["folder_rules_name"], self.__constants.PATH_BASE_TELK_ALERT + '/' + folder_rules_name)
+					telk_alert_data["folder_rules_name"] = folder_rules_name
+			if "SSL/TLS" in options_configuration_telk_alert_update:
+				if telk_alert_data["use_ssl_tls"] == True:
 					option_ssl_tls_true = self.__dialog.createRadioListDialog("Select a option:", 10, 70, self.__constants.OPTIONS_SSL_TLS_TRUE, "SSL/TLS Connection")
 					if option_ssl_tls_true == "Disable":
-						del data_configuration['validate_certificate_ssl']
-						if 'path_certificate_file' in data_configuration:
-							del data_configuration['path_certificate_file']
-						data_configuration['use_ssl_tls'] = False
-					elif option_ssl_tls_true == "Certificate Validation":
-						if data_configuration['validate_certificate_ssl'] == True:
-							option_validate_certificate_true = self.__dialog.createRadioListDialog("Select a option:", 10, 70, self.__constants.OPTIONS_VALIDATE_CERTIFICATE_TRUE, "Certificate Validation")
-							if option_validate_certificate_true == "Disable":
-								if 'path_certificate_file' in data_configuration:
-									del data_configuration['path_certificate_file']
-								data_configuration['validate_certificate_ssl'] = False
-							elif data_configuration['validate_certificate_ssl'] == "Certificate File":
-								path_certificate_file = self.__dialog.createFileDialog(data_configuration['path_certificate_file'], 8, 50, "Select the CA certificate:", ".pem")
-								data_configuration['path_certificate_file'] = path_certificate_file
+						del telk_alert_data['verificate_certificate_ssl']
+						if "path_certificate_file" in telk_alert_data:
+							del telk_alert_data["path_certificate_file"]
+						telk_alert_data["use_ssl_tls"] = False
+					elif option_ssl_tls_true == "Certificate Verification":
+						if telk_alert_data["verificate_certificate_ssl"] == True:
+							option_verificate_certificate_true = self.__dialog.createRadioListDialog("Select a option:", 10, 70, self.__constants.OPTIONS_VERIFICATE_CERTIFICATE_TRUE, "Certificate Verification")
+							if option_verificate_certificate_true == "Disable":
+								if "path_certificate_file" in telk_alert_data:
+									del telk_alert_data["path_certificate_file"]
+								telk_alert_data["verificate_certificate_ssl"] = False
+							elif option_verificate_certificate_true == "Certificate File":
+								path_certificate_file = self.__dialog.createFileDialog(telk_alert_data["path_certificate_file"], 8, 50, "Select the CA certificate:", ".pem")
+								telk_alert_data["path_certificate_file"] = path_certificate_file
 						else:
-							option_validate_certificate_false = self.__dialog.createRadioListDialog("Select a option:", 8, 70, self.__constants.OPTIONS_VALIDATE_CERTIFICATE_FALSE, "Certificate Validation")
-							if option_validate_certificate_false == "Enable":
-								data_configuration['validate_certificate_ssl'] = True
-								path_certificate_file = self.__dialog.createFileDialog("/etc", 8, 50, "Select the CA certificate:", ".pem")
-								validate_certificate_ssl_json = {'path_certificate_file' : path_certificate_file}
-								data_configuration.update(validate_certificate_ssl_json)
+							option_verificate_certificate_false = self.__dialog.createRadioListDialog("Select a option:", 8, 70, self.__constants.OPTIONS_VERIFICATE_CERTIFICATE_FALSE, "Certificate Verification")
+							if option_verificate_certificate_false == "Enable":
+								telk_alert_data["verificate_certificate_ssl"] = True
+								path_certificate_file = self.__dialog.createFileDialog("/etc/Telk-Alert-Suite/Telk-Alert/configuration", 8, 50, "Select the CA certificate:", ".pem")
+								verificate_certificate_ssl_json = {"path_certificate_file" : path_certificate_file}
+								telk_alert_data.update(verificate_certificate_ssl_json)
 				else:
 					option_ssl_tls_false = self.__dialog.createRadioListDialog("Select a option:", 8, 70, self.__constants.OPTIONS_SSL_TLS_FALSE, "SSL/TLS Connection")
-					data_configuration['use_ssl_tls'] = True
-					validate_certificate_ssl = self.__dialog.createYesOrNoDialog("\nDo you require VS-Monitor to validate the SSL certificate?", 8, 50, "Certificate Validation")
-					if validate_certificate_ssl == "ok":
-						path_certificate_file = self.__dialog.createFileDialog("/etc", 8, 50, "Select the CA certificate:", ".pem")
-						validate_certificate_ssl_json = {'validate_certificate_ssl' : True, 'path_certificate_file' : path_certificate_file}
+					telk_alert_data['use_ssl_tls'] = True
+					verificate_certificate_ssl = self.__dialog.createYesOrNoDialog("\nDo you require that Telk-Alert verificates the SSL certificate?", 8, 50, "Certificate Verification")
+					if verificate_certificate_ssl == "ok":
+						path_certificate_file = self.__dialog.createFileDialog("/etc/Telk-Alert-Suite/Telk-Alert/configuration", 8, 50, "Select the CA certificate:", ".pem")
+						verificate_certificate_ssl = {"verificate_certificate_ssl" : True, "path_certificate_file" : path_certificate_file}
 					else:
-						validate_certificate_ssl_json = {'validate_certificate_ssl' : False}
-					data_configuration.update(validate_certificate_ssl_json)
-			if 'HTTP Authentication' in options_fields_update:
-				if data_configuration['use_http_authentication'] == True:
-					option_http_authentication_true = self.__dialog.createRadioListDialog("Select a option:", 10, 70, self.__constants.OPTIONS_HTTP_AUTHENTICATION_TRUE, "HTTP Authentication")
-					if option_http_authentication_true == "Disable":
-						del data_configuration['user_http_authentication']
-						del data_configuration['password_http_authentication']
-						data_configuration['use_http_authentication'] = False
-					elif option_http_authentication_true == "Data":
-						passphrase = self.__utils.getPassphraseKeyFile(self.__constants.PATH_KEY_FILE)
-						options_http_authentication_data = self.__dialog.createCheckListDialog("Select one or more options:", 10, 70, self.__constants.OPTIONS_HTTP_AUTHENTICATION_DATA, "HTTP Authentication")
-						if 'Username' in options_http_authentication_data:
-							user_http_authentication = self.__utils.encryptDataWithAES(self.__dialog.createInputBoxDialog("Enter the username for HTTP authentication:", 8, 50, "user_http"), passphrase)
-							data_configuration['user_http_authentication'] = user_http_authentication.decode('utf-8')
-						if 'Password' in options_http_authentication_data:
-							password_http_authentication = self.__utils.encryptDataWithAES(self.__dialog.createPasswordBoxDialog("Enter the user's password for HTTP authentication:", 8, 50, "password", True), passphrase)
-							data_configuration['password_http_authentication'] = password_http_authentication.decode('utf-8')
+						verificate_certificate_ssl = {"verificate_certificate_ssl" : False}
+					telk_alert_data.update(verificate_certificate_ssl)
+			if "Authentication" in options_configuration_telk_alert_update:
+				if telk_alert_data["use_authentication_method"] == True:
+					option_authentication_true = self.__dialog.createRadioListDialog("Select a option:", 9, 50, self.__constants.OPTIONS_AUTHENTICATION_TRUE, "Authentication Method")
+					if option_authentication_true == "Data":
+						if telk_alert_data["authentication_method"] == "HTTP Authentication":
+							option_authentication_method_true = self.__dialog.createRadioListDialog("Select a option:", 9, 60, self.__constants.OPTIONS_AUTHENTICATION_METHOD_TRUE, "HTTP Authentication")
+							if option_authentication_method_true == "Data":
+								options_http_authentication_data = self.__dialog.createCheckListDialog("Select one or more options:", 9, 60, self.__constants.OPTIONS_HTTP_AUTHENTICATION_DATA, "HTTP Authentication")	
+								if "Username" in options_http_authentication_data:
+									passphrase = self.__utils.getPassphraseKeyFile(self.__constants.PATH_KEY_FILE)
+									user_http_authentication = self.__utils.encryptDataWithAES(self.__dialog.createInputBoxDialog("Enter the username for HTTP authentication:", 8, 50, "user_http"), passphrase)									
+									telk_alert_data["user_http_authentication"] = user_http_authentication.decode("utf-8")
+								if "Password" in options_http_authentication_data:
+									passphrase = self.__utils.getPassphraseKeyFile(self.__constants.PATH_KEY_FILE)
+									password_http_authentication = self.__utils.encryptDataWithAES(self.__dialog.createPasswordBoxDialog("Enter the user's password for HTTP authentication:", 8, 50, "password", True), passphrase)
+									telk_alert_data["password_http_authentication"] = password_http_authentication.decode("utf-8")
+							elif option_authentication_method_true == "Disable":
+								passphrase = self.__utils.getPassphraseKeyFile(self.__constants.PATH_KEY_FILE)
+								api_key_id = self.__utils.encryptDataWithAES(self.__dialog.createInputBoxDialog("Enter the API Key Identifier:", 8, 50, "VuaCfGcBCdbkQm-e5aOx"), passphrase)
+								api_key = self.__utils.encryptDataWithAES(self.__dialog.createInputBoxDialog("Enter the API Key:", 8, 50, "ui2lp2axTNmsyakw9tvNnw"), passphrase)
+								del telk_alert_data["user_http_authentication"]
+								del telk_alert_data["password_http_authentication"]
+								telk_alert_data["authentication_method"] = "API Key"
+								api_key_json = {"api_key_id" : api_key_id.decode("utf-8"), "api_key" : api_key.decode("utf-8")}
+								telk_alert_data.update(api_key_json)
+						elif telk_alert_data["authentication_method"] == "API Key":
+							option_authentication_method_true = self.__dialog.createRadioListDialog("Select a option:", 9, 60, self.__constants.OPTIONS_AUTHENTICATION_METHOD_TRUE, "API Key")
+							if option_authentication_method_true == "Data":
+								options_api_key_data = self.__dialog.createCheckListDialog("Select one or more options:", 9, 50, self.__constants.OPTIONS_API_KEY_DATA, "API Key")
+								if "API Key ID" in options_api_key_data:
+									passphrase = self.__utils.getPassphraseKeyFile(self.__constants.PATH_KEY_FILE)
+									api_key_id = self.__utils.encryptDataWithAES(self.__dialog.createInputBoxDialog("Enter the API Key Identifier:", 8, 50, "VuaCfGcBCdbkQm-e5aOx"), passphrase)
+									telk_alert_data["api_key_id"] = api_key_id.decode("utf-8")
+								if "API Key" in options_api_key_data:
+									passphrase = self.__utils.getPassphraseKeyFile(self.__constants.PATH_KEY_FILE)
+									api_key = self.__utils.encryptDataWithAES(self.__dialog.createInputBoxDialog("Enter the API Key:", 8, 50, "ui2lp2axTNmsyakw9tvNnw"), passphrase)
+									telk_alert_data["api_key"] = api_key.decode("utf-8")
+							elif option_authentication_method_true == "Disable":
+								passphrase = self.__utils.getPassphraseKeyFile(self.__constants.PATH_KEY_FILE)
+								user_http_authentication = self.__utils.encryptDataWithAES(self.__dialog.createInputBoxDialog("Enter the username for HTTP authentication:", 8, 50, "user_http"), passphrase)
+								password_http_authentication = self.__utils.encryptDataWithAES(self.__dialog.createPasswordBoxDialog("Enter the user's password for HTTP authentication:", 8, 50, "password", True), passphrase)
+								del telk_alert_data["api_key_id"]
+								del telk_alert_data["api_key"]
+								telk_alert_data["authentication_method"] = "HTTP authentication"
+								http_authentication_json = {"user_http_authentication" : user_http_authentication.decode("utf-8"), "password_http_authentication" : password_http_authentication.decode("utf-8")}
+								telk_alert_data.update(http_authentication_json)
+					elif option_authentication_true == "Disable":
+						telk_alert_data["use_authentication_method"] = False
+						if telk_alert_data["authentication_method"] == "HTTP Authentication":
+							del telk_alert_data["user_http_authentication"]
+							del telk_alert_data["password_http_authentication"]
+						elif telk_alert_data["authentication_method"] == "API Key":
+							del telk_alert_data["api_key_id"]
+							del telk_alert_data["api_key"]
+						del telk_alert_data["authentication_method"]
 				else:
-					option_http_authentication_false = self.__dialog.createRadioListDialog("Select a option:", 8, 70, self.__constants.OPTIONS_HTTP_AUTHENTICATION_FALSE, "HTTP Authentication")
-					if option_http_authentication_false == "Enable":
-						passphrase = self.__utils.getPassphraseKeyFile(self.__constants.PATH_KEY_FILE)
-						user_http_authentication = self.__utils.encryptDataWithAES(self.__dialog.createInputBoxDialog("Enter the username for HTTP authentication:", 8, 50, "user_http"), passphrase)
-						password_http_authentication = self.__utils.encryptDataWithAES(self.__dialog.createPasswordBoxDialog("Enter the user's password for HTTP authentication:", 8, 50, "password", True), passphrase)
-						http_authentication_json = {'user_http_authentication' : user_http_authentication.decode('utf-8'), 'password_http_authentication' : password_http_authentication.decode('utf-8')}
-						data_configuration.update(http_authentication_json)
-						data_configuration['use_http_authentication'] = True
-			self.__utils.createYamlFile(data_configuration, self.__constants.PATH_FILE_CONFIGURATION)
-			hash_file_configuration_new = self.__utils.getHashFunctionToFile(self.__constants.PATH_FILE_CONFIGURATION)
+					option_authentication_false = self.__dialog.createRadioListDialog("Select a option:", 8, 50, self.__constants.OPTIONS_AUTHENTICATION_FALSE, "Authentication Method")
+					if option_authentication_false == "Enable":
+						telk_alert_data["use_authentication_method"] = True
+						option_authentication_method = self.__dialog.createRadioListDialog("Select a option:", 10, 55, self.__constants.OPTIONS_AUTHENTICATION_METHOD, "Authentication Method")
+						if option_authentication_method == "HTTP Authentication":
+							passphrase = self.__utils.getPassphraseKeyFile(self.__constants.PATH_KEY_FILE)
+							user_http_authentication = self.__utils.encryptDataWithAES(self.__dialog.createInputBoxDialog("Enter the username for HTTP authentication:", 8, 50, "user_http"), passphrase)
+							password_http_authentication = self.__utils.encryptDataWithAES(self.__dialog.createPasswordBoxDialog("Enter the user's password for HTTP authentication:", 8, 50, "password", True), passphrase)
+							http_authentication_json = {"authentication_method" : "HTTP authentication", "user_http_authentication" : user_http_authentication.decode("utf-8"), "password_http_authentication" : password_http_authentication.decode("utf-8")}
+							telk_alert_data.update(http_authentication_json)
+						elif option_authentication_method == "API Key":
+							passphrase = self.__utils.getPassphraseKeyFile(self.__constants.PATH_KEY_FILE)
+							api_key_id = self.__utils.encryptDataWithAES(self.__dialog.createInputBoxDialog("Enter the API Key Identifier:", 8, 50, "VuaCfGcBCdbkQm-e5aOx"), passphrase)
+							api_key = self.__utils.encryptDataWithAES(self.__dialog.createInputBoxDialog("Enter the API Key:", 8, 50, "ui2lp2axTNmsyakw9tvNnw"), passphrase)
+							api_key_json = {"authentication_method" : "API Key", "api_key_id" : api_key_id.decode("utf-8"), "api_key" : api_key.decode("utf-8")}
+							telk_alert_data.update(api_key_json)
+			self.__utils.createYamlFile(telk_alert_data, self.__constants.PATH_TELK_ALERT_CONFIGURATION_FILE)
+			hash_file_configuration_new = self.__utils.getHashFunctionToFile(self.__constants.PATH_TELK_ALERT_CONFIGURATION_FILE)
 			if hash_file_configuration_original == hash_file_configuration_new:
-				self.__dialog.createMessageDialog("\nConfiguration file not modified.", 7, 50, "Notification Message")
+				self.__dialog.createMessageDialog("\nTelk-Alert configuration file not modified.", 7, 50, "Notification Message")
 			else:
-				self.__dialog.createMessageDialog("\nModified configuration file.", 7, 50, "Notification Message")
-				self.__logger.generateApplicationLog("Modified configuration file", 2, "__configuration", use_file_handler = True, name_file_log = self.__constants.NAME_FILE_LOG, user = self.__constants.USER, group = self.__constants.GROUP)
-			self.__action_to_cancel()
+				self.__dialog.createMessageDialog("\nTelk-Alert configuration file modified.", 7, 50, "Notification Message")
+				self.__logger.generateApplicationLog("Telk-Alert configuration file modified", 2, "__updateConfiguration", use_file_handler = True, name_file_log = self.__constants.NAME_FILE_LOG, user = self.__constants.USER, group = self.__constants.GROUP)
 		except KeyError as exception:
 			self.__dialog.createMessageDialog("\nKey Error: " + str(exception), 7, 50, "Error Message")
-			self.__logger.generateApplicationLog("Key Error: " + str(exception), 3, "__configuration", use_file_handler = True, name_file_log = self.__constants.NAME_FILE_LOG, user = self.__constants.USER, group = self.__constants.GROUP)
+			self.__logger.generateApplicationLog("Key Error: " + str(exception), 3, "__updateConfiguration", use_file_handler = True, name_file_log = self.__constants.NAME_FILE_LOG, user = self.__constants.USER, group = self.__constants.GROUP)
+		except ValueError as exception:
+			self.__dialog.createMessageDialog("\nIncorrect data. For more information, see the logs.", 7, 50, "Error Message")
+			self.__logger.generateApplicationLog(exception, 3, "__updateConfiguration", use_file_handler = True, name_file_log = self.__constants.NAME_FILE_LOG, user = self.__constants.USER, group = self.__constants.GROUP)
+		except (FileNotFoundError, OSError) as exception:
+			self.__dialog.createMessageDialog("\nI/O Error. For more information, see the logs.", 7, 50, "Error Message")
+			self.__logger.generateApplicationLog(exception, 3, "__updateConfiguration", use_file_handler = True, name_file_log = self.__constants.NAME_FILE_LOG, user = self.__constants.USER, group = self.__constants.GROUP)
+		finally:
 			self.__action_to_cancel()
-		except (IOError, FileNotFoundError, OSError) as exception:
-			self.__dialog.createMessageDialog("\n", 8, 50, "Error Message")
-			self.__logger.generateApplicationLog(exception, 3, "__configuration", use_file_handler = True, name_file_log = self.__constants.NAME_FILE_LOG,user = self.__constants.USER, group = self.__constants.GROUP)
+
+
+	def showConfigurationData(self):
+		"""
+		Method that displays the data stored in the Telk-Alert configuration file.
+		"""
+		try:
+			telk_alert_data = self.__utils.convertDataYamlFileToString(self.__constants.PATH_TELK_ALERT_CONFIGURATION_FILE)
+			message_to_display = "\nTelk-Alert Configuration:\n\n" + telk_alert_data
+			self.__dialog.createScrollBoxDialog(message_to_display, 18, 70, "Telk-Alert Configuration")
+		except (FileNotFoundError, OSError) as exception:
+			self.__dialog.createMessageDialog("\nI/O Error. For more information, see the logs.", 7, 50, "Error Message")
+			self.__logger.generateApplicationLog(exception, 3, "__showConfiguration", use_file_handler = True, name_file_log = self.__constants.NAME_FILE_LOG, user = self.__constants.USER, group = self.__constants.GROUP)
+		finally:
 			self.__action_to_cancel()
 
 

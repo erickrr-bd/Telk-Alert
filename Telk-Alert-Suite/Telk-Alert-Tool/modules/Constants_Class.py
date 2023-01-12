@@ -3,7 +3,7 @@ Class that manages all the constant variables of the application.
 """
 class Constants:
 	"""
-	Title that is shown in the background of the application.
+	Title displayed in the background of the application.
 	"""
 	BACKTITLE = "TELK-ALERT-TOOL v3.3 by Erick Rodriguez"
 
@@ -43,7 +43,7 @@ class Constants:
 	GROUP = "telk_alert"
 
 	"""
-	Options displayed in the main menu.
+	Options displayed in the "Main" menu.
 	"""
 	OPTIONS_MAIN_MENU = [("1", "Telk-Alert Configuration"),
 					     ("2", "Alert Rules"),
@@ -54,36 +54,43 @@ class Constants:
 					     ("7", "Exit")]
 
 	"""
-	Options that are shown when the configuration file does not exist.
+	Options displayed when the configuration file doesn't exist.
 	"""
 	OPTIONS_CONFIGURATION_FALSE = [("Create", "Create the configuration file", 0)]
 
 	"""
-	Options that are shown when the configuration file exists.
+	Options displayed when the configuration file exists.
 	"""
 	OPTIONS_CONFIGURATION_TRUE = [("Modify", "Modify the configuration file", 0),
 								  ("Show", "Show configuration data", 0)]
 
 	"""
-	Options that are displayed to select an authentication method.
+	Options displayed to select an authentication method.
 	"""
 	OPTIONS_AUTHENTICATION_METHOD = [("HTTP Authentication", "Use HTTP Authentication", 0),
 								     ("API Key", "Use API Key", 0)]
 
 	"""
-	Options that are shown when a value is going to be modified in the Telk-Alert configuration.
+	Options displayed when a value is gonna be modified in the Telk-Alert configuration.
 	"""
-	OPTIONS_FIELDS_UPDATE = [("Host", "ElasticSearch Host", 0),
-							 ("Port", "ElasticSearch Port", 0),
-							 ("Folder", "Rules Folder", 0),
-							 ("SSL/TLS", "Enable or disable SSL/TLS connection", 0),
-							 ("HTTP Authentication", "Enable or disable Http authentication", 0)]
+	OPTIONS_CONFIGURATION_TELK_ALERT_UPDATE = [("Host", "ElasticSearch Host", 0),
+							 	 			   ("Port", "ElasticSearch Port", 0),
+							 	 			   ("Folder", "Rules Folder", 0),
+							 	 			   ("SSL/TLS", "Enable or disable SSL/TLS connection", 0),
+							 	 			   ("Authentication", "Enable or disable authentication method", 0)]
+
+	"""
+	Options displayed when "ElasticSearch hosts" option will be modified.
+	"""
+	OPTIONS_ES_HOSTS_UPDATE = [("1", "Add New Hosts"),
+							   ("2", "Modify Hosts"),
+							   ("3", "Remove Hosts")]
 
 	"""
 	Options displayed when the use of SSL/TLS is enabled.
 	"""
 	OPTIONS_SSL_TLS_TRUE = [("Disable", "Disable SSL/TLS communication", 0),
-							("Certificate Validation", "Modify certificate validation", 0)]
+							("Certificate Verification", "Modify certificate verification", 0)]
 
 	"""
 	Options displayed when the use of SSL/TLS is disabled.
@@ -91,32 +98,44 @@ class Constants:
 	OPTIONS_SSL_TLS_FALSE = [("Enable", "Enable SSL/TLS communication", 0)]
 
 	"""
-	Options displayed when SSL certificate validation is enabled.
+	Options displayed when "SSL certificate verification" option is enabled.
 	"""
-	OPTIONS_VALIDATE_CERTIFICATE_TRUE = [("Disable", "Disable certificate validation", 0),
-								   		 ("Certificate File", "Change certificate file", 0)]
+	OPTIONS_VERIFICATE_CERTIFICATE_TRUE = [("Disable", "Disable certificate verification", 0),
+								   		   ("Certificate File", "Change certificate file", 0)]
 
 	"""
-	Options displayed when SSL certificate validation is disabled.
+	Options displayed when "SSL certificate verification" option is disabled.
 	"""
-	OPTIONS_VALIDATE_CERTIFICATE_FALSE = [("Enable", "Enable certificate validation", 0)]
+	OPTIONS_VERIFICATE_CERTIFICATE_FALSE = [("Enable", "Enable certificate verification", 0)]
 
 	"""
-	Options that are displayed when HTTP authentication is enabled.
+	Options displayed when "Use authentication method" option is enabled.
 	"""
-	OPTIONS_HTTP_AUTHENTICATION_TRUE = [("Disable", "Disable HTTP Authentication", 0),
-								 		("Data", "Modify HTTP Authentication data", 0)]
+	OPTIONS_AUTHENTICATION_TRUE = [("Data", "Modify authentication method", 0),
+								   ("Disable", "Disable authentication method", 0)]
 
 	"""
-	Options that are displayed when HTTP authentication is disabled.
+	Options displayed when an authentication method will be modified.
 	"""
-	OPTIONS_HTTP_AUTHENTICATION_FALSE = [("Enable", "Enable HTTP Authentication", 0)]
+	OPTIONS_AUTHENTICATION_METHOD_TRUE = [("Data", "Modify authentication method data", 0),
+								   	      ("Disable", "Disable authentication method", 0)]
+
+	"""
+	Options that are displayed when authentication is disabled.
+	"""
+	OPTIONS_AUTHENTICATION_FALSE = [("Enable", "Enable authentication", 0)]
 
 	"""
 	Options that are displayed when the HTTP authentication credentials are to be modified.
 	"""
 	OPTIONS_HTTP_AUTHENTICATION_DATA = [("Username", "Username for HTTP Authentication", 0),
 								 		("Password", "User password", 0)]
+
+	"""
+	Options that are displayed when the API Key credentials are to be modified.
+	"""
+	OPTIONS_API_KEY_DATA = [("API Key ID", "API Key Identifier", 0),
+							("Api Key", "API Key", 0)]
 
 	"""
 	Options displayed in the "Alert Rules" menu.
