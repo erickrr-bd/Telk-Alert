@@ -168,91 +168,92 @@ class Constants:
 	"""
 	Options that are displayed to select a Alert rule's query type.
 	"""
-	OPTIONS_QUERY_TYPE = [("query_string", "Perform the search using a Query String", 1)]
+	OPTIONS_QUERY_TYPE = [("query_string", "Perform the search using Query String", 0),
+						  ("aggregations", "Perform the search using Aggregations", 0)]
 
 	"""
-	Options that are displayed to select a value when "User Custom Rule" option is enabled.
+	Options displayed when the "Custom Rule" option is enable.
 	"""
 	OPTIONS_CUSTOM_RULE = [("Hostname", "Restrict by hostname", 0),
 					 	   ("Username", "Restrict by username", 0)]
 
 	"""
-	Options that are displayed to select a Alert rule's send type.
+	Options displayed to select a Alert rule's send type.
 	"""
-	OPTIONS_SEND_TYPE_ALERT = [["only", "A single alert with the total of events found", 1],
+	OPTIONS_SHIPPING_2 = [["only", "A single alert with the total of events found", 1],
 						       ["multiple", "An alert for each event found", 0]]
 
 	"""
-	Options that are displayed to modify "Alert Rule".
+	Options displayed when a value is gonna be modified in an alert rule.
 	"""
-	OPTIONS_FIELDS_UPDATE_ALERT_RULE = [("Name", "Alert rule name", 0),
-							  			("Level", "Alert rule level", 0),
-							  			("Index", "Index name or index pattern in ElastcSearch", 0),
-							  			("Number Events", "Number of events to which the alert is sent", 0),
-							  			("Time Search", "Time in which the search will be repeated", 0),
-							  			("Time Range", "Time range in which events will be searched", 0),
-							  			("Query String", "Query string for event search", 0),
-							  			("Fields Option", "Enables or disables the use of fields option", 0),
-							  			("Custom Rule", "Enable or disable the use of custom rule", 0),
-							  			("Shipping Type", "How the alert will be sent", 0),
-							  			("Bot Token", "Telegram Bot Token", 0),
-							  			("Chat ID", "Telegram channel identifier", 0)]
+	OPTIONS_ALERT_RULE_UPDATE = [("Name", "Alert rule's name", 0),
+							  	 ("Level", "Alert rule's level", 0),
+							  	 ("Index", "ElasticSearch's index pattern", 0),
+							  	 ("Number Events", "Number of events to which the alert is sent", 0),
+							  	 ("Time Search", "Time in which the search will be repeated", 0),
+							  	 ("Time Range", "Event search's range", 0),
+							  	 ("Query Kind", "Query's kind for event search", 0),
+							  	 ("Fields Option", "Enable or disable field's option", 0),
+							  	 ("Custom Rule", "Enable or disable custom rule's option", 0),
+							  	 ("Shipping Way", "How the alert is sent", 0),
+							  	 ("Bot Token", "Telegram's Bot Token", 0),
+							  	 ("Chat ID", "Telegram's channel identifier", 0)]
 	
 	"""
-	Options that are displayed when "use fields" option is false.
+	Options displayed when the "fields" option is disable.
 	"""
-	OPTIONS_USE_FIELDS_OPTION_FALSE = [("Enable", "Enables the use fields option", 0)]
+	OPTIONS_FIELDS_OPTION_FALSE = [("Enable", "Enable field's option", 0)]
 
 	"""
-	Options that are displayed when "use fields" option is true.
+	Options displayed when "fields" option is enable.
 	"""
-	OPTIONS_USE_FIELDS_OPTION_TRUE = [("Disable", "Disable the use fields option", 0),
-								      ("Data", "Modify configured data", 0)]
+	OPTIONS_FIELDS_OPTION_TRUE = [("Disable", "Disable field's option", 0),
+								  ("Data", "Modify configured data", 0)]
 
 	"""
-	Options that are displayed when "use fields" option is modify.
+	Options displayed when the "fields" option will be modified.
 	"""
-	OPTIONS_USE_FIELDS_OPTION_UPDATE = [("1", "Add New Field(s)"),
-									   	("2", "Modify Field(s)"),
-									   	("3", "Remove Field(s)")]
+	OPTIONS_FIELDS_OPTION_UPDATE = [("1", "Add New Field(s)"),
+									("2", "Modify Field(s)"),
+									("3", "Remove Field(s)")]
 
 	"""
-	Options that are displayed when "use custom rule" option is false.
+	Options displayed when the "custom rule" option is disable.
 	"""
-	OPTIONS_USE_CUSTOM_RULE_OPTION_FALSE = [("Enable", "Enable the use of a custom rule", 0)]
+	OPTIONS_CUSTOM_RULE_OPTION_FALSE = [("Enable", "Enable custom rule's option", 0)]
 
 	"""
-	Options that are displayed when "use custom rule" option is true.
+	Options displayed when the "custom rule" option is enable.
 	"""
-	OPTIONS_USE_CUSTOM_RULE_OPTION_TRUE = [("Disable", "Disable the use of a custom rule", 0),
-								 		   ("Data", "Modify configured data", 0)]
+	OPTIONS_CUSTOM_RULE_OPTION_TRUE = [("Disable", "Disable custom rule's option", 0),
+								 	   ("Data", "Modify configured data", 0)]
 
 	"""
-	Options that are displayed when "restriction by hostname" option is false.
+	Options displayed when the "restriction by hostname" option is disable.
 	"""
 	OPTIONS_RESTRICTION_BY_HOSTNAME_FALSE = [("Enable", "Enable restriction by hostname", 0)]
 
 	"""
-	Options that are displayed when "restriction by hostname" option is true.
+	Options displayed when the "restriction by hostname" option is enable.
 	"""
-	OPTIONS_RESTRICTION_BY_HOSTNAME_TRUE = [("Disable", "Disable hostname restriction", 0),
+	OPTIONS_RESTRICTION_BY_HOSTNAME_TRUE = [("Disable", "Disable restriction by hostname", 0),
 								 		    ("Data", "Modify configured data", 0)]
 
 	"""
-	Options that are displayed when "restriction by username" option is false.
+	Options that are displayed when the "restriction by username" option is false.
 	"""
 	OPTIONS_RESTRICTION_BY_USERNAME_FALSE = [("Enable", "Enable restriction by username", 0)]
 
 	"""
-	Options that are displayed when "restriction by username" option is true.
+	Options that are displayed when the "restriction by username" option is true.
 	"""
 	OPTIONS_RESTRICTION_BY_USERNAME_TRUE = [("Disable", "Disable restriction by username", 0),
 								 		    ("Data", "Modify configured data", 0)]
 	
 	"""
-	Options that are displayed when "restriction by hostname and by username" option is modify.
+	Options displayed when the "restriction by hostname or username" option will be modified.
 	"""
-	OPTIONS_RESTRICTION_UPDATE = [("Field", "Name of the field in the index", 0),
+	OPTIONS_RESTRICTION_UPDATE = [("Field", "Field's name in the index", 0),
 								  ("Events", "Number of events", 0)]
 
 	"""

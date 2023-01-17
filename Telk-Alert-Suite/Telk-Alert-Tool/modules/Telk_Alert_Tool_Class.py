@@ -6,9 +6,7 @@ from libPyDialog import libPyDialog
 from .Constants_Class import Constants
 from .Alert_Rules_Class import AlertRules
 from .Agent_Service_Class import AgentService
-from .Report_Service_Class import ReportService
 from .Agent_Configuration_Class import AgentConfiguration
-from .Report_Configuration_Class import ReportConfiguration
 from .Telk_Alert_Configuration_Class import TelkAlertConfiguration
 
 """
@@ -37,11 +35,11 @@ class TelkAlertTool:
 		"""
 		Method that shows the "Alert RUles" menu.
 		"""
-		if path.exists(self.__constants.PATH_FILE_CONFIGURATION):
+		if path.exists(self.__constants.PATH_TELK_ALERT_CONFIGURATION_FILE):
 			option_alert_rules_menu = self.__dialog.createMenuDialog("Select a option:", 12, 50, self.__constants.OPTIONS_ALERT_RULES_MENU, "Alert Rules Menu")
 			self.__switchAlertRulesMenu(int(option_alert_rules_menu))
 		else:
-			self.__dialog.createMessageDialog("\nConfiguration file not found.", 7, 50, "Notification Message")
+			self.__dialog.createMessageDialog("\nTelk-Alert configuration file not found.", 7, 50, "Notification Message")
 			self.mainMenu()
 
 
@@ -49,7 +47,7 @@ class TelkAlertTool:
 		"""
 		Method that shows the "Service" menu.
 		"""
-		if path.exists(self.__constants.PATH_FILE_CONFIGURATION):
+		if path.exists(self.__constants.PATH_TELK_ALERT_CONFIGURATION_FILE):
 			option_service_menu = self.__dialog.createMenuDialog("Select a option:", 12, 50, self.__constants.OPTIONS_SERVICE_MENU, "Service Menu")
 			self.__switchServiceMenu(int(option_service_menu))
 		else:
