@@ -13,7 +13,7 @@ class TelkAlertConfiguration:
 		"""
 		Method that corresponds to the constructor of the class.
 
-		:arg action_to_cancel: Method to be called when the user chooses the cancel option.
+		:arg action_to_cancel (object): Method to be called when the user chooses the cancel option.
 		"""
 		self.__logger = libPyLog()
 		self.__utils = libPyUtils()
@@ -71,10 +71,10 @@ class TelkAlertConfiguration:
 				self.__dialog.createMessageDialog("\nTelk-Alert configuration file created.", 7, 50, "Notification Message")
 				self.__logger.generateApplicationLog("Telk-Alert configuration file created", 1, "__createConfiguration", use_file_handler = True, name_file_log = self.__constants.NAME_FILE_LOG, user = self.__constants.USER, group = self.__constants.GROUP)
 		except ValueError as exception:
-			self.__dialog.createMessageDialog("\nIncorrect data. For more information, see the logs.", 7, 50, "Error Message")
+			self.__dialog.createMessageDialog("\nValue Error. For more information, see the logs.", 7, 50, "Error Message")
 			self.__logger.generateApplicationLog(exception, 3, "__createConfiguration", use_file_handler = True, name_file_log = self.__constants.NAME_FILE_LOG, user = self.__constants.USER, group = self.__constants.GROUP)
 		except (FileNotFoundError, OSError) as exception:
-			self.__dialog.createMessageDialog("\nI/O Error. For more information, see the logs.", 7, 50, "Error Message")
+			self.__dialog.createMessageDialog("\nFile Not Found or OS Error. For more information, see the logs.", 8, 50, "Error Message")
 			self.__logger.generateApplicationLog(exception, 3, "__createConfiguration", use_file_handler = True, name_file_log = self.__constants.NAME_FILE_LOG, user = self.__constants.USER, group = self.__constants.GROUP)
 		finally:
 			self.__action_to_cancel()
@@ -230,10 +230,10 @@ class TelkAlertConfiguration:
 			self.__dialog.createMessageDialog("\nKey Error: " + str(exception), 7, 50, "Error Message")
 			self.__logger.generateApplicationLog("Key Error: " + str(exception), 3, "__updateConfiguration", use_file_handler = True, name_file_log = self.__constants.NAME_FILE_LOG, user = self.__constants.USER, group = self.__constants.GROUP)
 		except ValueError as exception:
-			self.__dialog.createMessageDialog("\nIncorrect data. For more information, see the logs.", 7, 50, "Error Message")
+			self.__dialog.createMessageDialog("\nValue Error. For more information, see the logs.", 7, 50, "Error Message")
 			self.__logger.generateApplicationLog(exception, 3, "__updateConfiguration", use_file_handler = True, name_file_log = self.__constants.NAME_FILE_LOG, user = self.__constants.USER, group = self.__constants.GROUP)
 		except (FileNotFoundError, OSError) as exception:
-			self.__dialog.createMessageDialog("\nI/O Error. For more information, see the logs.", 7, 50, "Error Message")
+			self.__dialog.createMessageDialog("\nFile Not Found or OS Error. For more information, see the logs.", 7, 50, "Error Message")
 			self.__logger.generateApplicationLog(exception, 3, "__updateConfiguration", use_file_handler = True, name_file_log = self.__constants.NAME_FILE_LOG, user = self.__constants.USER, group = self.__constants.GROUP)
 		finally:
 			self.__action_to_cancel()
@@ -248,7 +248,7 @@ class TelkAlertConfiguration:
 			message_to_display = "\nTelk-Alert Configuration:\n\n" + telk_alert_data
 			self.__dialog.createScrollBoxDialog(message_to_display, 18, 70, "Telk-Alert Configuration")
 		except (FileNotFoundError, OSError) as exception:
-			self.__dialog.createMessageDialog("\nI/O Error. For more information, see the logs.", 7, 50, "Error Message")
+			self.__dialog.createMessageDialog("\nFile Not Found or OS Error. For more information, see the logs.", 7, 50, "Error Message")
 			self.__logger.generateApplicationLog(exception, 3, "__showConfiguration", use_file_handler = True, name_file_log = self.__constants.NAME_FILE_LOG, user = self.__constants.USER, group = self.__constants.GROUP)
 		finally:
 			self.__action_to_cancel()
@@ -258,7 +258,7 @@ class TelkAlertConfiguration:
 		""" 	
 		Method that creates the YAML file corresponding to the Telk-Alert configuration.
 
-		:arg telk_alert_data: Data to be stored in the configuration file.
+		:arg telk_alert_data (dict): Data to be stored in the configuration file.
 		"""
 		telk_alert_data_json = {
 			"es_hosts" : telk_alert_data[0],
