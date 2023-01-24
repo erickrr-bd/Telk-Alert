@@ -83,9 +83,13 @@ The installer performs the following actions on the computer:
 
 `systemctl start telk-alert.service`
 
+Note: You must configured it before start Telk-Alert's service or demon.
+
 ## Telk-Alert-Agent
 
 `systemctl start telk-alert-agent.service`
+
+Note: You must configured it before start Telk-Alert's service or demon.
 
 ## Telk-Alert-Tool
 
