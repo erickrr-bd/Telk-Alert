@@ -52,7 +52,7 @@ Characteristics:
 - Generation of application logs.
 
 # Requirements
-- CentOS 8 or Red Hat 8 (So far it has only been tested in this version)
+- CentOS 8 or Rocky Linux 8
 - ElasticSearch 7.x 
 - Python 3.6
 - Python Libraries
