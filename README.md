@@ -14,7 +14,7 @@ If you have data in ElasticSearch in real time and need to be alerted when certa
 
 # Applications
 ## Telk-Alert
-Telk-Alert is an application that mades searches by query string or aggregations in an specific ElasticSearch's index pattern, and when it found events or documents, those are sended to a Telegram channel.
+Telk-Alert is an application that mades searches using "query string" or "aggregations" in an specific ElasticSearch's index pattern, and when it found events or documents, those are sended to a Telegram channel.
 
 ![Telk-Alert](https://github.com/erickrr-bd/Telk-Alert/blob/master/screens/screen2.jpg)
 
@@ -33,26 +33,26 @@ Characteristics:
 - Generation of application logs.
 
 ## Telk-Alert-Tool
-Telk-Alert-Tool is a graphical application that allows the management of the Telk-Alert and Telk-Alert-Agent configuration, the alert rules, as well as the Telk-Alert and Telk-Alert-Agent service, all this in an easy way for the user.
+Telk-Alert-Tool is a graphical application that allows to the user manages Telk-Alert and Telk-Alert-Agent configuration, alert rules (create, update, delete, show), Telk-Alert and Telk-Alert-Agent service and others, everything in an easy way for the user.
 
 ![Telk-Alert-Tool](https://github.com/erickrr-bd/Telk-Alert/blob/master/screens/screen1.jpg)
 
 Characteristics:
-- Creation and modification of the Telk-Alert and Telk-Alert-Agent configuration file.
-- Alert rules can be created, modified, deleted, or viewed.
-- Encrypts sensitive data such as passwords so that they are not stored in plain text.
-- Allows you to start, restart, stop and get the status of the Telk-Alert service.
-- Allows you to start, restart, stop and get the status of the Telk-Alert-Agent service.
+- Use of graphical interface.
+- You can create, update or show Telk-Alert and Telk-Alert-Agent configuration file.
+- You can create, update, delete and show alert rules.
+- Encrypts sensitive data such as passwords so that they are not stored in clear text. It uses a passphrase as key. This key is generated during Telk-Alert's installation, whereby, it is different in each installation. 
+- You can start, restart, stop and get current status of Telk-Alert and Telk-Alert-Agent service.
 - Generation of application logs.
 
 ## Telk-Alert-Agent
-Telk-Alert-Agent is an application that validates the status of the Telk-Alert service every minute and alerts in case it has stopped for any reason.
+Telk-Alert-Agent is an application that validates current status of Telk-Alert's service or demon every minute, and, alerts when it isn't working for any reason.
 
 ![Telk-Alert-Agent](https://github.com/erickrr-bd/Telk-Alert/blob/master/screens/screen3.jpg)
 
 Characteristics:
-- Validate the status of the Telk-Alert service every minute.
-- In case the service stops or fails for any reason, an alert every minute is sent until the service starts again.
+- It validates the current status of the Telk-Alert's service or demon every minute.
+- When Telk-Alert's service or demon isn't working for any reason, an alert every minute is sent.
 - Otherwise, that the service is working correctly, the alert is sent at two configurable hours of the day.
 - Send the status of the Telk-Alert service to a Telegram channel.
 - Generation of application logs.
@@ -62,13 +62,11 @@ Characteristics:
 - ElasticSearch 7.x 
 - Python 3.6
 - Python Libraries
-  - elasticsearch
-  - elasticsearch-dsl
-  - requests
-  - pycurl
-  - pythondialog
-  - pycryptodome
-  - pyyaml
+  - libPyDialog (https://github.com/erickrr-bd/libPyDialog)
+  - libPyElk (https://github.com/erickrr-bd/libPyElk)
+  - libPyTelegram (https://github.com/erickrr-bd/libPyTelegram)
+  - libPyLog (https://github.com/erickrr-bd/libPyLog)
+  - libPyUtils (https://github.com/erickrr-bd/libPyUtils)
 
 # Installation
 To install or update Telk-Alert you must run the script "installer_telk_alert.sh" for this you can use any of the following commands:
