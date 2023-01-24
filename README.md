@@ -81,23 +81,11 @@ The installer performs the following actions on the computer:
 # Running
 ## Telk-Alert
 
-- Run as service:
-
 `systemctl start telk-alert.service`
-
-- To execute manually, first you must go to the path /etc/Telk-Alert-Suite/Telk-Alert and execute using the following commands:
-
-`python3 Telk_Alert.py` or `./Telk_Alert.py`
 
 ## Telk-Alert-Agent
 
-- Run as service:
-
 `systemctl start telk-alert-agent.service`
-
-- To execute manually, first you must go to the path /etc/Telk-Alert-Suite/Telk-Alert-Agent and execute using the following commands:
-
-`python3 Telk_Alert_Agent.py` or `./Telk_Alert_Agent.py`
 
 ## Telk-Alert-Tool
 
