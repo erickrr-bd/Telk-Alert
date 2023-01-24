@@ -16,8 +16,6 @@ If you have data in ElasticSearch in real time and need to be alerted when certa
 ## Telk-Alert
 Telk-Alert is an application that mades searches using "query string" or "aggregations" in an specific ElasticSearch's index pattern, and when it found events or documents, those are sended to a Telegram channel.
 
-![Telk-Alert](https://github.com/erickrr-bd/Telk-Alert/blob/master/screens/screen2.jpg)
-
 Characteristics:
 - The connection with ElasticSearch can set using HTTPS (SSL/TLS), it means that all data travel through a secure channel and encripted.
 - The connection with ElasticSearch can set using an authentication method (HTTP Authentication or API Key). Note: It must be configured in ElasticSearch's cluster.
@@ -35,8 +33,6 @@ Characteristics:
 ## Telk-Alert-Tool
 Telk-Alert-Tool is a graphical application that allows to the user manages Telk-Alert and Telk-Alert-Agent configuration, alert rules (create, update, delete, show), Telk-Alert and Telk-Alert-Agent service and others, everything in an easy way for the user.
 
-![Telk-Alert-Tool](https://github.com/erickrr-bd/Telk-Alert/blob/master/screens/screen1.jpg)
-
 Characteristics:
 - Use of graphical interface.
 - You can create, update or show Telk-Alert and Telk-Alert-Agent configuration file.
@@ -47,8 +43,6 @@ Characteristics:
 
 ## Telk-Alert-Agent
 Telk-Alert-Agent is an application that validates current status of Telk-Alert's service or demon every minute, and, alerts when it isn't working for any reason.
-
-![Telk-Alert-Agent](https://github.com/erickrr-bd/Telk-Alert/blob/master/screens/screen3.jpg)
 
 Characteristics:
 - It validates the current status of the Telk-Alert's service or demon every minute.
