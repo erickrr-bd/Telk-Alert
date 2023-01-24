@@ -147,19 +147,19 @@ class Constants:
 					 			("5", "Show all alert rules")]
 
 	"""
-	Options that are displayed to select a Alert rule's level.
+	Options displayed to select a Alert rule's level.
 	"""
 	OPTIONS_ALERT_RULE_LEVEL = [["Low", "Low level alert", 1],
 							 	["Medium", "Medium level alert", 0],
 							 	["High", "High level alert", 0]]
 
 	"""
-	Options that are displayed to select a Alert rule's type.
+	Options displayed to select a Alert rule's kind.
 	"""
 	OPTIONS_ALERT_RULE_TYPE = [("Frequency", "Perform searches periodically", 1)]
 
 	"""
-	Options that are displayed to select an unit time.
+	Options displayed to select an unit time.
 	"""
 	OPTIONS_UNIT_TIME = [["minutes", "Time expressed in minutes", 1],
 					  	 ["hours", "Time expressed in hours", 0],
@@ -178,10 +178,10 @@ class Constants:
 					 	   ("Username", "Restrict by username", 0)]
 
 	"""
-	Options displayed to select a Alert rule's send type.
+	Options displayed to select a Alert rule's shipping kind.
 	"""
-	OPTIONS_SHIPPING_2 = [["only", "A single alert with the total of events found", 1],
-						       ["multiple", "An alert for each event found", 0]]
+	OPTIONS_SHIPPING_KIND = [["only", "A single alert with the total of events found", 1],
+						     ["multiple", "An alert for each event found", 0]]
 
 	"""
 	Options displayed when a value is gonna be modified in an alert rule.
@@ -195,7 +195,7 @@ class Constants:
 							  	 ("Query Kind", "Query's kind for event search", 0),
 							  	 ("Fields Option", "Enable or disable field's option", 0),
 							  	 ("Custom Rule", "Enable or disable custom rule's option", 0),
-							  	 ("Shipping Way", "How the alert is sent", 0),
+							  	 ("Shipping Kind", "How the alert is sent", 0),
 							  	 ("Bot Token", "Telegram's Bot Token", 0),
 							  	 ("Chat ID", "Telegram's channel identifier", 0)]
 	

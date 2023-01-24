@@ -29,84 +29,84 @@ class AlertRules:
 		Method that collects the information for the creation of the new alert rule.
 		"""
 		alert_rule_data = []
-		try:
-			alert_rule_name = self.__dialog.createFolderOrFileNameDialog("Enter alert rule's name:", 8, 50, "rule1")
-			alert_rule_data.append(alert_rule_name)
-			option_alert_rule_level = self.__dialog.createRadioListDialog("Select a option:", 10, 50, self.__constants.OPTIONS_ALERT_RULE_LEVEL, "Alert Rule Level")
-			alert_rule_data.append(option_alert_rule_level)
-			index_pattern_name = self.__dialog.createInputBoxDialog("Enter index pattern's name where the search will be made:", 9, 50, "winlogbeat-*")
-			alert_rule_data.append(index_pattern_name)
-			option_alert_rule_type = self.__dialog.createRadioListDialog("Select a option:", 8, 50, self.__constants.OPTIONS_ALERT_RULE_TYPE, "Alert Rule Type")
-			alert_rule_data.append(option_alert_rule_type)
-			if option_alert_rule_type == "Frequency":
-				number_events_found_by_alert = self.__dialog.createInputBoxToNumberDialog("Enter the number of events found to which the alert is sent:", 9, 50, "1")
-				alert_rule_data.append(number_events_found_by_alert)
-				option_unit_time_search = self.__dialog.createRadioListDialog("Select a option:", 10, 50, self.__constants.OPTIONS_UNIT_TIME, "Unit Time")
-				alert_rule_data.append(option_unit_time_search)
-				total_unit_time_search = self.__dialog.createInputBoxToNumberDialog("Enter the total in " + option_unit_time_search + " that the search will be repeated:", 9, 50, "1")
-				alert_rule_data.append(total_unit_time_search)
-				option_unit_time_range = self.__dialog.createRadioListDialog("Select a option:", 10, 50, self.__constants.OPTIONS_UNIT_TIME, "Unit Time")
-				alert_rule_data.append(option_unit_time_range)
-				total_unit_time_range = self.__dialog.createInputBoxToNumberDialog("Enter the range in " + option_unit_time_range + " of the search:", 8, 50, "1")
-				alert_rule_data.append(total_unit_time_range)
-			query_type = self.__dialog.createRadioListDialog("Select a option:", 9, 70, self.__constants.OPTIONS_QUERY_TYPE, "Query Type")
-			alert_rule_data.append(query_type)
-			if query_type == "query_string":
-				query_string = self.__dialog.createInputBoxDialog("Enter the query string:", 8, 50, "event.code: 4625")
-				alert_rule_data.append(query_string)
-				use_fields_option = self.__dialog.createYesOrNoDialog("\nDo you require to use the fields option for the search?", 8, 50, "Fields Option Search")
-				if use_fields_option == "ok":
+		#try:
+		alert_rule_name = self.__dialog.createFolderOrFileNameDialog("Enter alert rule's name:", 8, 50, "rule1")
+		alert_rule_data.append(alert_rule_name)
+		option_alert_rule_level = self.__dialog.createRadioListDialog("Select a option:", 10, 50, self.__constants.OPTIONS_ALERT_RULE_LEVEL, "Alert Rule Level")
+		alert_rule_data.append(option_alert_rule_level)
+		index_pattern_name = self.__dialog.createInputBoxDialog("Enter index pattern's name where the search will be made:", 9, 50, "winlogbeat-*")
+		alert_rule_data.append(index_pattern_name)
+		option_alert_rule_type = self.__dialog.createRadioListDialog("Select a option:", 8, 50, self.__constants.OPTIONS_ALERT_RULE_TYPE, "Alert Rule Type")
+		alert_rule_data.append(option_alert_rule_type)
+		if option_alert_rule_type == "Frequency":
+			number_events_found_by_alert = self.__dialog.createInputBoxToNumberDialog("Enter the number of events found to which the alert is sent:", 9, 50, "1")
+			alert_rule_data.append(number_events_found_by_alert)
+			option_unit_time_search = self.__dialog.createRadioListDialog("Select a option:", 10, 50, self.__constants.OPTIONS_UNIT_TIME, "Unit Time")
+			alert_rule_data.append(option_unit_time_search)
+			total_unit_time_search = self.__dialog.createInputBoxToNumberDialog("Enter the total in " + option_unit_time_search + " that the search will be repeated:", 9, 50, "1")
+			alert_rule_data.append(total_unit_time_search)
+			option_unit_time_range = self.__dialog.createRadioListDialog("Select a option:", 10, 50, self.__constants.OPTIONS_UNIT_TIME, "Unit Time")
+			alert_rule_data.append(option_unit_time_range)
+			total_unit_time_range = self.__dialog.createInputBoxToNumberDialog("Enter the range in " + option_unit_time_range + " of the search:", 8, 50, "1")
+			alert_rule_data.append(total_unit_time_range)
+		query_type = self.__dialog.createRadioListDialog("Select a option:", 9, 70, self.__constants.OPTIONS_QUERY_TYPE, "Query Type")
+		alert_rule_data.append(query_type)
+		if query_type == "query_string":
+			query_string = self.__dialog.createInputBoxDialog("Enter the query string:", 8, 50, "event.code: 4625")
+			alert_rule_data.append(query_string)
+			use_fields_option = self.__dialog.createYesOrNoDialog("\nDo you require to use the fields option for the search?", 8, 50, "Fields Option Search")
+			if use_fields_option == "ok":
+				alert_rule_data.append(True)
+				number_of_fields_to_enter = self.__dialog.createInputBoxToNumberDialog("Enter the total of fields to be define:", 8, 50, "3")
+				list_to_form_dialog = self.__utils.createListToDialogForm(int(number_of_fields_to_enter), "Field")
+				list_all_fields = self.__dialog.createFormDialog("Enter the field's names:", list_to_form_dialog, 15, 50, "Fields Form")
+				alert_rule_data.append(list_all_fields)
+			else:
+				alert_rule_data.append(False)
+			use_custom_rule_option = self.__dialog.createYesOrNoDialog("\nDo you require to use the custom rule option?", 8, 50, "Custom Rule Option")
+			if use_custom_rule_option == "ok":
+				alert_rule_data.append(True)
+				options_custom_rule_option = self.__dialog.createCheckListDialog("Select one or more options:", 10, 50, self.__constants.OPTIONS_CUSTOM_RULE, "Custom Rule Options")
+				if "Hostname" in options_custom_rule_option:
 					alert_rule_data.append(True)
-					number_of_fields_to_enter = self.__dialog.createInputBoxToNumberDialog("Enter the total of fields to be define:", 8, 50, "3")
-					list_to_form_dialog = self.__utils.createListToDialogForm(int(number_of_fields_to_enter), "Field")
-					list_all_fields = self.__dialog.createFormDialog("Enter the field's names:", list_to_form_dialog, 15, 50, "Fields Form")
-					alert_rule_data.append(list_all_fields)
+					field_name_hostname = self.__dialog.createInputBoxDialog("Enter the field's name in the index that corresponds the hostname:", 8, 50, "host.hostname")
+					alert_rule_data.append(field_name_hostname)
+					number_total_events_by_hostname = self.__dialog.createInputBoxToNumberDialog("Enter the total of events by hostname for the alert rule:", 8, 50, "5")
+					alert_rule_data.append(number_total_events_by_hostname)
 				else:
 					alert_rule_data.append(False)
-				use_custom_rule_option = self.__dialog.createYesOrNoDialog("\nDo you require to use the custom rule option?", 8, 50, "Custom Rule Option")
-				if use_custom_rule_option == "ok":
+				if "Username" in options_custom_rule_option:
 					alert_rule_data.append(True)
-					options_custom_rule_option = self.__dialog.createCheckListDialog("Select one or more options:", 10, 50, self.__constants.OPTIONS_CUSTOM_RULE, "Custom Rule Options")
-					if "Hostname" in options_custom_rule_option:
-						alert_rule_data.append(True)
-						field_name_hostname = self.__dialog.createInputBoxDialog("Enter the field's name in the index that corresponds the hostname:", 8, 50, "host.hostname")
-						alert_rule_data.append(field_name_hostname)
-						number_total_events_by_hostname = self.__dialog.createInputBoxToNumberDialog("Enter the total of events by hostname for the alert rule:", 8, 50, "5")
-						alert_rule_data.append(number_total_events_by_hostname)
-					else:
-						alert_rule_data.append(False)
-					if "Username" in options_custom_rule_option:
-						alert_rule_data.append(True)
-						field_name_username = self.__dialog.createInputBoxDialog("Enter the field's name in the index that corresponds the username", 8, 50, "winlog.username")
-						alert_rule_data.append(field_name_username)
-						number_total_events_by_username = self.__dialog.createInputBoxToNumberDialog("Enter the total of events by username for the alert rule", 8, 50, "5")
-						alert_rule_data.append(number_total_events_by_username)
-					else:
-						alert_rule_data.append(False)
+					field_name_username = self.__dialog.createInputBoxDialog("Enter the field's name in the index that corresponds the username", 8, 50, "winlog.username")
+					alert_rule_data.append(field_name_username)
+					number_total_events_by_username = self.__dialog.createInputBoxToNumberDialog("Enter the total of events by username for the alert rule", 8, 50, "5")
+					alert_rule_data.append(number_total_events_by_username)
 				else:
 					alert_rule_data.append(False)
-				option_send_type_alert_rule = self.__dialog.createRadioListDialog("Select a option:", 10, 50, self.__constants.OPTIONS_SEND_TYPE_ALERT, "Alert Sending Type Options")
-				alert_rule_data.append(option_send_type_alert_rule)
-			elif query_type == "aggregations":
-				index_field_name = self.__dialog.createInputBoxDialog("Enther the index field's name:", 8, 50, "host.hostname.keyword")
-				alert_rule_data.append(index_field_name)
-			passphrase = self.__utils.getPassphraseKeyFile(self.__constants.PATH_KEY_FILE)
-			telegram_bot_token = self.__utils.encryptDataWithAES(self.__dialog.createInputBoxDialog("Enter the Telegram bot token:", 8, 50, "751988420:AAHrzn7RXWxVQQNha0tQUzyouE5lUcPde1g"), passphrase)
-			alert_rule_data.append(telegram_bot_token.decode("utf-8"))
-			telegram_chat_id = self.__utils.encryptDataWithAES(self.__dialog.createInputBoxDialog("Enter the Telegram channel identifier:", 8, 50, "-1002365478941"), passphrase)
-			alert_rule_data.append(telegram_chat_id.decode("utf-8"))
-			self.__createYamlFileAlertRule(alert_rule_data)
-			if path.exists(self.__folder_alert_rules_path + '/' + alert_rule_name + ".yaml"):
-				self.__logger.generateApplicationLog("Alert rule created: " + alert_rule_name, 1, "__createAlertRule", use_file_handler = True, name_file_log = self.__constants.NAME_FILE_LOG, user = self.__constants.USER, group = self.__constants.GROUP)
-				self.__dialog.createMessageDialog("\nAlert rule created: " + alert_rule_name, 7, 50, "Notification Message")
-		except ValueError as exception:
-			self.__dialog.createMessageDialog("\nIncorrect data. For more information, see the logs.", 7, 50, "Error Message")
-			self.__logger.generateApplicationLog(exception, 3, "__createAlertRule", use_file_handler = True, name_file_log = self.__constants.NAME_FILE_LOG, user = self.__constants.USER, group = self.__constants.GROUP)
-		except (OSError, FileNotFoundError) as exception:
-			self.__dialog.createMessageDialog("\nI/O Error. For more information, see the logs.", 7, 50, "Error Message")
-			self.__logger.generateApplicationLog(exception, 3, "__createAlertRule", use_file_handler = True, name_file_log = self.__constants.NAME_FILE_LOG, user = self.__constants.USER, group = self.__constants.GROUP)
-		finally:
-			self.__action_to_cancel()
+			else:
+				alert_rule_data.append(False)
+			option_send_type_alert_rule = self.__dialog.createRadioListDialog("Select a option:", 10, 50, self.__constants.OPTIONS_SHIPPING_KIND, "Alert Shipping Kind Options")
+			alert_rule_data.append(option_send_type_alert_rule)
+		elif query_type == "aggregations":
+			index_field_name = self.__dialog.createInputBoxDialog("Enther the index field's name:", 8, 50, "host.hostname.keyword")
+			alert_rule_data.append(index_field_name)
+		passphrase = self.__utils.getPassphraseKeyFile(self.__constants.PATH_KEY_FILE)
+		telegram_bot_token = self.__utils.encryptDataWithAES(self.__dialog.createInputBoxDialog("Enter the Telegram bot token:", 8, 50, "751988420:AAHrzn7RXWxVQQNha0tQUzyouE5lUcPde1g"), passphrase)
+		alert_rule_data.append(telegram_bot_token.decode("utf-8"))
+		telegram_chat_id = self.__utils.encryptDataWithAES(self.__dialog.createInputBoxDialog("Enter the Telegram channel identifier:", 8, 50, "-1002365478941"), passphrase)
+		alert_rule_data.append(telegram_chat_id.decode("utf-8"))
+		self.__createYamlFileAlertRule(alert_rule_data)
+		if path.exists(self.__folder_alert_rules_path + '/' + alert_rule_name + ".yaml"):
+			self.__logger.generateApplicationLog("Alert rule created: " + alert_rule_name, 1, "__createAlertRule", use_file_handler = True, name_file_log = self.__constants.NAME_FILE_LOG, user = self.__constants.USER, group = self.__constants.GROUP)
+			self.__dialog.createMessageDialog("\nAlert rule created: " + alert_rule_name, 7, 50, "Notification Message")
+		#except ValueError as exception:
+		#	self.__dialog.createMessageDialog("\nValue Error. For more information, see the logs.", 8, 50, "Error Message")
+		#	self.__logger.generateApplicationLog(exception, 3, "__createAlertRule", use_file_handler = True, name_file_log = self.__constants.NAME_FILE_LOG, user = self.__constants.USER, group = self.__constants.GROUP)
+		#except (OSError, FileNotFoundError) as exception:
+		#	self.__dialog.createMessageDialog("\nFile Not Found or OS Error. For more information, see the logs.", 8, 50, "Error Message")
+		#	self.__logger.generateApplicationLog(exception, 3, "__createAlertRule", use_file_handler = True, name_file_log = self.__constants.NAME_FILE_LOG, user = self.__constants.USER, group = self.__constants.GROUP)
+		#finally:
+		#	self.__action_to_cancel()
 
 
 	def modifyAlertRule(self):
@@ -293,14 +293,14 @@ class AlertRules:
 								restriction_by_username_json = {"restriction_by_username" : False}
 							alert_rule_data.update(restriction_by_hostname_json)
 							alert_rule_data.update(restriction_by_username_json)
-				if "Shipping Way" in options_alert_rule_update:
-					for option in self.__constants.OPTIONS_SEND_TYPE_ALERT:
+				if "Shipping Kind" in options_alert_rule_update:
+					for option in self.__constants.OPTIONS_SHIPPING_KIND:
 						if option[0] == alert_rule_data["send_type_alert_rule"]:
 							option[2] = 1
 						else:
 							option[2] = 0
-					option_send_type_alert_rule = self.__dialog.createRadioListDialog("Select a option:", 10, 50, self.__constants.OPTIONS_SEND_TYPE_ALERT, "Alert Sending Type Options")
-					alert_rule_data["send_type_alert_rule"] = option_send_type_alert_rule
+					option_shipping_kind = self.__dialog.createRadioListDialog("Select a option:", 9, 50, self.__constants.OPTIONS_SHIPPING_KIND, "Alert Rule's Shipping Options")
+					alert_rule_data["send_type_alert_rule"] = option_shipping_kind
 				if "Bot Token" in options_alert_rule_update:
 					passphrase = self.__utils.getPassphraseKeyFile(self.__constants.PATH_KEY_FILE)
 					telegram_bot_token = self.__utils.encryptDataWithAES(self.__dialog.createInputBoxDialog("Enter the Telegram's bot token:", 8, 50, self.__utils.decryptDataWithAES(alert_rule_data["telegram_bot_token"], passphrase).decode("utf-8")), passphrase)
@@ -324,9 +324,10 @@ class AlertRules:
 			self.__dialog.createMessageDialog("\nKey Error: " + str(exception), 7, 50, "Error Message")
 			self.__logger.generateApplicationLog("Key Error: " + str(exception), 3, "__updateAlertRule", use_file_handler = True, name_file_log = self.__constants.NAME_FILE_LOG, user = self.__constants.USER, group = self.__constants.GROUP)
 		except ValueError as exception:
-			self.__dialog.createMessageDialog("\nError valueError", 7, 50, "Error Message")
+			self.__dialog.createMessageDialog("\nValue Error. For more information, see the logs.", 7, 50, "Error Message")
+			self.__logger.generateApplicationLog(exception, 3, "__updateAlertRule", use_file_handler = True, name_file_log = self.__constants.NAME_FILE_LOG, user = self.__constants.USER, group = self.__constants.GROUP)
 		except (OSError, FileNotFoundError) as exception:
-			self.__dialog.createMessageDialog("\nError to modify the alert rule. For more information, see the logs.", 8, 50, "Error Message")
+			self.__dialog.createMessageDialog("\nFile Not Found or OS Error. For more information, see the logs.", 8, 50, "Error Message")
 			self.__logger.generateApplicationLog(exception, 3, "__updateAlertRule", use_file_handler = True, name_file_log = self.__constants.NAME_FILE_LOG, user = self.__constants.USER, group = self.__constants.GROUP)
 		finally:
 			self.__action_to_cancel()
@@ -339,15 +340,15 @@ class AlertRules:
 		try:
 			list_all_alert_rules = self.__utils.getListOfAllYamlFilesInFolder(self.__folder_alert_rules_path)
 			if list_all_alert_rules:
-				list_alert_rules_to_show = self.__utils.convertListToDialogList(list_all_alert_rules, "Alert Rule")
-				alert_rule_to_show = self.__dialog.createRadioListDialog("Select a option:", 18, 70, list_alert_rules_to_show, "Alert Rules")
-				data_alert_rule = self.__utils.convertDataYamlFileToString(self.__folder_alert_rules_path + '/' + alert_rule_to_show)
-				message_to_display = '\n' + alert_rule_to_show[:-5] + "\n\n" + data_alert_rule
-				self.__dialog.createScrollBoxDialog(message_to_display, 18, 70, "Alert Rule Data")
+				dialog_list = self.__utils.convertListToDialogList(list_all_alert_rules, "Alert Rule's Name")
+				alert_rule_to_show = self.__dialog.createRadioListDialog("Select a option:", 18, 70, dialog_list, "Alert Rules")
+				alert_rule_data = self.__utils.convertDataYamlFileToString(self.__folder_alert_rules_path + '/' + alert_rule_to_show)
+				message_to_display = '\n' + alert_rule_to_show[:-5] + "\n\n" + alert_rule_data
+				self.__dialog.createScrollBoxDialog(message_to_display, 18, 70, "Alert Rule's Data")
 			else:
 				self.__dialog.createMessageDialog("\nNo alert rules found.", 7, 50, "Notification Message")
 		except (OSError, FileNotFoundError) as exception:
-			self.__dialog.createMessageDialog("\nError to show the data of the alert rule. For more information, see the logs.", 8, 50, "Error Message")
+			self.__dialog.createMessageDialog("\nFile Not Found or OS Error. For more information, see the logs.", 8, 50, "Error Message")
 			self.__logger.generateApplicationLog(exception, 3, "__showDataAlertRule", use_file_handler = True, name_file_log = self.__constants.NAME_FILE_LOG, user = self.__constants.USER, group = self.__constants.GROUP)
 		finally:
 			self.__action_to_cancel()
@@ -360,19 +361,20 @@ class AlertRules:
 		try:
 			list_all_alert_rules = self.__utils.getListOfAllYamlFilesInFolder(self.__folder_alert_rules_path)
 			if list_all_alert_rules:
-				list_alert_rules_to_delete = self.__utils.convertListToDialogList(list_all_alert_rules, "Alert Rule")
-				alert_rules_to_delete = self.__dialog.createCheckListDialog("Select one or more options:", 18, 70, list_alert_rules_to_delete, "Alert Rules")
-				confirmation_delete_alert_rules = self.__dialog.createYesOrNoDialog("\nAre you sure to delete the following alert rules?\n\n** This action cannot be undone.", 10, 50, "Delete Alert Rules")
-				if confirmation_delete_alert_rules == "ok":
-					message_to_display = "\nAlert rules removed:\n"
-					for alert_rule in alert_rules_to_delete:
+				dialog_list = self.__utils.convertListToDialogList(list_all_alert_rules, "Alert Rule's Name")
+				list_alert_rules_remove = self.__dialog.createCheckListDialog("Select one or more options:", 18, 70, dialog_list, "Alert Rules")
+				message_to_display = self.__utils.getStringFromList(list_alert_rules_remove, "Alert rules selected to remove:")
+				self.__dialog.createScrollBoxDialog(message_to_display, 14, 50, "Delete Alert Rules")
+				remove_alert_rules_confirmation = self.__dialog.createYesOrNoDialog("\nAre you sure to delete the selected alert rules?\n\n** This action cannot be undone.", 10, 50, "Delete Alert Rules")
+				if remove_alert_rules_confirmation == "ok":
+					for alert_rule in list_alert_rules_remove:
 						self.__utils.deleteFile(self.__folder_alert_rules_path + '/' + alert_rule)
-						message_to_display += "\n- " + alert_rule
-					self.__dialog.createScrollBoxDialog(message_to_display, 14, 50, "Delete Alert Rules")
+						self.__logger.generateApplicationLog("Alert rule deleted: " + alert_rule, 2, "__deleteAlertRules", use_file_handler = True, name_file_log = self.__constants.NAME_FILE_LOG, user = self.__constants.USER, group = self.__constants.GROUP)
+				self.__dialog.createMessageDialog("\nAlert rules deleted.", 7, 50, "Notification Message")
 			else:
 				self.__dialog.createMessageDialog("\nNo alert rules found.", 7, 50, "Notification Message")
 		except (OSError, FileNotFoundError) as exception:
-			self.__dialog.createMessageDialog("\nError to delete one or more alert rules. For more information, see the logs.", 8, 50, "Error Message")
+			self.__dialog.createMessageDialog("\nFile Not Found or OS Error. For more information, see the logs.", 8, 50, "Error Message")
 			self.__logger.generateApplicationLog(exception, 3, "__deleteAlertRules", use_file_handler = True, name_file_log = self.__constants.NAME_FILE_LOG, user = self.__constants.USER, group = self.__constants.GROUP)
 		finally:
 			self.__action_to_cancel()
@@ -380,7 +382,7 @@ class AlertRules:
 
 	def showAllAlertRules(self):
 		"""
-		Method that displays all alert rules created so far.
+		Method that displays all alert rules created.
 		"""
 		try:
 			list_all_alert_rules = self.__utils.getListOfAllYamlFilesInFolder(self.__folder_alert_rules_path)
@@ -392,7 +394,7 @@ class AlertRules:
 			else:
 				self.__dialog.createMessageDialog("\nNo alert rules found.", 7, 50, "Notification Message")
 		except (OSError, FileNotFoundError) as exception:
-			self.__dialog.createMessageDialog("\nError to show all alert rules. For more information, see the logs.", 8, 50, "Error Message")
+			self.__dialog.createMessageDialog("\nFile Not Found or OS Error. For more information, see the logs.", 8, 50, "Error Message")
 			self.__logger.generateApplicationLog(exception, 3, "__showAlertRules", use_file_handler = True, name_file_log = self.__constants.NAME_FILE_LOG, user = self.__constants.USER, group = self.__constants.GROUP)
 		finally:
 			self.__action_to_cancel()
