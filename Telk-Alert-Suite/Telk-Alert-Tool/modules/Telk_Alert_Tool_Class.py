@@ -4,10 +4,10 @@ from libPyUtils import libPyUtils
 from libPyDialog import libPyDialog
 from .Constants_Class import Constants
 from .Alert_Rules_Class import AlertRules
-from .Agent_Service_Class import AgentService
 from .Telk_Alert_Service_Class import TelkAlertService
-from .Agent_Configuration_Class import AgentConfiguration
+from .Telk_Alert_Agent_Service_Class import TelkAlertAgentService
 from .Telk_Alert_Configuration_Class import TelkAlertConfiguration
+from .Telk_Alert_Agent_Configuration_Class import TelkAlertAgentConfiguration
 
 """
 Class that manages what is related to the interfaces and actions of Telk-Alert-Tool.
@@ -45,7 +45,7 @@ class TelkAlertTool:
 
 	def __serviceTelkAlertMenu(self):
 		"""
-		Method shows the "Telk-Alert service" menu.
+		Method that shows the "Telk-Alert service" menu.
 		"""
 		if path.exists(self.__constants.PATH_TELK_ALERT_CONFIGURATION_FILE):
 			option_telk_alert_service_menu = self.__dialog.createMenuDialog("Select a option:", 11, 50, self.__constants.OPTIONS_SERVICE_MENU, "Telk-Alert Service Menu")
@@ -59,16 +59,16 @@ class TelkAlertTool:
 		"""
 		Method that shows the "Telk-Alert-Agent" menu.
 		"""
-		option_telk_alert_agent_menu = self.__dialog.createMenuDialog("Select a option:", 10, 50, self.__constants.OPTIONS_TELK_ALERT_AGENT_MENU, "Telk-Alert-Agent Menu")
+		option_telk_alert_agent_menu = self.__dialog.createMenuDialog("Select a option:", 9, 50, self.__constants.OPTIONS_TELK_ALERT_AGENT_MENU, "Telk-Alert-Agent Menu")
 		self.__switchTelkAlertAgentMenu(int(option_telk_alert_agent_menu))
 
 
-	def __serviceAgentMenu(self):
+	def __serviceTelkAlertAgentMenu(self):
 		"""
 		Method that shows the "Telk-Alert-Agent Service" menu.
 		"""
-		option_service_agent_menu = self.__dialog.createMenuDialog("Select a option:", 12, 50, self.__constants.OPTIONS_SERVICE_MENU, "Telk-Alert-Agent Service Menu")
-		self.__switchAgentServiceMenu(int(option_service_agent_menu))
+		option_service_agent_menu = self.__dialog.createMenuDialog("Select a option:", 11, 50, self.__constants.OPTIONS_SERVICE_MENU, "Telk-Alert-Agent Service Menu")
+		self.__switchTelkAlertAgentServiceMenu(int(option_service_agent_menu))
 
 
 	def __switchMainMenu(self, option):
@@ -114,7 +114,7 @@ class TelkAlertTool:
 
 	def __switchTelkAlertServiceMenu(self, option):
 		"""
-		Method executes a certain action based on the number of the option chosen in the "Telk-Alert Service" menu.
+		Method that executes a certain action based on the number of the option chosen in the "Telk-Alert Service" menu.
 
 		:arg option: Option number.
 		"""
@@ -136,26 +136,26 @@ class TelkAlertTool:
 		:arg option: Option number.
 		"""
 		if option == 1:
-			self.__defineAgentConfiguration()
+			self.__defineTelkAlertAgentConfiguration()
 		elif option == 2:
-			self.__serviceAgentMenu()
+			self.__serviceTelkAlertAgentMenu()
 
 
-	def __switchAgentServiceMenu(self, option):
+	def __switchTelkAlertAgentServiceMenu(self, option):
 		"""
 		Method that executes a certain action based on the number of the option chosen in the "Telk-Alert-Agent Service" menu.
 
 		:arg option: Option number.
 		"""
-		agent_service = AgentService(self.mainMenu)
+		telk_alert_agent_service = TelkAlertAgentService(self.mainMenu)
 		if option == 1:
-			agent_service.startTelkAlertAgentService()
+			telk_alert_agent_service.startService()
 		elif option == 2:
-			agent_service.restartTelkAlertAgentService()
+			telk_alert_agent_service.restartService()
 		elif option == 3:
-			agent_service.stopTelkAlertAgentService()
+			telk_alert_agent_service.stopService()
 		elif option == 4:
-			agent_service.getStatusTelkAlertAgentService()
+			telk_alert_agent_service.getServiceStatus()
 
 
 	def __defineTelkAlertConfiguration(self):
@@ -175,19 +175,21 @@ class TelkAlertTool:
 				telk_alert_configuration.showConfigurationData()
 
 
-	def __defineAgentConfiguration(self):
+	def __defineTelkAlertAgentConfiguration(self):
 		"""
 		Method that defines the action to perform on the Telk-Alert-Agent configuration (create or modify).
 		"""
-		agent_configuration = AgentConfiguration(self.mainMenu)
-		if not path.exists(self.__constants.PATH_FILE_AGENT_CONFIGURATION):
+		telk_alert_agent_configuration = TelkAlertAgentConfiguration(self.mainMenu)
+		if not path.exists(self.__constants.PATH_TELK_ALERT_AGENT_CONFIGURATION_FILE):
 			option_configuration_false = self.__dialog.createRadioListDialog("Select a option:", 8, 50, self.__constants.OPTIONS_CONFIGURATION_FALSE, "Configuration Options")
 			if option_configuration_false == "Create":
-				agent_configuration.createAgentConfiguration()
+				telk_alert_agent_configuration.createConfiguration()
 		else:
-			option_configuration_true = self.__dialog.createRadioListDialog("Select a option:", 8, 50, self.__constants.OPTIONS_CONFIGURATION_TRUE, "Configuration Options")
+			option_configuration_true = self.__dialog.createRadioListDialog("Select a option:", 9, 50, self.__constants.OPTIONS_CONFIGURATION_TRUE, "Configuration Options")
 			if option_configuration_true == "Modify":
-				agent_configuration.modifyAgentConfiguration()
+				telk_alert_agent_configuration.modifyConfiguration()
+			elif option_configuration_true == "Show":
+				telk_alert_agent_configuration.showConfigurationData()
 
 
 	def __showAboutApplication(self):
