@@ -2,14 +2,11 @@
 
 from modules.Telk_Alert_Tool_Class import TelkAlertTool
 
-"""
-Attribute that stores an object of the TelkAlertTool class.
-"""
 telk_alert_tool = TelkAlertTool()
 
 """
-Main function of the application
+Main function.
 """
-if __name__ == "__main__":	
+if __name__ == "__main__":
 	while True:
-		telk_alert_tool.mainMenu()
+		telk_alert_tool.main_menu()
