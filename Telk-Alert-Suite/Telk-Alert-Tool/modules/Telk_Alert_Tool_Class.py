@@ -3,6 +3,7 @@ from sys import exit
 from libPyDialog import libPyDialog
 from .Constants_Class import Constants
 from .Telk_Alert_Configuration_Class import TelkAlertConfiguration
+from .Telk_Alert_Agent_Configuration_Class import TelkAlertAgentConfiguration
 
 """
 Class that manages Telk-Alert-Tool actions.
@@ -54,7 +55,7 @@ class TelkAlertTool:
 
 		:arg option_configuration_menu (integer): Chosen option.
 		"""
-		self.define_telk_alert_configuration() if option_configuration_menu == 1 else print("Hola 2")
+		self.define_telk_alert_configuration() if option_configuration_menu == 1 else self.define_telk_alert_agent_configuration()
 
 
 	def define_telk_alert_configuration(self):
@@ -69,3 +70,17 @@ class TelkAlertTool:
 		else:
 			option_configuration_true = self.dialog.createRadioListDialog("Select a option:", 9, 50, self.constants.OPTIONS_CONFIGURATION_TRUE, "Telk-Alert Configuration Options")
 			telk_alert_configuration.update_configuration() if option_configuration_true == "Update" else telk_alert_configuration.display_configuration()
+
+
+	def define_telk_alert_agent_configuration(self):
+		"""
+		Method that defines actions to perform on the Telk-Alert-Agent configuration.
+		"""
+		telk_alert_agent_configuration = TelkAlertAgentConfiguration()
+		if not path.exists(self.constants.TELK_ALERT_AGENT_CONFIGURATION_FILE_PATH):
+			option_configuration_false = self.dialog.createRadioListDialog("Select a option:", 8, 50, self.constants.OPTIONS_CONFIGURATION_FALSE, "Telk-Alert-Agent Configuration Options")
+			if option_configuration_false == "Create":
+				telk_alert_agent_configuration.create_configuration()
+		else:
+			option_configuration_true = self.dialog.createRadioListDialog("Select a option:", 9, 50, self.constants.OPTIONS_CONFIGURATION_TRUE, "Telk-Alert-Agent Configuration Options")
+			telk_alert_agent_configuration.update_configuration() if option_configuration_true == "Update" else telk_alert_agent_configuration.display_configuration()

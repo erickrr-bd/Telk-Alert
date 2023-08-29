@@ -1,4 +1,4 @@
-#! /usr/bin/env python3
+#! /usr/bin/env python3.9
 
 from modules.Telk_Alert_Tool_Class import TelkAlertTool
 

@@ -18,6 +18,11 @@ class Constants:
 	TELK_ALERT_CONFIGURATION_FILE_PATH = "/etc/Telk-Alert-Suite/Telk-Alert/configuration/telk_alert_conf.yaml"
 
 	"""
+	Absolute path of the Telk-Alert-Agent configuration file.
+	"""
+	TELK_ALERT_AGENT_CONFIGURATION_FILE_PATH = "/etc/Telk-Alert-Suite/Telk-Alert-Agent/configuration/telk_alert_agent_conf.yaml"
+
+	"""
 	Absolute path of the file where the encryption key is stored.
 	"""
 	KEY_FILE_PATH = "/etc/Telk-Alert-Suite/Telk-Alert/configuration/key"
@@ -112,16 +117,45 @@ class Constants:
 	"""
 	OPTIONS_VERIFICATE_CERTIFICATE_FALSE = [("Enable", "Enable certificate verification", 0)]
 
+	"""
+	Options that are displayed when an authentication method is enabled.
+	"""
 	OPTIONS_AUTHENTICATION_TRUE = [("Disable", "Disable authentication method", 0),
 								   ("Method", "Modify authentication method", 0)]
 
+	"""
+	Options that are displayed when an authentication method is going to be updated.
+	"""
 	OPTIONS_AUTHENTICATION_METHOD_UPDATE = [("Disable", "Disable authentication method", 0),
 									        ("Data", "Modify authentication method data", 0)]
 
+	"""
+	Options that are displayed when an authentication method isn't enabled.
+	"""
 	OPTIONS_AUTHENTICATION_FALSE = [("Enable", "Enable authentication", 0)]
 
+	"""
+	Options that are displayed when the authentication method is HTTP Authentication.
+	"""
 	OPTIONS_HTTP_AUTHENTICATION_DATA = [("Username", "Username for HTTP Authentication", 0),
 								 		("Password", "User password", 0)]
 
+	"""
+	Options that are displayed when the authentication method is API Key.
+	"""
 	OPTIONS_API_KEY_DATA = [("ID", "API Key ID", 0),
 							("API Key", "API Key", 0)]
+
+	"""
+	Options that display units of time.
+	"""
+	OPTIONS_UNIT_TIME = [["minutes", "Time expressed in minutes", 1],
+					  	 ["hours", "Time expressed in hours", 0],
+					  	 ["days", "Time expressed in days", 0]]
+
+	"""
+	Options that are displayed when the option to update the Telk-Alert-Agent configuration file is chosen.
+	"""
+	OPTIONS_TELK_ALERT_AGENT_CONFIGURATION_UPDATE = [("Time", "Service validation time", 0),
+							       					 ("Bot Token", "Telegram bot token", 0),
+							       					 ("Chat ID", "Telegram chat id", 0)]

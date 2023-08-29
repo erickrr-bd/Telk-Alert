@@ -112,6 +112,7 @@ class TelkAlertConfiguration:
 
 	def display_configuration(self):
 		"""
+		Method that shows the current configuration of Telk-Alert.
 		"""
 		try:
 			yaml_file_data = self.utils.convertYamlFileToString(self.constants.TELK_ALERT_CONFIGURATION_FILE_PATH)
