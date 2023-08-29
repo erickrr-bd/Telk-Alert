@@ -54,13 +54,13 @@ Characteristics:
 # Requirements
 - CentOS 8 or Rocky Linux 8
 - ElasticSearch 7.x 
-- Python 3.6
+- Python 3.9
 - Python Libraries
-  - libPyDialog (https://github.com/erickrr-bd/libPyDialog)
-  - libPyElk (https://github.com/erickrr-bd/libPyElk)
-  - libPyTelegram (https://github.com/erickrr-bd/libPyTelegram)
-  - libPyLog (https://github.com/erickrr-bd/libPyLog)
-  - libPyUtils (https://github.com/erickrr-bd/libPyUtils)
+  - libPyDialog 1.2 (https://github.com/erickrr-bd/libPyDialog)
+  - libPyElk 1.2 (https://github.com/erickrr-bd/libPyElk)
+  - libPyTelegram 1.2 (https://github.com/erickrr-bd/libPyTelegram)
+  - libPyLog 1.2 (https://github.com/erickrr-bd/libPyLog)
+  - libPyUtils 1.2 (https://github.com/erickrr-bd/libPyUtils)
 
 # Installation
 To install or update Telk-Alert you must run the script "installer_telk_alert.sh" for this you can use any of the following commands:
