@@ -57,10 +57,10 @@ class Constants:
 					     ("5", "Exit")]
 
 	"""
-	Options that are displayed in the "Configuration" menu.
+	Options displayed to select a tool from the Telk-Alert suite.
 	"""
-	OPTIONS_CONFIGURATION_MENU = [("1", "Telk-Alert"),
-					     		  ("2", "Telk-Alert-Agent")]
+	OPTIONS_TOOLS_MENU = [("1", "Telk-Alert"),
+					      ("2", "Telk-Alert-Agent")]
 
 	"""
 	Options displayed when there is no Telk-Alert configuration file.
@@ -159,3 +159,122 @@ class Constants:
 	OPTIONS_TELK_ALERT_AGENT_CONFIGURATION_UPDATE = [("Time", "Service validation time", 0),
 							       					 ("Bot Token", "Telegram bot token", 0),
 							       					 ("Chat ID", "Telegram chat id", 0)]
+
+	"""
+	Options that are displayed in the "Alert Rules" menu.
+	"""
+	OPTIONS_ALERT_RULES_MENU = [("1", "Create new alert rule"),
+					 			("2", "Update alert rule"),
+					 			("3", "Display alert rule data"),
+					 			("4", "Remove alert rule(s)"),
+					 			("5", "Show all alert rules")]
+
+	"""
+	Options that display the criticality levels of the alert rules.
+	"""
+	OPTIONS_ALERT_RULE_LEVEL = [["Low", "Low level alert", 1],
+							 	["Medium", "Medium level alert", 0],
+							 	["High", "High level alert", 0]]
+
+	"""
+	Options that display alert rule types.
+	"""
+	OPTIONS_ALERT_RULE_TYPE = [("Frequency", "Search for events periodically", 1)]
+
+	"""
+	Options that display the query types.
+	"""
+	OPTIONS_QUERY_TYPE = [("query_string", "Perform the search using Query String", 0)]
+
+	"""
+	Options that show when the custom search option is chosen.
+	"""
+	OPTIONS_CUSTOM_SEARCH = [("Hostname", "Restrict by hostname", 0),
+					 	     ("Username", "Restrict by username", 0)]
+
+	"""
+	Options that show the types of alert delivery.
+	"""
+	OPTIONS_ALERT_DELIVERY_TYPE = [["only", "A single alert with the total of events found", 1],
+						           ["multiple", "An alert for each event found", 0]]
+
+	"""
+	Options that are displayed when the option to update an alert rule is chosen.
+	"""
+	OPTIONS_ALERT_RULE_UPDATE = [("Name", "Alert rule's name", 0),
+							  	 ("Level", "Alert rule's level", 0),
+							  	 ("Index", "ElasticSearch's index pattern", 0),
+							  	 ("Total Events", "Number of events to which the alert is sent", 0),
+							  	 ("Search Time", "Time in which the search is repeated", 0),
+							  	 ("Range Time", "Search range time", 0),
+							  	 ("Query", "Query type", 0),
+							  	 ("Fields Selection", "Enable or disable fields selection", 0),
+							  	 ("Custom Search", "Enable or disable custom search option", 0),
+							  	 ("Delivery", "How the alert is sent", 0),
+							  	 ("Bot Token", "Telegram Bot Token", 0),
+							  	 ("Chat ID", "Telegram channel identifier", 0)]
+
+	"""
+	Options displayed when the use of field selection is disabled.
+	"""
+	OPTIONS_FIELDS_SELECTION_FALSE = [("Enable", "Enable fields selection", 0)]
+
+	"""
+	Options displayed when the use of field selection is enabled.
+	"""
+	OPTIONS_FIELDS_SELECTION_TRUE = [("Disable", "Disable fields selection", 0),
+								     ("Data", "Modify data", 0)]
+
+	"""
+	Options displayed when the field selection usage is to be modified.
+	"""
+	OPTIONS_FIELDS_SELECTION_UPDATE = [("1", "Add New Field(s)"),
+									   ("2", "Modify Field(s)"),
+									   ("3", "Remove Field(s)")]
+
+	"""
+	Options that are displayed when the use of custom search is disabled.
+	"""
+	OPTIONS_CUSTOM_SEARCH_FALSE = [("Enable", "Enable custom search", 0)]
+
+	"""
+	Options that are displayed when the use of custom search is enabled.
+	"""
+	OPTIONS_CUSTOM_SEARCH_TRUE = [("Disable", "Disable custom search", 0),
+								  ("Data", "Modify data", 0)]
+
+	"""
+	Options displayed when hostname restriction is disabled.
+	"""
+	OPTIONS_RESTRICTION_BY_HOSTNAME_FALSE = [("Enable", "Enable restriction by hostname", 0)]
+
+	"""
+	Options displayed when hostname restriction is enabled.
+	"""
+	OPTIONS_RESTRICTION_BY_HOSTNAME_TRUE = [("Disable", "Disable restriction by hostname", 0),
+								 		    ("Data", "Modify configured data", 0)]
+
+	"""
+	Options displayed when username restriction is disabled.
+	"""
+	OPTIONS_RESTRICTION_BY_USERNAME_FALSE = [("Enable", "Enable restriction by username", 0)]
+
+	"""
+	Options that are displayed when username restriction is enabled.
+	"""
+	OPTIONS_RESTRICTION_BY_USERNAME_TRUE = [("Disable", "Disable restriction by username", 0),
+								 		    ("Data", "Modify configured data", 0)]
+	
+	"""
+	Options that are displayed when a value of a restriction type is to be updated.
+	"""
+	OPTIONS_RESTRICTION_UPDATE = [("Field", "Field's name in the index", 0),
+								  ("Events", "Number of events", 0)]
+
+	"""
+	Options displayed in the "Service" menu.
+	"""
+	OPTIONS_SERVICE_MENU = [("1", "Start Service"),
+					  		("2", "Restart Service"),
+					  		("3", "Stop Service"),
+					  		("4", "Service Status")]

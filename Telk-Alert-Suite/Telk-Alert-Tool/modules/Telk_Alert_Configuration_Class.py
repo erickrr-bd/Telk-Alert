@@ -155,7 +155,7 @@ class TelkAlertConfiguration:
 		if telk_alert_data[last_index + 1]:
 			telk_alert_data_json.update({"use_authentication_method" : telk_alert_data[last_index + 1]})
 			if telk_alert_data[last_index + 2] == "HTTP Authentication":
-				authentication_method_json.update({"authentication_method" : telk_alert_data[last_index + 2], "http_authentication_user" : telk_alert_data[last_index + 3], "http_authentication_password" : telk_alert_data[last_index + 4]})
+				telk_alert_data_json.update({"authentication_method" : telk_alert_data[last_index + 2], "http_authentication_user" : telk_alert_data[last_index + 3], "http_authentication_password" : telk_alert_data[last_index + 4]})
 			elif telk_alert_data[last_index + 2] == "API Key":
 				telk_alert_data_json.update({"authentication_method" : telk_alert_data[last_index + 2], "api_key_id" : telk_alert_data[last_index + 3], "api_key" : telk_alert_data[last_index + 4]})
 		
