@@ -39,8 +39,8 @@ class TelkAlertConfiguration:
 				verificate_certificate_ssl = self.dialog.createYesOrNoDialog("\nIs SSL certificate verification required?", 7, 50, "Certificate Verification")
 				if verificate_certificate_ssl == "ok":
 					telk_alert_data.append(True)
-					certificate_file_name = self.dialog.createFileDialog("/etc/Telk-Alert-Suite/Telk-Alert/certificates", 8, 50, "Select the CA certificate:", ".pem")
-					telk_alert_data.append(certificate_file_name)
+					certificate_file_path = self.dialog.createFileDialog("/etc/Telk-Alert-Suite/Telk-Alert/certificates", 8, 50, "Select the CA certificate:", ".pem")
+					telk_alert_data.append(certificate_file_path)
 				else:
 					telk_alert_data.append(False)
 			else:
@@ -112,7 +112,7 @@ class TelkAlertConfiguration:
 
 	def display_configuration(self):
 		"""
-		Method that shows the current configuration of Telk-Alert.
+		Method that displays the current configuration of Telk-Alert.
 		"""
 		try:
 			yaml_file_data = self.utils.convertYamlFileToString(self.constants.TELK_ALERT_CONFIGURATION_FILE_PATH)
@@ -144,10 +144,10 @@ class TelkAlertConfiguration:
 			telk_alert_data_json.update({"verificate_certificate_ssl" : telk_alert_data[4]})
 			if telk_alert_data[4]:
 				last_index = 5
-				certificate_file_name = path.basename(telk_alert_data[5])
-				telk_alert_data_json.update({"certificate_file_name" : certificate_file_name})
-				self.utils.copyFile(telk_alert_data[5], self.constants.certificate_file_name)
-				self.utils.changeFileFolderOwner(self.constants.certificate_file_name + '/' + certificate_file_name, self.constants.USER, self.constants.GROUP, "640")
+				certificate_file_path = self.constants.CERTIFICATE_FILE_PATH + '/' + path.basename(telk_alert_data[5])
+				telk_alert_data_json.update({"certificate_file_path" : certificate_file_path})
+				self.utils.copyFile(telk_alert_data[5], self.constants.CERTIFICATE_FILE_PATH)
+				self.utils.changeFileFolderOwner(certificate_file_path, self.constants.USER, self.constants.GROUP, "640")
 			else:
 				last_index = 4
 		else:
@@ -235,42 +235,42 @@ class TelkAlertConfiguration:
 			option_ssl_tls_true = self.dialog.createRadioListDialog("Select a option:", 9, 70, self.constants.OPTIONS_SSL_TLS_TRUE, "SSL/TLS Connection")
 			if option_ssl_tls_true == "Disable":
 				del telk_alert_data["verificate_certificate_ssl"]
-				if "certificate_file_name" in telk_alert_data:
-					del telk_alert_data["certificate_file_name"]
+				if "certificate_file_path" in telk_alert_data:
+					del telk_alert_data["certificate_file_path"]
 				telk_alert_data["use_ssl_tls"] = False
 			elif option_ssl_tls_true == "Certificate Verification":
 				if telk_alert_data["verificate_certificate_ssl"]:
 					option_verificate_certificate_true = self.dialog.createRadioListDialog("Select a option:", 9, 65, self.constants.OPTIONS_VERIFICATE_CERTIFICATE_TRUE, "Certificate Verification")
 					if option_verificate_certificate_true == "Disable":
-						if "certificate_file_name" in telk_alert_data:
-							del telk_alert_data["certificate_file_name"]
+						if "certificate_file_path" in telk_alert_data:
+							del telk_alert_data["certificate_file_path"]
 						telk_alert_data["verificate_certificate_ssl"] = False
 					elif option_verificate_certificate_true == "Certificate File":
-						certificate_file_path = self.dialog.createFileDialog(self.constants.CERTIFICATE_FILE_PATH + '/' + telk_alert_data["certificate_file_name"], 8, 50, "Select the CA certificate:", ".pem")
-						certificate_file_name = path.basename(certificate_file_path)
-						telk_alert_data["certificate_file_name"] = certificate_file_name
-						self.utils.copyFile(certificate_file_path, self.constants.CERTIFICATE_FILE_PATH)
-						self.utils.changeFileFolderOwner(self.constants.CERTIFICATE_FILE_PATH + '/' + certificate_file_name, self.constants.USER, self.constants.GROUP, "640")
+						new_certificate_file_path = self.dialog.createFileDialog(telk_alert_data["certificate_file_path"], 8, 50, "Select the CA certificate:", ".pem")
+						certificate_file_path = self.constants.CERTIFICATE_FILE_PATH + '/' + path.basename(certificate_file_path)
+						telk_alert_data["certificate_file_path"] = certificate_file_path
+						self.utils.copyFile(new_certificate_file_path, self.constants.CERTIFICATE_FILE_PATH)
+						self.utils.changeFileFolderOwner(certificate_file_path, self.constants.USER, self.constants.GROUP, "640")
 				else:
 					option_verificate_certificate_false = self.dialog.createRadioListDialog("Select a option:", 8, 70, self.constants.OPTIONS_VERIFICATE_CERTIFICATE_FALSE, "Certificate Verification")
 					if option_verificate_certificate_false == "Enable":
 						telk_alert_data["verificate_certificate_ssl"] = True
-						certificate_file_path = self.dialog.createFileDialog(self.constants.CERTIFICATE_FILE_PATH, 8, 50, "Select the CA certificate:", ".pem")			
-						certificate_file_name = path.basename(certificate_file_path)
-						telk_alert_data.update({"certificate_file_name" : certificate_file_name})
-						self.utils.copyFile(certificate_file_path, self.constants.CERTIFICATE_FILE_PATH)
-						self.utils.changeFileFolderOwner(self.constants.CERTIFICATE_FILE_PATH + '/' + certificate_file_name, self.constants.USER, self.constants.GROUP, "640")
+						new_certificate_file_path = self.dialog.createFileDialog(self.constants.CERTIFICATE_FILE_PATH, 8, 50, "Select the CA certificate:", ".pem")			
+						certificate_file_path = self.constants.CERTIFICATE_FILE_PATH + '/' + path.basename(new_certificate_file_path)
+						telk_alert_data.update({"certificate_file_path" : certificate_file_path})
+						self.utils.copyFile(new_certificate_file_path, self.constants.CERTIFICATE_FILE_PATH)
+						self.utils.changeFileFolderOwner(certificate_file_path, self.constants.USER, self.constants.GROUP, "640")
 		else:
 			option_ssl_tls_false = self.dialog.createRadioListDialog("Select a option:", 8, 70, self.constants.OPTIONS_SSL_TLS_FALSE, "SSL/TLS Connection")
 			if option_ssl_tls_false == "Enable":
 				telk_alert_data["use_ssl_tls"] = True
 				verificate_certificate_ssl = self.dialog.createYesOrNoDialog("\nIs SSL certificate verification required?", 7, 50, "Certificate Verification")
 				if verificate_certificate_ssl == "ok":
-					certificate_file_path = self.dialog.createFileDialog(self.constants.CERTIFICATE_FILE_PATH, 8, 50, "Select the CA certificate:", ".pem")
-					certificate_file_name = path.basename(certificate_file_path)
-					telk_alert_data.update({"verificate_certificate_ssl" : True, "certificate_file_name" : certificate_file_name})
-					self.utils.copyFile(certificate_file_path, self.constants.CERTIFICATE_FILE_PATH)
-					self.utils.changeFileFolderOwner(self.constants.CERTIFICATE_FILE_PATH + '/' + certificate_file_name, self.constants.USER, self.constants.GROUP, "640")
+					new_certificate_file_path = self.dialog.createFileDialog(self.constants.CERTIFICATE_FILE_PATH, 8, 50, "Select the CA certificate:", ".pem")
+					certificate_file_path = self.constants.CERTIFICATE_FILE_PATH + '/' + path.basename(new_certificate_file_path)
+					telk_alert_data.update({"verificate_certificate_ssl" : True, "certificate_file_path" : certificate_file_path})
+					self.utils.copyFile(new_certificate_file_path, self.constants.CERTIFICATE_FILE_PATH)
+					self.utils.changeFileFolderOwner(certificate_file_path, self.constants.USER, self.constants.GROUP, "640")
 				else:
 					telk_alert_data.update({"verificate_certificate_ssl" : False})
 		return telk_alert_data
@@ -278,7 +278,7 @@ class TelkAlertConfiguration:
 
 	def update_authentication_method(self, telk_alert_data):
 		"""
-		Method that updates the use of SSL/TLS.
+		Method that updates the use of an authentication method
 
 		Returns the dictionary with the updated configuration file data.
 
