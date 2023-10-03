@@ -5,6 +5,7 @@ from libPyElk import libPyElk
 from libPyLog import libPyLog
 from libPyUtils import libPyUtils
 from .Constants_Class import Constants
+from libPyTelegram import libPyTelegram
 from .Telegram_Messages_Class import TelegramMessages
 
 """
@@ -20,6 +21,7 @@ class TelkAlert:
 		self.utils = libPyUtils()
 		self.constants = Constants()
 		self.elasticsearch = libPyElk()
+		self.telegram = libPyTelegram()
 		self.telegram_messages = TelegramMessages()
 
 
@@ -46,6 +48,12 @@ class TelkAlert:
 				self.logger.generateApplicationLog("Connection established with: " + ','.join(telk_alert_data["es_host"]) + " Port: " + str(telk_alert_data["es_port"]), 1, "__clusterConnection", use_stream_handler = True)
 				self.logger.generateApplicationLog("ElasticSearch Cluster Name: " + conn_es.info()["cluster_name"], 1, "__clusterConnection", use_stream_handler = True)
 				self.logger.generateApplicationLog("ElasticSearch Version: " + conn_es.info()["version"]["number"], 1, "__clusterConnection", use_stream_handler = True)
+				self.logger.generateApplicationLog("Connection established using SSL/TLS", 1, "__clusterConnection", use_stream_handler = True) if telk_alert_data["use_ssl_tls"] else self.logger.generateApplicationLog("Connection established without SSL/TLS", 2, "__clusterConnection", use_stream_handler = True)
+				self.logger.generateApplicationLog("SSL certificate verification enabled", 1, "__clusterConnection", use_stream_handler = True) if telk_alert_data["verificate_certificate_ssl"] else self.logger.generateApplicationLog("SSL certificate verification disabled", 2, "__clusterConnection", use_stream_handler = True)
+				self.logger.generateApplicationLog("Certificate file path: " + telk_alert_data["certificate_file_path"], 1, "__clusterConnection", use_stream_handler = True) if telk_alert_data["verificate_certificate_ssl"] else self.logger.generateApplicationLog("Certificate file path: None", 2, "__clusterConnection", use_stream_handler = True)
+				self.logger.generateApplicationLog("Authentication method enabled", 1, "__clusterConnection", use_stream_handler = True) if telk_alert_data["use_authentication_method"] else self.logger.generateApplicationLog("Authentication method disabled", 2, "__clusterConnection", use_stream_handler = True)
+				if telk_alert_data["use_authentication_method"]:
+					self.logger.generateApplicationLog("Authentication method: " + telk_alert_data["authentication_method"], 1, "__clusterConnection", use_stream_handler = True) if telk_alert_data["authentication_method"] == "HTTP Authentication" else self.logger.generateApplicationLog("Authentication method: " + telk_alert_data["authentication_method"], 1, "__clusterConnection", use_stream_handler = True)
 				alert_rules_folder_path = self.constants.TELK_ALERT_PATH + '/' + telk_alert_data["alert_rules_folder"]
 				alert_rules_list = self.utils.getListYamlFilesInFolder(alert_rules_folder_path)
 				if alert_rules_list:
@@ -74,10 +82,11 @@ class TelkAlert:
 			gte_date_math = self.utils.getGteDateMath(range_unit_time, alert_rule_data["range_time"][range_unit_time])
 			lte_date_math = self.utils.getLteDateMath(range_unit_time)
 			passphrase = self.utils.getPassphraseKeyFromFile(self.constants.KEY_FILE_PATH)
-			telegram_bot_token = self.utils.decryptDataWithAES(alert_rule_data["telegram_bot_token"], passphrase)
-			telegram_chat_id = self.utils.decryptDataWithAES(alert_rule_data["telegram_chat_id"], passphrase)
+			telegram_bot_token = self.utils.decryptDataWithAES(alert_rule_data["telegram_bot_token"], passphrase).decode("utf-8")
+			telegram_chat_id = self.utils.decryptDataWithAES(alert_rule_data["telegram_chat_id"], passphrase).decode("utf-8")
 			query_string = alert_rule_data["query_type"][0]["query_string"]["query"]
 			search = self.elasticsearch.createSearch(conn_es, alert_rule_data["index_pattern"])
+			list_timestamp = []
 			while True:
 				if alert_rule_data["use_custom_search"]:
 					print("Custom")
@@ -88,11 +97,24 @@ class TelkAlert:
 						result = self.elasticsearch.searchByQueryString(search, query_string, gte_date_math, lte_date_math, alert_rule_data["use_fields_selection"])
 					if result:
 						if len(result) >= alert_rule_data["total_number_events"]:
+							print(list_timestamp)
 							self.logger.generateApplicationLog("Events found: " + str(len(result)), 1, "__" + alert_rule_data["alert_rule_name"], use_stream_handler = True, use_file_handler = True, log_file_name = self.constants.LOG_FILE_NAME, user = self.constants.USER, group = self.constants.GROUP)
 							if alert_rule_data["alert_delivery_type"] == "multiple":
-								telegram_message = self.telegram_messages.multiple_alert_rule_message(result, alert_rule_data)
+								for hit in result:
+									if hit["@timestamp"] in list_timestamp:
+										list_timestamp.remove(hit["@timestamp"])
+									else:
+										telegram_message = self.telegram_messages.generate_telegram_message(hit, alert_rule_data)
+										response_http_code = self.telegram.sendMessageTelegram(telegram_bot_token, telegram_chat_id, telegram_message)
+										self.telegram_messages.create_log_by_telegram_code(response_http_code, alert_rule_data["alert_rule_name"])
+										list_timestamp.append(hit["@timestamp"])
 							elif alert_rule_data["alert_delivery_type"] == "only":
-								telegram_message = self.telegram_messages.
+								for hit in result:
+									telegram_message = self.telegram_messages.generate_telegram_message(hit, alert_rule_data)
+									break
+								telegram_message += "TOTAL EVENTS FOUND: " + str(len(result))
+								response_http_code = self.telegram.sendMessageTelegram(telegram_bot_token, telegram_chat_id, telegram_message)
+								self.telegram_messages.create_log_by_telegram_code(response_http_code, alert_rule_data["alert_rule_name"])
 					else:
 						self.logger.generateApplicationLog("No events found", 1, "__" + alert_rule_data["alert_rule_name"], use_stream_handler = True)
 				sleep(search_time_seconds)
