@@ -72,7 +72,7 @@ class TelkAlert:
 
 	def start_alert_rule(self, conn_es, alert_rule_data):
 		"""
-
+		Method that starts an alert rule.
 		"""
 		try:
 			self.logger.generateApplicationLog(alert_rule_data["alert_rule_name"] + " loaded", 1, "__readAlertRules", use_stream_handler = True)
@@ -86,10 +86,57 @@ class TelkAlert:
 			telegram_chat_id = self.utils.decryptDataWithAES(alert_rule_data["telegram_chat_id"], passphrase).decode("utf-8")
 			query_string = alert_rule_data["query_type"][0]["query_string"]["query"]
 			search = self.elasticsearch.createSearch(conn_es, alert_rule_data["index_pattern"])
-			list_timestamp = []
 			while True:
 				if alert_rule_data["use_custom_search"]:
-					print("Custom")
+					if alert_rule_data["restriction_by_hostname"] and not alert_rule_data["restriction_by_username"]:
+						result = self.elasticsearch.searchByQueryStringAggregation(search, query_string, gte_date_math, lte_date_math, alert_rule_data["field_name_hostname"], False)
+						if result:
+							for tag in result.aggregations.events.buckets:
+								if tag.doc_count >= alert_rule_data["total_events_by_hostname"]:
+									query_string += " AND " + alert_rule_data["field_name_hostname"] + ':' + tag.key
+									if alert_rule_data["use_fields_selection"]:
+										result = self.elasticsearch.searchByQueryString(search, query_string, gte_date_math, lte_date_math, alert_rule_data["use_fields_selection"], fields_name = alert_rule_data["fields_name"])
+									else:
+										result = self.elasticsearch.searchByQueryString(search, query_string, gte_date_math, lte_date_math, alert_rule_data["use_fields_selection"])
+									self.logger.generateApplicationLog("Events found: " + str(len(result)), 1, "__" + alert_rule_data["alert_rule_name"], use_stream_handler = True, use_file_handler = True, log_file_name = self.constants.LOG_FILE_NAME, user = self.constants.USER, group = self.constants.GROUP)
+									if alert_rule_data["alert_delivery_type"] == "multiple":
+										self.send_multiple_alert(result, alert_rule_data, telegram_bot_token, telegram_chat_id)
+									elif alert_rule_data["alert_delivery_type"] == "only":
+										self.send_only_alert(result, alert_rule_data, telegram_bot_token, telegram_chat_id)
+					elif not alert_rule_data["restriction_by_hostname"] and alert_rule_data["restriction_by_username"]:
+						result = self.elasticsearch.searchByQueryStringAggregation(search, query_string, gte_date_math, lte_date_math, alert_rule_data["field_name_username"], False)
+						if result:
+							for tag in result.aggregations.events.buckets:
+								if tag.doc_count >= alert_rule_data["total_events_by_username"]:
+									query_string += " AND " + alert_rule_data["field_name_username"] + ':' + tag.key
+									if alert_rule_data["use_fields_selection"]:
+										result = self.elasticsearch.searchByQueryString(search, query_string, gte_date_math, lte_date_math, alert_rule_data["use_fields_selection"], fields_name = alert_rule_data["fields_name"])
+									else:
+										result = self.elasticsearch.searchByQueryString(search, query_string, gte_date_math, lte_date_math, alert_rule_data["use_fields_selection"])
+									self.logger.generateApplicationLog("Events found: " + str(len(result)), 1, "__" + alert_rule_data["alert_rule_name"], use_stream_handler = True, use_file_handler = True, log_file_name = self.constants.LOG_FILE_NAME, user = self.constants.USER, group = self.constants.GROUP)
+									if alert_rule_data["alert_delivery_type"] == "multiple":
+										self.send_multiple_alert(result, alert_rule_data, telegram_bot_token, telegram_chat_id)
+									elif alert_rule_data["alert_delivery_type"] == "only":
+										self.send_only_alert(result, alert_rule_data, telegram_bot_token, telegram_chat_id)
+					elif alert_rule_data["restriction_by_hostname"] and alert_rule_data["restriction_by_username"]:
+						result = self.elasticsearch.searchByQueryStringAggregation(search, query_string, gte_date_math, lte_date_math, alert_rule_data["field_name_hostname"], False)
+						if result:
+							for tag in result.aggregations.events.buckets:
+								if tag.doc_count >= alert_rule_data["total_events_by_hostname"]:
+									query_string += " AND " + alert_rule_data["field_name_hostname"] + ':' + tag.key
+									result = self.elasticsearch.searchByQueryStringAggregation(search, query_string, gte_date_math, lte_date_math, alert_rule_data["field_name_username"], False)
+									for tag in result.aggregations.events.buckets:
+										if tag.doc_count >= alert_rule_data["total_events_by_username"]:
+											query_string += " AND " + alert_rule_data["field_name_username"] + ':' + tag.key
+											if alert_rule_data["use_fields_selection"]:
+												result = self.elasticsearch.searchByQueryString(search, query_string, gte_date_math, lte_date_math, alert_rule_data["use_fields_selection"], fields_name = alert_rule_data["fields_name"])
+											else:
+												result = self.elasticsearch.searchByQueryString(search, query_string, gte_date_math, lte_date_math, alert_rule_data["use_fields_selection"])
+											self.logger.generateApplicationLog("Events found: " + str(len(result)), 1, "__" + alert_rule_data["alert_rule_name"], use_stream_handler = True, use_file_handler = True, log_file_name = self.constants.LOG_FILE_NAME, user = self.constants.USER, group = self.constants.GROUP)
+											if alert_rule_data["alert_delivery_type"] == "multiple":
+												self.send_multiple_alert(result, alert_rule_data, telegram_bot_token, telegram_chat_id)
+											elif alert_rule_data["alert_delivery_type"] == "only":
+												self.send_only_alert(result, alert_rule_data, telegram_bot_token, telegram_chat_id)
 				else:
 					if alert_rule_data["use_fields_selection"]:
 						result = self.elasticsearch.searchByQueryString(search, query_string, gte_date_math, lte_date_math, alert_rule_data["use_fields_selection"], fields_name = alert_rule_data["fields_name"])
@@ -97,24 +144,11 @@ class TelkAlert:
 						result = self.elasticsearch.searchByQueryString(search, query_string, gte_date_math, lte_date_math, alert_rule_data["use_fields_selection"])
 					if result:
 						if len(result) >= alert_rule_data["total_number_events"]:
-							print(list_timestamp)
 							self.logger.generateApplicationLog("Events found: " + str(len(result)), 1, "__" + alert_rule_data["alert_rule_name"], use_stream_handler = True, use_file_handler = True, log_file_name = self.constants.LOG_FILE_NAME, user = self.constants.USER, group = self.constants.GROUP)
 							if alert_rule_data["alert_delivery_type"] == "multiple":
-								for hit in result:
-									if hit["@timestamp"] in list_timestamp:
-										list_timestamp.remove(hit["@timestamp"])
-									else:
-										telegram_message = self.telegram_messages.generate_telegram_message(hit, alert_rule_data)
-										response_http_code = self.telegram.sendMessageTelegram(telegram_bot_token, telegram_chat_id, telegram_message)
-										self.telegram_messages.create_log_by_telegram_code(response_http_code, alert_rule_data["alert_rule_name"])
-										list_timestamp.append(hit["@timestamp"])
+								self.send_multiple_alert(result, alert_rule_data, telegram_bot_token, telegram_chat_id)
 							elif alert_rule_data["alert_delivery_type"] == "only":
-								for hit in result:
-									telegram_message = self.telegram_messages.generate_telegram_message(hit, alert_rule_data)
-									break
-								telegram_message += "TOTAL EVENTS FOUND: " + str(len(result))
-								response_http_code = self.telegram.sendMessageTelegram(telegram_bot_token, telegram_chat_id, telegram_message)
-								self.telegram_messages.create_log_by_telegram_code(response_http_code, alert_rule_data["alert_rule_name"])
+								self.send_only_alert(result, alert_rule_data, telegram_bot_token, telegram_chat_id)
 					else:
 						self.logger.generateApplicationLog("No events found", 1, "__" + alert_rule_data["alert_rule_name"], use_stream_handler = True)
 				sleep(search_time_seconds)
@@ -122,48 +156,34 @@ class TelkAlert:
 			self.logger.generateApplicationLog("Error executing alert rule. For more information, see the logs.", 3, "__" + alert_rule_data["alert_rule_name"], use_stream_handler = True)
 			self.logger.generateApplicationLog(exception, 3, "__" + alert_rule_data["alert_rule_name"], use_file_handler = True, log_file_name = self.constants.LOG_FILE_NAME, user = self.constants.USER, group = self.constants.GROUP)
 
-"""
-def __startAlertRule(self, conn_es, data_alert_rule):
-		try:
-			while True:
-				if not data_alert_rule["use_custom_rule_option"] == True:
-					if result_search:
-						if len(result_search) >= data_alert_rule["number_events_found_by_alert"]:
-							self.__logger.generateApplicationLog("Events found: " + str(len(result_search)), 1, "__" + data_alert_rule["alert_rule_name"], use_stream_handler = True, use_file_handler = True, name_file_log = self.__constants.NAME_FILE_LOG, user = self.__constants.USER, group = self.__constants.GROUP)
-							if data_alert_rule["send_type_alert_rule"] == "multiple":
-								self.__sendMultipleAlertRule(result_search, data_alert_rule, telegram_bot_token, telegram_chat_id)
-							elif data_alert_rule["send_type_alert_rule"] == "only":
-								self.__sendOnlyAlertRule(result_search, data_alert_rule, telegram_bot_token, telegram_chat_id, len(result_search))
-					else:
-						self.__logger.generateApplicationLog("No events found", 1, "__" + data_alert_rule["alert_rule_name"], use_stream_handler = True)
-				else:
-					result_search_custom_rule = self.__elasticsearch.executeSearchQueryStringWithAggregation(search_in_elastic, data_alert_rule["field_name_hostname"], gte_date_math_string, lte_date_math_string, query_string_alert_rule, False)
-					if result_search_custom_rule:
-						for tag_hostname in result_search_custom_rule.aggregations.events.buckets:
-							if tag_hostname.doc_count >= data_alert_rule["number_total_events_by_hostname"]:
-								if data_alert_rule["restriction_by_username"] == True:
-									query_string_alert_rule += " AND " + data_alert_rule['field_name_hostname'] + ':' + tag_hostname.key
-									result_search_hostname = self.__elasticsearch.executeSearchQueryStringWithAggregation(search_in_elastic, data_alert_rule["field_name_username"], gte_date_math_string, lte_date_math_string, query_string_alert_rule, False)
-									for tag_username in result_search_hostname.aggregations.events.buckets:
-										if tag_username.doc_count >= data_alert_rule["number_total_events_by_username"]:
-											query_string_alert_rule += " AND " + data_alert_rule['field_name_username'] + ':' + tag_username.key
-											if data_alert_rule["use_fields_option"] == True:
-												result_search = self.__elasticsearch.executeSearchQueryString(search_in_elastic, gte_date_math_string, lte_date_math_string, query_string_alert_rule, data_alert_rule["use_fields_option"], fields = data_alert_rule["fields_name"])
-											else:
-												result_search = self.__elasticsearch.executeSearchQueryString(search_in_elastic, gte_date_math_string, lte_date_math_string, query_string_alert_rule, data_alert_rule["use_fields_option"])
-											self.__logger.generateApplicationLog("Events found: " + str(len(result_search)), 1, "__" + data_alert_rule["alert_rule_name"], use_stream_handler = True, use_file_handler = True, name_file_log = self.__constants.NAME_FILE_LOG, user = self.__constants.USER, group = self.__constants.GROUP)
-											if data_alert_rule["send_type_alert_rule"] == "multiple":
-												self.__sendMultipleAlertRule(result_search, data_alert_rule, telegram_bot_token, telegram_chat_id)
-											elif data_alert_rule["send_type_alert_rule"] == "only":
-												self.__sendOnlyAlertRule(result_search, data_alert_rule, telegram_bot_token, telegram_chat_id, len(result_search))
-					else:
-						self.__logger.generateApplicationLog("No events found", 1, "__" + data_alert_rule["alert_rule_name"], use_stream_handler = True)
-				sleep(time_search_in_seconds)
-		except KeyError as exception:
-			self.__logger.generateApplicationLog("Key Error: " + str(exception), 3, "__" + data_alert_rule["alert_rule_name"], use_stream_handler = True, use_file_handler = True, name_file_log = self.__constants.NAME_FILE_LOG, user = self.__constants.USER, group = self.__constants.GROUP)
-			exit(1)
-		except (self.__elasticsearch.exceptions.AuthenticationException, self.__elasticsearch.exceptions.ConnectionError, self.__elasticsearch.exceptions.AuthorizationException, self.__elasticsearch.exceptions.RequestError, self.__elasticsearch.exceptions.ConnectionTimeout) as exception:
-			self.__logger.generateApplicationLog("Error performing an action in ElasticSearch. For more information, see the logs.", 3, "__" + data_alert_rule["alert_rule_name"], use_stream_handler = True)
-			self.__logger.generateApplicationLog(exception, 3, "__" + data_alert_rule["alert_rule_name"], use_file_handler = True, name_file_log = self.__constants.NAME_FILE_LOG, user = self.__constants.USER, group = self.__constants.GROUP)
-			exit(1)	
-"""
+
+	def send_only_alert(self, result, alert_rule_data, telegram_bot_token, telegram_chat_id):
+		"""
+		Method that sends a single alert for all events found.
+
+		:arg result (dict): Dictionary with the search result data.
+		:arg alert_rule_data (dict): Dictionary with the alert rule data.
+		:arg telegram_bot_token (string): Telegram Bot Token.
+		:arg telegram_chat_id (string): Telegram channel identifier.
+		"""
+		for hit in result:
+			telegram_message = self.telegram_messages.generate_telegram_message(hit, alert_rule_data)
+			break
+		telegram_message += "TOTAL EVENTS FOUND: " + str(len(result))
+		response_http_code = self.telegram.sendMessageTelegram(telegram_bot_token, telegram_chat_id, telegram_message)
+		self.telegram_messages.create_log_by_telegram_code(response_http_code, alert_rule_data["alert_rule_name"])
+
+
+	def send_multiple_alert(self, result, alert_rule_data, telegram_bot_token, telegram_chat_id):
+		"""
+		Method that sends an alert for each event found.
+
+		:arg result (dict): Dictionary with the search result data.
+		:arg alert_rule_data (dict): Dictionary with the alert rule data.
+		:arg telegram_bot_token (string): Telegram Bot Token.
+		:arg telegram_chat_id (string): Telegram channel identifier.
+		"""
+		for hit in result:
+			telegram_message = self.telegram_messages.generate_telegram_message(hit, alert_rule_data)
+			response_http_code = self.telegram.sendMessageTelegram(telegram_bot_token, telegram_chat_id, telegram_message)
+			self.telegram_messages.create_log_by_telegram_code(response_http_code, alert_rule_data["alert_rule_name"])

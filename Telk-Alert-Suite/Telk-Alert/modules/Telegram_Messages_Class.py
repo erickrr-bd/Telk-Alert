@@ -19,9 +19,12 @@ class TelegramMessages:
 
 	def generate_telegram_message(self, hit, alert_rule_data):
 		"""
+		Method that generates a text message based on an event found during a search in ElasticSearch.
 
-		:arg hit (dict):
-		:arg alert_rule_data (dict):
+		Return the text message.
+
+		:arg hit (dict): Dictionary with the data of the event found during the search.
+		:arg alert_rule_data (dict): Dictionary with the alert rule data.
 		"""
 		telegram_message = u'\u26A0\uFE0F' + ' ' + alert_rule_data["alert_rule_name"] +  ' ' + u'\u26A0\uFE0F' + "\n\n" + u'\U0001f6a6' +  " Alert level: " + alert_rule_data["alert_rule_level"] + "\n\n" +  u'\u23F0' + " Alert sent: " + strftime("%c") + "\n\n"
 		telegram_message += "At least " + str(alert_rule_data["total_number_events"]) + " event(s) were found." + "\n\nFOUND EVENT:\n\n"
