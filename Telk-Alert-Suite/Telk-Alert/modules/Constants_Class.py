@@ -13,11 +13,6 @@ class Constants:
 	TELK_ALERT_CONFIGURATION_FILE_PATH = "/etc/Telk-Alert-Suite/Telk-Alert/configuration/telk_alert_conf.yaml"
 
 	"""
-	Absolute path of the Telk-Alert-Agent configuration file.
-	"""
-	TELK_ALERT_AGENT_CONFIGURATION_FILE_PATH = "/etc/Telk-Alert-Suite/Telk-Alert-Agent/configuration/telk_alert_agent_conf.yaml"
-
-	"""
 	Absolute path of the file where the encryption key is stored.
 	"""
 	KEY_FILE_PATH = "/etc/Telk-Alert-Suite/Telk-Alert/configuration/key"
