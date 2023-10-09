@@ -94,7 +94,7 @@ class AlertRules:
 			if path.exists(self.alert_rules_folder_path + '/' + alert_rule_name + ".yaml"):
 				self.dialog.createMessageDialog("\nAlert rule created: " + alert_rule_name, 7, 50, "Notification Message")
 				self.logger.generateApplicationLog("Alert rule created: " + alert_rule_name, 1, "__createAlertRule", use_file_handler = True, log_file_name = self.constants.LOG_FILE_NAME, user = self.constants.USER, group = self.constants.GROUP)
-		except (OSError, FileNotFoundError, IOError, ValueError) as exception:
+		except Exception as exception:
 			self.dialog.createMessageDialog("\nError creating the alert rule.For more information, see the logs.", 8, 50, "Error Message")
 			self.logger.generateApplicationLog(exception, 3, "__createAlertRule", use_file_handler = True, log_file_name = self.constants.LOG_FILE_NAME, user = self.constants.USER, group = self.constants.GROUP)
 		except KeyboardInterrupt:
@@ -256,6 +256,7 @@ class AlertRules:
 				last_index = 11
 			alert_rule_data_json.update({"use_custom_search" : alert_rule_data[last_index + 1]})
 			if alert_rule_data[last_index + 1]:
+				del alert_rule_data["total_number_events"]
 				alert_rule_data_json.update({"restriction_by_hostname" : alert_rule_data[last_index + 2]})
 				if alert_rule_data[last_index + 2]:
 					alert_rule_data_json.update({"field_name_hostname" : alert_rule_data[last_index + 3], "total_events_by_hostname" : int(alert_rule_data[last_index + 4])})
@@ -325,8 +326,8 @@ class AlertRules:
 
 	def update_total_number_events(self, alert_rule_data):
 		"""
-		Method that updates the index pattern.
-
+		Method that updates how many events found the alert is sent.
+		
 		Returns the dictionary with the updated data of the alert rule.
 
 		:arg alert_rule_data (dict): Dictionary with the data stored in the alert rule.
@@ -454,6 +455,8 @@ class AlertRules:
 					del alert_rule_data["field_name_username"]
 					del alert_rule_data["total_events_by_username"]
 					del alert_rule_data["restriction_by_username"]
+				total_number_events = self.dialog.createInputBoxToNumberDialog("Enter the total number of events to which the alert will be sent:", 9, 50, "1")
+				alert_rule_data.update({"total_number_events" : int(total_number_events)})
 			elif option_custom_search_true == "Data":
 				options_custom_search = self.dialog.createCheckListDialog("Select one or more options:", 9, 50, self.constants.OPTIONS_CUSTOM_SEARCH, "Custom Search")
 				if "Hostname" in options_custom_search:
@@ -508,6 +511,7 @@ class AlertRules:
 			option_custom_search_false = self.dialog.createRadioListDialog("Select a option:", 8, 55, self.constants.OPTIONS_CUSTOM_SEARCH_FALSE, "Custom Search")
 			if option_custom_search_false == "Enable":
 				alert_rule_data["use_custom_search"] = True
+				del alert_rule_data["total_number_events"]
 				options_custom_search = self.dialog.createCheckListDialog("Select one or more options:", 9, 50, self.constants.OPTIONS_CUSTOM_SEARCH, "Custom Search")
 				if "Hostname" in options_custom_search:
 					field_name_hostname = self.dialog.createInputBoxDialog("Enter the field name for the hostname:", 8, 50, "host.hostname")
