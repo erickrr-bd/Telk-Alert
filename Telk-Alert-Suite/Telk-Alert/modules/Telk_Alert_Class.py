@@ -137,6 +137,8 @@ class TelkAlert:
 												self.send_multiple_alert(result, alert_rule_data, telegram_bot_token, telegram_chat_id)
 											elif alert_rule_data["alert_delivery_type"] == "only":
 												self.send_only_alert(result, alert_rule_data, telegram_bot_token, telegram_chat_id)
+						else:
+							self.logger.generateApplicationLog("No events found", 1, "__" + alert_rule_data["alert_rule_name"], use_stream_handler = True)
 				else:
 					if alert_rule_data["use_fields_selection"]:
 						result = self.elasticsearch.searchByQueryString(search, query_string, gte_date_math, lte_date_math, alert_rule_data["use_fields_selection"], fields_name = alert_rule_data["fields_name"])
@@ -170,6 +172,8 @@ class TelkAlert:
 			telegram_message = self.telegram_messages.generate_telegram_message(hit, alert_rule_data)
 			break
 		telegram_message += "TOTAL EVENTS FOUND: " + str(len(result))
+		if len(telegram_message) > 4096:
+			telegram_message = "Alert rule: " + alert_rule_data["alert_rule_name"] + "\nThe size of the message in Telegram (4096) has been exceeded. Overall size: " + str(len(telegram_message))
 		response_http_code = self.telegram.sendMessageTelegram(telegram_bot_token, telegram_chat_id, telegram_message)
 		self.telegram_messages.create_log_by_telegram_code(response_http_code, alert_rule_data["alert_rule_name"])
 
@@ -185,5 +189,7 @@ class TelkAlert:
 		"""
 		for hit in result:
 			telegram_message = self.telegram_messages.generate_telegram_message(hit, alert_rule_data)
+			if len(telegram_message) > 4096:
+				telegram_message = "Alert rule: " + alert_rule_data["alert_rule_name"] + "\nThe size of the message in Telegram (4096) has been exceeded. Overall size: " + str(len(telegram_message))
 			response_http_code = self.telegram.sendMessageTelegram(telegram_bot_token, telegram_chat_id, telegram_message)
 			self.telegram_messages.create_log_by_telegram_code(response_http_code, alert_rule_data["alert_rule_name"])

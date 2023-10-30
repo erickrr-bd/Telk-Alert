@@ -64,7 +64,7 @@ class AlertRules:
 					use_custom_search = self.dialog.createYesOrNoDialog("\nIs the use of a custom search required?", 7, 50, "Custom Search")
 					if use_custom_search == "ok":
 						alert_rule_data.append(True)
-						options_custom_search = self.dialog.createCheckListDialog("Select one or more options:", 10, 50, self.constants.OPTIONS_CUSTOM_SEARCH, "Custom Search")
+						options_custom_search = self.dialog.createCheckListDialog("Select one or more options:", 9, 50, self.constants.OPTIONS_CUSTOM_SEARCH, "Custom Search")
 						if "Hostname" in options_custom_search:
 							alert_rule_data.append(True)
 							field_name_hostname = self.dialog.createInputBoxDialog("Enter the field name for the hostname:", 8, 50, "host.hostname")
@@ -256,7 +256,7 @@ class AlertRules:
 				last_index = 11
 			alert_rule_data_json.update({"use_custom_search" : alert_rule_data[last_index + 1]})
 			if alert_rule_data[last_index + 1]:
-				del alert_rule_data["total_number_events"]
+				del alert_rule_data_json["total_number_events"]
 				alert_rule_data_json.update({"restriction_by_hostname" : alert_rule_data[last_index + 2]})
 				if alert_rule_data[last_index + 2]:
 					alert_rule_data_json.update({"field_name_hostname" : alert_rule_data[last_index + 3], "total_events_by_hostname" : int(alert_rule_data[last_index + 4])})
@@ -327,7 +327,7 @@ class AlertRules:
 	def update_total_number_events(self, alert_rule_data):
 		"""
 		Method that updates how many events found the alert is sent.
-		
+
 		Returns the dictionary with the updated data of the alert rule.
 
 		:arg alert_rule_data (dict): Dictionary with the data stored in the alert rule.
@@ -372,7 +372,8 @@ class AlertRules:
 			else:
 				item[2] = 0
 		option_unit_time = self.dialog.createRadioListDialog("Select a option:", 10, 50, self.constants.OPTIONS_UNIT_TIME, "Unit Time")
-		unit_time_total = self.dialog.createInputBoxToNumberDialog("Enter the total in " + option_unit_time + " of the search range:", 8, 50, str(alert_rule_data["range_time"][current_unit_time]))
+		size = 9 if option_unit_time == "minutes" else 8
+		unit_time_total = self.dialog.createInputBoxToNumberDialog("Enter the total in " + option_unit_time + " of the search range:", size, 50, str(alert_rule_data["range_time"][current_unit_time]))
 		alert_rule_data["range_time"] = {option_unit_time : int(unit_time_total)}
 		return alert_rule_data
 
