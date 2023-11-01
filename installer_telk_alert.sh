@@ -14,7 +14,7 @@ echo -e "\e[96m@2023 Tekium. All rights reserved.\e[0m"
 echo -e "\e[96mAuthor: Erick Roberto Rodríguez Rodríguez\e[0m"
 echo -e "\e[96mEmail: erodriguez@tekium.mx, erickrr.tbd93@gmail.com\e[0m"
 echo -e "\e[96mGitHub: https://github.com/erickrr-bd/Telk-Alert"
-echo -e "\e[96mInstaller for Telk-Alert v3.3 - July 2023\e[0m"
+echo -e "\e[96mInstaller for Telk-Alert v3.3 - October 2023\e[0m"
 echo -e "\e[96mLicense: GPLv3\e[0m"
 echo -e "\e[1;33m--------------------------------------------------------------------------------\e[0m\n"
 echo "Do you want to install or update Telk-Alert? (I/U)"
@@ -82,7 +82,8 @@ EOF
 	cd /opt/Telk-Alert-Suite/Telk-Alert-Tool
 	python3 Telk_Alert_Tool.py
 elif [ $opc = "U" ] || [ $opc = "u" ]; then
-	echo -e "\e[96mStarting the Telk-Alert update process\e[0m\n"
+	echo -e "\e[96mStarting the Telk-Alert update\e[0m\n"
+	sleep 3
 	echo -e "\e[96mStopping and updating the Telk-Alert and Telk-Alert-Agent service\e[0m\n"
 	systemctl stop telk-alert.service
 	systemctl stop telk-alert-agent.service
@@ -99,5 +100,5 @@ elif [ $opc = "U" ] || [ $opc = "u" ]; then
 	echo -e "\e[96mRunning Telk-Alert-Tool\e[0m\n"
 	sleep 3
 	cd /opt/Telk-Alert-Suite/Telk-Alert-Tool
-	python3 Telk_Alert_Tool.py
+	python3.9 Telk_Alert_Tool.py
 fi

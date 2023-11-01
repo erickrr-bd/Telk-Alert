@@ -1,5 +1,5 @@
 [Unit]
-Description=Telk-Alert v3.3 by Erick Rodriguez
+Description=Telk-Alert v3.3
 After=networking.target
 StartLimitIntervalSec=0
 
