@@ -1,11 +1,5 @@
 # Telk-Alert v3.3 (Tekium ELK - Alert)
 
-Author: Erick Rodríguez 
-
-Email: erodriguez@tekium.mx, erickrr.tbd93@gmail.com
-
-License: GPLv3
-
 Telk-Alert is an application to alert about anomalies or patterns of interest in the data stored in ElasticSearch.
 
 Telk-Alert was born as an initiative to have a tool that could alert about possible security events that need to be monitored 24/7.
