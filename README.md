@@ -15,7 +15,7 @@ Characteristics:
 - The connection with ElasticSearch can be established using an authentication method (HTTP Authentication or API Key). **Note:** This must be configured on the cluster.
 - The SSL certificate can be verified or not. **Note:** It's recommended to verify the certificate, for security reasons.
 - Telk-Alert works with any index or index pattern.
-- Use of query string to search for defined events. [Query String](https://www.elastic.co/guide/en/elasticsearch/reference/7.17/query-dsl-simple-query-string-query.html)
+- Use of [Query String](https://www.elastic.co/guide/en/elasticsearch/reference/7.17/query-dsl-simple-query-string-query.html) to search for defined events. 
 - Each alert can be sent to a different Telegram channel.
 - Each alert rule is assigned a criticality level (High, medium and low).
 - N alert rules can be running at the same time, because Telk-Alert uses threads.
@@ -37,18 +37,18 @@ Characteristics:
 - Generation of application logs.
 
 ## Telk-Alert-Agent
-Telk-Alert-Agent is an application that validates current status of Telk-Alert's service or demon every minute, and, alerts when it isn't working for any reason.
+Telk-Alert-Agent is an application that periodically monitors the health of Telk-Alert.
 
 Characteristics:
-- It validates the current status of the Telk-Alert's service or demon every minute.
-- When Telk-Alert's service or demon isn't working for any reason, an alert every minute is sent.
-- Otherwise, that the service is working correctly, the alert is sent at two configurable hours of the day.
-- Send the status of the Telk-Alert service to a Telegram channel.
-- Generation of application logs.
+- The validation time period is configurable, for example, every minute or every hour.
+- The Telegram channel to which the alerts are sent is configurable.
+- Validates the health status of the Telk-Alert daemon. In case, it isn't working for some reason, Telk-Alert-Agent sends an alert to a Telegram channel.
+- Validates the number of threads working on Telk-Alert as well as the number of alert rules that should be working. If this number doesn't match, Telk-Alert-Agent sends an alert to a Telegram channel and automatically restarts the Telk-Alert daemon. Ideal, when Telk-Alert is working but an alert rule stopped working.
+- Generation of application logs in `/var/log/Telk-Alert`.
 
 # Requirements
-- CentOS 8 or Rocky Linux 8
-- ElasticSearch 7.x 
+- CentOS 8 or Rocky Linux 8 (Tested in these versions)
+- ElasticSearch 7.x
 - Python 3.9
 - Python Libraries
   - libPyDialog 1.2 (https://github.com/erickrr-bd/libPyDialog)
