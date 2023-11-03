@@ -8,21 +8,22 @@ If you have data in ElasticSearch in real time and need to be alerted when certa
 
 # Applications
 ## Telk-Alert
-Telk-Alert is an application that mades searches using "query string" or "aggregations" in an specific ElasticSearch's index pattern, and when it found events or documents, those are sended to a Telegram channel.
+Telk-Alert is an application that periodically searches for defined events and sends alerts via Telegram.
 
 Characteristics:
-- The connection with ElasticSearch can set using HTTPS (SSL/TLS), it means that all data travel through a secure channel and encripted.
-- The connection with ElasticSearch can set using an authentication method (HTTP Authentication or API Key). Note: It must be configured in ElasticSearch's cluster.
-- The connection with ElasticSearch can set using a certificate file (PEM file) and it can be verficated or no. Note: The recomendation is verificates the cerficate file for more security in the connection.
-- It works with any index or index pattern.
-- It can use "query string" or "aggregations" to make searches.
-- Every alert can send to a specific telegram channel.
-- N alert rules can be configured, each with a specific or different purpose.
-- You can configure the search so that it only shows specific fields of the event in the Telegram message.
-- Use of "custom rules", for example, to configure an alert rule that alerts failed logins when they are on the same host and by the same user.
-- Telk Alert's service or daemon runs using the "telk_alert" user. It was created for this purpose, and more security.
-- You can set send an alert for all the events or an alert for each one.
-- Generation of application logs.
+- The connection to ElasticSearch can be established using the SSL/TLS protocol. **Note:** This must be configured on the cluster.
+- The connection with ElasticSearch can be established using an authentication method (HTTP Authentication or API Key). **Note:** This must be configured on the cluster.
+- The SSL certificate can be verified or not. **Note:** It's recommended to verify the certificate, for security reasons.
+- Telk-Alert works with any index or index pattern.
+- Use of query string to search for defined events. [Query String](https://www.elastic.co/guide/en/elasticsearch/reference/7.17/query-dsl-simple-query-string-query.html)
+- Each alert can be sent to a different Telegram channel.
+- Each alert rule is assigned a criticality level (High, medium and low).
+- N alert rules can be running at the same time, because Telk-Alert uses threads.
+- The search result can be configured to only show certain fields and not all.
+- Telk-Alert has an option known as "Custom Search", which uses aggregations. For example, if an alert rule for failed logins is required when these are generated on the same host and with the same user in a period of time, this option is indicated.
+- The Telk-Alert daemon runs with a user defined for that purpose, for security reasons.
+- You can configure sending a single alert for all events found or one alert for each event found.
+- Generation of application logs in `/var/log/Telk-Alert`.
 
 ## Telk-Alert-Tool
 Telk-Alert-Tool is a graphical application that allows to the user manages Telk-Alert and Telk-Alert-Agent configuration, alert rules (create, update, delete, show), Telk-Alert and Telk-Alert-Agent service and others, everything in an easy way for the user.
