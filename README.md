@@ -56,46 +56,41 @@ Characteristics:
   - libPyLog 1.2 (https://github.com/erickrr-bd/libPyLog)
   - libPyUtils 1.2 (https://github.com/erickrr-bd/libPyUtils)
 
-# Installation
-To install or update Telk-Alert you must run the script "installer_telk_alert.sh" for this you can use any of the following commands:
+# Installation or update
+Give execution permissions to the "installer_telk_alert.sh" file. Run the following command:
 
-`./installer_telk_alert.sh` or `sh installer_telk_alert.sh`
+`chmod +x installer_telk_alert.sh`
 
-The installer performs the following actions on the computer:
+To install or update Telk-Alert you must run the script "installer_telk_alert.sh". Run the following command:
 
-- Download the libraries and packages necessary for the operation of Telk-Alert (if so indicated).
-- Copy and creation of directories and files necessary for the operation of Telk-Alert.
-- Creation of user and specific group for the operation of Telk-Alert.
-- It changes the owner of the files and directories necessary for the operation of Telk-Alert, assigning them to the user created for this purpose.
-- Creation of passphrase for the encryption and decryption of sensitive information, which is generated randomly, so it is unique for each installed Telk-Alert installation.
-- Creation of Telk-Alert and Telk-Alert-Agent services.
-- Creation of the alias for the execution of Telk-Alert-Tool.
-- Creation of the /var/log/Telk-Alert directory where the application logs are generated.
+`./installer_telk_alert.sh`
+
+To install Telk-Alert for first time enter the character 'I', otherwise, when a previous version is already installed on the computer enter the character 'U' to update the tool.
+
+The installer will perform all the necessary actions for Telk-Alert to be implemented on your computer.
 
 # Running
 ## Telk-Alert
 
 `systemctl start telk-alert.service`
 
-Note: You must configured it before start Telk-Alert's service or demon.
+**Note:** Configure before starting the application. Use Telk-Alert-Tool.
 
 ## Telk-Alert-Agent
 
 `systemctl start telk-alert-agent.service`
 
-Note: You must configured it before start Telk-Alert's service or demon.
+**Note:** Configure before starting the application. Use Telk-Alert-Tool.
 
 ## Telk-Alert-Tool
 
-- The first way to run Telk-Alert-Tool, you must go to the path /etc/Telk-Alert-Suite/Telk-Alert-Tool and execute using the following commands:
+Telk-Alert-Tool will start automatically when the installation or update process finishes.
 
-`python3 Telk_Alert_Tool.py` or `./Telk_Alert_Tool.py`
-
-- The second way to run Telk-Alert-Tool is upon installation of Telk-Alert an alias for Telk-Alert-Tool is created. To use it, you must first execute the following command once the installation is complete:
+During the installation process, an alias for Telk-Alert-Tool is created. To use the alias, you must first run the following command:
 
 `source ~/.bashrc`
 
-Later, Telk-Alert-Tool can be executed only by using the following command:
+Run Telk-Alert-Tool using the following alias:
 
 `Telk-Alert-Tool`
 
