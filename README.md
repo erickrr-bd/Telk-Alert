@@ -26,15 +26,16 @@ Characteristics:
 - Generation of application logs in `/var/log/Telk-Alert`.
 
 ## Telk-Alert-Tool
-Telk-Alert-Tool is a graphical application that allows to the user manages Telk-Alert and Telk-Alert-Agent configuration, alert rules (create, update, delete, show), Telk-Alert and Telk-Alert-Agent service and others, everything in an easy way for the user.
+Telk-Alert-Tool is a graphical application that manages Telk-Alert and Telk-Alert-Agent.
 
 Characteristics:
-- Use of graphical interface.
-- You can create, update or show Telk-Alert and Telk-Alert-Agent configuration file.
-- You can create, update, delete and show alert rules.
-- Encrypts sensitive data such as passwords so that they are not stored in clear text. It uses a passphrase as key. This key is generated during Telk-Alert's installation, whereby, it is different in each installation. 
-- You can start, restart, stop and get current status of Telk-Alert and Telk-Alert-Agent service.
-- Generation of application logs.
+- Create, update and display Telk-Alert configuration.
+- Create, update and display Telk-Alert-Agent configuration.
+- Create, update, display and delete alert rules.
+- Encrypt sensitive data such as passwords. 
+- Start, restart, stop and display the current status of the Telk-Alert daemon.
+- Start, restart, stop and display the current status of the Telk-Alert-Agent daemon.
+- Generation of application logs in `/var/log/Telk-Alert`.
 
 ## Telk-Alert-Agent
 Telk-Alert-Agent is an application that periodically monitors the health of Telk-Alert.
