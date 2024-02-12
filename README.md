@@ -8,46 +8,48 @@ If you have data in ElasticSearch in real time and need to be alerted when certa
 
 # Applications
 ## Telk-Alert
-Telk-Alert is an application that mades searches using "query string" or "aggregations" in an specific ElasticSearch's index pattern, and when it found events or documents, those are sended to a Telegram channel.
+Telk-Alert is an application that periodically searches for defined events and sends alerts via Telegram.
 
 Characteristics:
-- The connection with ElasticSearch can set using HTTPS (SSL/TLS), it means that all data travel through a secure channel and encripted.
-- The connection with ElasticSearch can set using an authentication method (HTTP Authentication or API Key). Note: It must be configured in ElasticSearch's cluster.
-- The connection with ElasticSearch can set using a certificate file (PEM file) and it can be verficated or no. Note: The recomendation is verificates the cerficate file for more security in the connection.
-- It works with any index or index pattern.
-- It can use "query string" or "aggregations" to make searches.
-- Every alert can send to a specific telegram channel.
-- N alert rules can be configured, each with a specific or different purpose.
-- You can configure the search so that it only shows specific fields of the event in the Telegram message.
-- Use of "custom rules", for example, to configure an alert rule that alerts failed logins when they are on the same host and by the same user.
-- Telk Alert's service or daemon runs using the "telk_alert" user. It was created for this purpose, and more security.
-- You can set send an alert for all the events or an alert for each one.
-- Generation of application logs.
+- The connection to ElasticSearch can be established using the SSL/TLS protocol. **Note:** This must be configured on the cluster.
+- The connection with ElasticSearch can be established using an authentication method (HTTP Authentication or API Key). **Note:** This must be configured on the cluster.
+- The SSL certificate can be verified or not. **Note:** It's recommended to verify the certificate, for security reasons.
+- Telk-Alert works with any index or index pattern.
+- Use of [Query String](https://www.elastic.co/guide/en/elasticsearch/reference/7.17/query-dsl-simple-query-string-query.html) to search for defined events. 
+- Each alert can be sent to a different Telegram channel.
+- Each alert rule is assigned a criticality level (High, medium and low).
+- N alert rules can be running at the same time, because Telk-Alert uses threads.
+- The search result can be configured to only show certain fields and not all.
+- Telk-Alert has an option known as "Custom Search", which uses aggregations. For example, if an alert rule for failed logins is required when these are generated on the same host and with the same user in a period of time, this option is indicated.
+- The Telk-Alert daemon runs with a user defined for that purpose, for security reasons.
+- You can configure sending a single alert for all events found or one alert for each event found.
+- Generation of application logs in `/var/log/Telk-Alert`.
 
 ## Telk-Alert-Tool
-Telk-Alert-Tool is a graphical application that allows to the user manages Telk-Alert and Telk-Alert-Agent configuration, alert rules (create, update, delete, show), Telk-Alert and Telk-Alert-Agent service and others, everything in an easy way for the user.
+Telk-Alert-Tool is a graphical application that manages Telk-Alert and Telk-Alert-Agent.
 
 Characteristics:
-- Use of graphical interface.
-- You can create, update or show Telk-Alert and Telk-Alert-Agent configuration file.
-- You can create, update, delete and show alert rules.
-- Encrypts sensitive data such as passwords so that they are not stored in clear text. It uses a passphrase as key. This key is generated during Telk-Alert's installation, whereby, it is different in each installation. 
-- You can start, restart, stop and get current status of Telk-Alert and Telk-Alert-Agent service.
-- Generation of application logs.
+- Create, update and display Telk-Alert configuration.
+- Create, update and display Telk-Alert-Agent configuration.
+- Create, update, display and delete alert rules.
+- Encrypt sensitive data such as passwords. 
+- Start, restart, stop and display the current status of the Telk-Alert daemon.
+- Start, restart, stop and display the current status of the Telk-Alert-Agent daemon.
+- Generation of application logs in `/var/log/Telk-Alert`.
 
 ## Telk-Alert-Agent
-Telk-Alert-Agent is an application that validates current status of Telk-Alert's service or demon every minute, and, alerts when it isn't working for any reason.
+Telk-Alert-Agent is an application that periodically monitors the health of Telk-Alert.
 
 Characteristics:
-- It validates the current status of the Telk-Alert's service or demon every minute.
-- When Telk-Alert's service or demon isn't working for any reason, an alert every minute is sent.
-- Otherwise, that the service is working correctly, the alert is sent at two configurable hours of the day.
-- Send the status of the Telk-Alert service to a Telegram channel.
-- Generation of application logs.
+- The validation time period is configurable, for example, every minute or every hour.
+- The Telegram channel to which the alerts are sent is configurable.
+- Validates the health status of the Telk-Alert daemon. In case, it isn't working for some reason, Telk-Alert-Agent sends an alert to a Telegram channel.
+- Validates the number of threads working on Telk-Alert as well as the number of alert rules that should be working. If this number doesn't match, Telk-Alert-Agent sends an alert to a Telegram channel and automatically restarts the Telk-Alert daemon. Ideal, when Telk-Alert is working but an alert rule stopped working.
+- Generation of application logs in `/var/log/Telk-Alert`.
 
 # Requirements
-- CentOS 8 or Rocky Linux 8
-- ElasticSearch 7.x 
+- CentOS 8 or Rocky Linux 8 (Tested in these versions)
+- ElasticSearch 7.x
 - Python 3.9
 - Python Libraries
   - libPyDialog 1.2 (https://github.com/erickrr-bd/libPyDialog)
@@ -56,46 +58,41 @@ Characteristics:
   - libPyLog 1.2 (https://github.com/erickrr-bd/libPyLog)
   - libPyUtils 1.2 (https://github.com/erickrr-bd/libPyUtils)
 
-# Installation
-To install or update Telk-Alert you must run the script "installer_telk_alert.sh" for this you can use any of the following commands:
+# Installation or update
+Give execution permissions to the "installer_telk_alert.sh" file. Run the following command:
 
-`./installer_telk_alert.sh` or `sh installer_telk_alert.sh`
+`chmod +x installer_telk_alert.sh`
 
-The installer performs the following actions on the computer:
+To install or update Telk-Alert you must run the script "installer_telk_alert.sh". Run the following command:
 
-- Download the libraries and packages necessary for the operation of Telk-Alert (if so indicated).
-- Copy and creation of directories and files necessary for the operation of Telk-Alert.
-- Creation of user and specific group for the operation of Telk-Alert.
-- It changes the owner of the files and directories necessary for the operation of Telk-Alert, assigning them to the user created for this purpose.
-- Creation of passphrase for the encryption and decryption of sensitive information, which is generated randomly, so it is unique for each installed Telk-Alert installation.
-- Creation of Telk-Alert and Telk-Alert-Agent services.
-- Creation of the alias for the execution of Telk-Alert-Tool.
-- Creation of the /var/log/Telk-Alert directory where the application logs are generated.
+`./installer_telk_alert.sh`
+
+To install Telk-Alert for first time enter the character 'I', otherwise, when a previous version is already installed on the computer enter the character 'U' to update the tool.
+
+The installer will perform all the necessary actions for Telk-Alert to be implemented on your computer.
 
 # Running
 ## Telk-Alert
 
 `systemctl start telk-alert.service`
 
-Note: You must configured it before start Telk-Alert's service or demon.
+**Note:** Configure before starting the application. Use Telk-Alert-Tool.
 
 ## Telk-Alert-Agent
 
 `systemctl start telk-alert-agent.service`
 
-Note: You must configured it before start Telk-Alert's service or demon.
+**Note:** Configure before starting the application. Use Telk-Alert-Tool.
 
 ## Telk-Alert-Tool
 
-- The first way to run Telk-Alert-Tool, you must go to the path /etc/Telk-Alert-Suite/Telk-Alert-Tool and execute using the following commands:
+Telk-Alert-Tool will start automatically when the installation or update process finishes.
 
-`python3 Telk_Alert_Tool.py` or `./Telk_Alert_Tool.py`
-
-- The second way to run Telk-Alert-Tool is upon installation of Telk-Alert an alias for Telk-Alert-Tool is created. To use it, you must first execute the following command once the installation is complete:
+During the installation process, an alias for Telk-Alert-Tool is created. To use the alias, you must first run the following command:
 
 `source ~/.bashrc`
 
-Later, Telk-Alert-Tool can be executed only by using the following command:
+Run Telk-Alert-Tool using the following alias:
 
 `Telk-Alert-Tool`
 
