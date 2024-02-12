@@ -166,12 +166,12 @@ class TelkAlertTool:
 		Method that defines actions to perform on the Telk-Alert configuration.
 		"""
 		telk_alert_configuration = TelkAlertConfiguration()
-		if not path.exists(self.constants.TELK_ALERT_CONFIGURATION_FILE_PATH):
-			option_configuration_false = self.dialog.createRadioListDialog("Select a option:", 8, 50, self.constants.OPTIONS_CONFIGURATION_FALSE, "Telk-Alert Configuration Options")
+		if not path.exists(self.constants.TELK_ALERT_CONFIGURATION_PATH):
+			option_configuration_false = self.dialog.createRadioListDialog("Select a option:", 8, 50, self.constants.OPTIONS_CONFIGURATION_FALSE, "Telk-Alert Configuration")
 			if option_configuration_false == "Create":
 				telk_alert_configuration.create_configuration()
 		else:
-			option_configuration_true = self.dialog.createRadioListDialog("Select a option:", 9, 50, self.constants.OPTIONS_CONFIGURATION_TRUE, "Telk-Alert Configuration Options")
+			option_configuration_true = self.dialog.createRadioListDialog("Select a option:", 9, 50, self.constants.OPTIONS_CONFIGURATION_TRUE, "Telk-Alert Configuration")
 			telk_alert_configuration.update_configuration() if option_configuration_true == "Update" else telk_alert_configuration.display_configuration()
 
 
@@ -194,7 +194,7 @@ class TelkAlertTool:
 		Method that shows the Telk-Alert about.
 		"""
 		try:
-			message_to_display = "\nCopyright@2023 Tekium. All rights reserved.\nAuthor: Erick Roberto Rodríguez Rodríguez\nEmail: erickrr.tbd93@gmail.com, erodriguez@tekium.mx\nGithub: https://github.com/erickrr-bd/Telk-Alert\nTelk-Alert v3.3 - October 2023" + "\n\nEasy alerting with ElasticSearch and Python."
+			message_to_display = "\nCopyright@2024 Tekium. All rights reserved.\nAuthor: Erick Roberto Rodríguez Rodríguez\nEmail: erickrr.tbd93@gmail.com, erodriguez@tekium.mx\nGithub: https://github.com/erickrr-bd/Telk-Alert\nTelk-Alert v3.3 - February 2024" + "\n\nEasy alerting with ElasticSearch and Python."
 			self.dialog.createScrollBoxDialog(message_to_display, 13, 60, "About")
 		except KeyboardInterrupt:
 			pass

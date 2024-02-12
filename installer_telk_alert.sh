@@ -10,11 +10,11 @@ telk_alert_key=/etc/Telk-Alert-Suite/Telk-Alert/configuration/key
 dir=$(sudo pwd)
 
 echo -e "\e[1;33m--------------------------------------------------------------------------------\e[0m"
-echo -e "\e[96m@2023 Tekium. All rights reserved.\e[0m"
+echo -e "\e[96m@2024 Tekium. All rights reserved.\e[0m"
 echo -e "\e[96mAuthor: Erick Roberto Rodríguez Rodríguez\e[0m"
 echo -e "\e[96mEmail: erodriguez@tekium.mx, erickrr.tbd93@gmail.com\e[0m"
 echo -e "\e[96mGitHub: https://github.com/erickrr-bd/Telk-Alert"
-echo -e "\e[96mInstaller for Telk-Alert v3.3 - October 2023\e[0m"
+echo -e "\e[96mInstaller for Telk-Alert v3.3 - February 2024\e[0m"
 echo -e "\e[96mLicense: GPLv3\e[0m"
 echo -e "\e[1;33m--------------------------------------------------------------------------------\e[0m\n"
 echo "Do you want to install or update Telk-Alert? (I/U)"

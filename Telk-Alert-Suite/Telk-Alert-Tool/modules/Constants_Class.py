@@ -13,9 +13,9 @@ class Constants:
 	TELK_ALERT_PATH = "/etc/Telk-Alert-Suite/Telk-Alert"
 
 	"""
-	Absolute path of the Telk-Alert configuration file.
+	Telk-Alert configuration file path.
 	"""
-	TELK_ALERT_CONFIGURATION_FILE_PATH = "/etc/Telk-Alert-Suite/Telk-Alert/configuration/telk_alert_conf.yaml"
+	TELK_ALERT_CONFIGURATION_PATH = "/etc/Telk-Alert-Suite/Telk-Alert/configuration/telk_alert_conf.yaml"
 
 	"""
 	Absolute path of the Telk-Alert-Agent configuration file.
@@ -28,9 +28,14 @@ class Constants:
 	KEY_FILE_PATH = "/etc/Telk-Alert-Suite/Telk-Alert/configuration/key"
 
 	"""
-	Absolute path of the SSL certificate.
+	SSL certificate path.
 	"""
-	CERTIFICATE_FILE_PATH = "/etc/Telk-Alert-Suite/Telk-Alert/certificates"
+	SSL_CERTIFICATE_PATH = "/etc/Telk-Alert-Suite/Telk-Alert/certificates"
+
+	"""
+	Alert rules path.
+	"""
+	ALERT_RULES_PATH = "/etc/Telk-Alert-Suite/Telk-Alert/alert_rules"
 
 	"""
 	Absolute path of the Telk-Alert-Tool log file.
@@ -57,7 +62,7 @@ class Constants:
 					     ("5", "Exit")]
 
 	"""
-	Options displayed to select a tool from the Telk-Alert suite.
+	Options that are displayed in the "Configuration" menu.
 	"""
 	OPTIONS_TOOLS_MENU = [("1", "Telk-Alert"),
 					      ("2", "Telk-Alert-Agent")]
@@ -84,7 +89,6 @@ class Constants:
 	"""
 	OPTIONS_TELK_ALERT_CONFIGURATION_UPDATE = [("Host", "ElasticSearch Host", 0),
 							 	 			   ("Port", "ElasticSearch Port", 0),
-							 	 			   ("Folder", "Alert Rules Folder", 0),
 							 	 			   ("SSL/TLS", "Enable or disable SSL/TLS connection", 0),
 							 	 			   ("Authentication", "Enable or disable authentication method", 0)]
 

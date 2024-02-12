@@ -31,8 +31,6 @@ class TelkAlertConfiguration:
 			telk_alert_data.append(es_host)
 			es_port = self.dialog.createInputBoxToPortDialog("Enter the port to communicate with ElasticSearch:", 9, 50, "9200")
 			telk_alert_data.append(es_port)
-			alert_rules_folder = self.dialog.createFolderOrFileNameDialog("Enter the folder's name where the alert rules will be stored:", 9, 50, "alert_rules_folder")
-			telk_alert_data.append(alert_rules_folder)
 			use_ssl_tls = self.dialog.createYesOrNoDialog("\nIs the SSL/TLS protocol required for communication between Telk-Alert and ElasticSearch?", 9, 50, "SSL/TLS Connection")
 			if use_ssl_tls == "ok":
 				telk_alert_data.append(True)
@@ -64,7 +62,7 @@ class TelkAlertConfiguration:
 			else:
 				telk_alert_data.append(False)
 			self.create_yaml_file(telk_alert_data)
-			if path.exists(self.constants.TELK_ALERT_CONFIGURATION_FILE_PATH):
+			if path.exists(self.constants.TELK_ALERT_CONFIGURATION_PATH):
 				self.dialog.createMessageDialog("\nTelk-Alert configuration file created.", 7, 50, "Notification Message")
 				self.logger.generateApplicationLog("Telk-Alert configuration file created", 1, "__createConfiguration", use_file_handler = True, log_file_name = self.constants.LOG_FILE_NAME, user = self.constants.USER, group = self.constants.GROUP)
 		except Exception as exception:
@@ -81,21 +79,19 @@ class TelkAlertConfiguration:
 		Method that updates one or more values of the Telk-Alert configuration file.
 		"""
 		try:
-			options_telk_alert_configuration_update = self.dialog.createCheckListDialog("Select one or more options:", 12, 65, self.constants.OPTIONS_TELK_ALERT_CONFIGURATION_UPDATE, "Telk-Alert Configuration Fields")
-			telk_alert_data = self.utils.readYamlFile(self.constants.TELK_ALERT_CONFIGURATION_FILE_PATH)
-			file_hash_original = self.utils.getHashFunctionOfFile(self.constants.TELK_ALERT_CONFIGURATION_FILE_PATH)
+			options_telk_alert_configuration_update = self.dialog.createCheckListDialog("Select one or more options:", 11, 65, self.constants.OPTIONS_TELK_ALERT_CONFIGURATION_UPDATE, "Telk-Alert Configuration Fields")
+			telk_alert_data = self.utils.readYamlFile(self.constants.TELK_ALERT_CONFIGURATION_PATH)
+			file_hash_original = self.utils.getHashFunctionOfFile(self.constants.TELK_ALERT_CONFIGURATION_PATH)
 			if "Host" in options_telk_alert_configuration_update:
 				self.update_es_host(telk_alert_data)
 			if "Port" in options_telk_alert_configuration_update:
 				self.update_es_port(telk_alert_data)
-			if "Folder" in options_telk_alert_configuration_update:
-				self.update_alert_rules_folder(telk_alert_data)
 			if "SSL/TLS" in options_telk_alert_configuration_update:
 				self.update_ssl_tls(telk_alert_data)
 			if "Authentication" in options_telk_alert_configuration_update:
 				self.update_authentication_method(telk_alert_data)
-			self.utils.createYamlFile(telk_alert_data, self.constants.TELK_ALERT_CONFIGURATION_FILE_PATH)
-			files_hash_new = self.utils.getHashFunctionOfFile(self.constants.TELK_ALERT_CONFIGURATION_FILE_PATH)
+			self.utils.createYamlFile(telk_alert_data, self.constants.TELK_ALERT_CONFIGURATION_PATH)
+			files_hash_new = self.utils.getHashFunctionOfFile(self.constants.TELK_ALERT_CONFIGURATION_PATH)
 			if file_hash_original == files_hash_new:
 				self.dialog.createMessageDialog("\nTelk-Alert configuration file not updated.", 7, 50, "Notification Message")
 			else:
@@ -115,7 +111,7 @@ class TelkAlertConfiguration:
 		Method that displays the current configuration of Telk-Alert.
 		"""
 		try:
-			yaml_file_data = self.utils.convertYamlFileToString(self.constants.TELK_ALERT_CONFIGURATION_FILE_PATH)
+			yaml_file_data = self.utils.convertYamlFileToString(self.constants.TELK_ALERT_CONFIGURATION_PATH)
 			message_to_display = "\nTelk-Alert Configuration:\n\n" + yaml_file_data
 			self.dialog.createScrollBoxDialog(message_to_display, 18, 70, "Telk-Alert Configuration")
 		except Exception as exception:
@@ -136,22 +132,21 @@ class TelkAlertConfiguration:
 		telk_alert_data_json = {
 			"es_host" : telk_alert_data[0],
 			"es_port" : int(telk_alert_data[1]),
-			"alert_rules_folder" : telk_alert_data[2],
-			"use_ssl_tls" : telk_alert_data[3]
+			"use_ssl_tls" : telk_alert_data[2]
 		}
 
-		if telk_alert_data[3]:
-			telk_alert_data_json.update({"verificate_certificate_ssl" : telk_alert_data[4]})
-			if telk_alert_data[4]:
-				last_index = 5
-				certificate_file_path = self.constants.CERTIFICATE_FILE_PATH + '/' + path.basename(telk_alert_data[5])
-				telk_alert_data_json.update({"certificate_file_path" : certificate_file_path})
-				self.utils.copyFile(telk_alert_data[5], self.constants.CERTIFICATE_FILE_PATH)
-				self.utils.changeFileFolderOwner(certificate_file_path, self.constants.USER, self.constants.GROUP, "640")
-			else:
+		if telk_alert_data[2]:
+			telk_alert_data_json.update({"verificate_certificate_ssl" : telk_alert_data[3]})
+			if telk_alert_data[3]:
 				last_index = 4
+				certificate_file_path = self.constants.SSL_CERTIFICATE_PATH + '/' + path.basename(telk_alert_data[4])
+				telk_alert_data_json.update({"certificate_file_path" : certificate_file_path})
+				self.utils.copyFile(telk_alert_data[4], self.constants.SSL_CERTIFICATE_PATH)
+				self.utils.changeFileFolderOwner(certificate_file_path, self.constants.USER, self.constants.GROUP, "644")
+			else:
+				last_index = 3
 		else:
-			last_index = 3
+			last_index = 2
 		if telk_alert_data[last_index + 1]:
 			telk_alert_data_json.update({"use_authentication_method" : telk_alert_data[last_index + 1]})
 			if telk_alert_data[last_index + 2] == "HTTP Authentication":
@@ -159,11 +154,8 @@ class TelkAlertConfiguration:
 			elif telk_alert_data[last_index + 2] == "API Key":
 				telk_alert_data_json.update({"authentication_method" : telk_alert_data[last_index + 2], "api_key_id" : telk_alert_data[last_index + 3], "api_key" : telk_alert_data[last_index + 4]})
 		
-		self.utils.createYamlFile(telk_alert_data_json, self.constants.TELK_ALERT_CONFIGURATION_FILE_PATH)
-		self.utils.changeFileFolderOwner(self.constants.TELK_ALERT_CONFIGURATION_FILE_PATH, self.constants.USER, self.constants.GROUP, "640")
-		folder_path = self.constants.TELK_ALERT_PATH + '/' + telk_alert_data[2]
-		self.utils.createFolder(folder_path)
-		self.utils.changeFileFolderOwner(folder_path, self.constants.USER, self.constants.GROUP, "640")
+		self.utils.createYamlFile(telk_alert_data_json, self.constants.TELK_ALERT_CONFIGURATION_PATH)
+		self.utils.changeFileFolderOwner(self.constants.TELK_ALERT_CONFIGURATION_PATH, self.constants.USER, self.constants.GROUP, "644")
 
 
 	def update_es_host(self, telk_alert_data):
@@ -205,21 +197,6 @@ class TelkAlertConfiguration:
 		"""
 		es_port = self.dialog.createInputBoxToPortDialog("Enter the port to communicate with ElasticSearch:", 9, 50, str(telk_alert_data["es_port"]))
 		telk_alert_data["es_port"] = int(es_port)
-		return telk_alert_data
-
-
-	def update_alert_rules_folder(self, telk_alert_data):
-		"""
-		Method that updates the folder where the alert rules are stored.
-
-		Returns the dictionary with the updated configuration file data.
-
-		:arg telk_alert_data (dict): Dictionary with the data stored in the configuration file.
-		"""
-		alert_rules_folder = self.dialog.createFolderOrFileNameDialog("Enter the folder's name where the alert rules will be stored:", 9, 50, telk_alert_data["alert_rules_folder"])
-		if not telk_alert_data["alert_rules_folder"] == alert_rules_folder:
-			self.utils.renameFileOrFolder(self.constants.TELK_ALERT_PATH + '/' + telk_alert_data["alert_rules_folder"], self.constants.TELK_ALERT_PATH + '/' + alert_rules_folder)
-			telk_alert_data["alert_rules_folder"] = alert_rules_folder
 		return telk_alert_data
 
 
