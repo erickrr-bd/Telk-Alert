@@ -46,7 +46,7 @@ class TelkAlertConfiguration:
 			use_authentication_method = self.dialog.createYesOrNoDialog("\nIs an authentication method (HTTP Authentication or API Key) required for communication between Telk-Alert and ElasticSearch?", 10, 50, "Authentication Method")
 			if use_authentication_method == "ok":
 				telk_alert_data.append(True)
-				passphrase = self.utils.getPassphraseKeyFromFile(self.constants.KEY_FILE_PATH)
+				passphrase = self.utils.getPassphraseKeyFromFile(self.constants.KEY_PATH)
 				option_authentication_method = self.dialog.createRadioListDialog("Select a option:", 9, 55, self.constants.OPTIONS_AUTHENTICATION_METHOD, "Authentication Method")
 				telk_alert_data.append(option_authentication_method)
 				if option_authentication_method == "HTTP Authentication":
@@ -224,30 +224,30 @@ class TelkAlertConfiguration:
 						telk_alert_data["verificate_certificate_ssl"] = False
 					elif option_verificate_certificate_true == "Certificate File":
 						new_certificate_file_path = self.dialog.createFileDialog(telk_alert_data["certificate_file_path"], 8, 50, "Select the CA certificate:", ".pem")
-						certificate_file_path = self.constants.CERTIFICATE_FILE_PATH + '/' + path.basename(certificate_file_path)
+						certificate_file_path = self.constants.SSL_CERTIFICATE_PATH + '/' + path.basename(certificate_file_path)
 						telk_alert_data["certificate_file_path"] = certificate_file_path
-						self.utils.copyFile(new_certificate_file_path, self.constants.CERTIFICATE_FILE_PATH)
-						self.utils.changeFileFolderOwner(certificate_file_path, self.constants.USER, self.constants.GROUP, "640")
+						self.utils.copyFile(new_certificate_file_path, self.constants.SSL_CERTIFICATE_PATH)
+						self.utils.changeFileFolderOwner(certificate_file_path, self.constants.USER, self.constants.GROUP, "644")
 				else:
 					option_verificate_certificate_false = self.dialog.createRadioListDialog("Select a option:", 8, 70, self.constants.OPTIONS_VERIFICATE_CERTIFICATE_FALSE, "Certificate Verification")
 					if option_verificate_certificate_false == "Enable":
 						telk_alert_data["verificate_certificate_ssl"] = True
-						new_certificate_file_path = self.dialog.createFileDialog(self.constants.CERTIFICATE_FILE_PATH, 8, 50, "Select the CA certificate:", ".pem")			
-						certificate_file_path = self.constants.CERTIFICATE_FILE_PATH + '/' + path.basename(new_certificate_file_path)
+						new_certificate_file_path = self.dialog.createFileDialog(self.constants.SSL_CERTIFICATE_PATH, 8, 50, "Select the CA certificate:", ".pem")			
+						certificate_file_path = self.constants.SSL_CERTIFICATE_PATH + '/' + path.basename(new_certificate_file_path)
 						telk_alert_data.update({"certificate_file_path" : certificate_file_path})
-						self.utils.copyFile(new_certificate_file_path, self.constants.CERTIFICATE_FILE_PATH)
-						self.utils.changeFileFolderOwner(certificate_file_path, self.constants.USER, self.constants.GROUP, "640")
+						self.utils.copyFile(new_certificate_file_path, self.constants.SSL_CERTIFICATE_PATH)
+						self.utils.changeFileFolderOwner(certificate_file_path, self.constants.USER, self.constants.GROUP, "644")
 		else:
 			option_ssl_tls_false = self.dialog.createRadioListDialog("Select a option:", 8, 70, self.constants.OPTIONS_SSL_TLS_FALSE, "SSL/TLS Connection")
 			if option_ssl_tls_false == "Enable":
 				telk_alert_data["use_ssl_tls"] = True
 				verificate_certificate_ssl = self.dialog.createYesOrNoDialog("\nIs SSL certificate verification required?", 7, 50, "Certificate Verification")
 				if verificate_certificate_ssl == "ok":
-					new_certificate_file_path = self.dialog.createFileDialog(self.constants.CERTIFICATE_FILE_PATH, 8, 50, "Select the CA certificate:", ".pem")
-					certificate_file_path = self.constants.CERTIFICATE_FILE_PATH + '/' + path.basename(new_certificate_file_path)
+					new_certificate_file_path = self.dialog.createFileDialog(self.constants.SSL_CERTIFICATE_PATH, 8, 50, "Select the CA certificate:", ".pem")
+					certificate_file_path = self.constants.SSL_CERTIFICATE_PATH + '/' + path.basename(new_certificate_file_path)
 					telk_alert_data.update({"verificate_certificate_ssl" : True, "certificate_file_path" : certificate_file_path})
-					self.utils.copyFile(new_certificate_file_path, self.constants.CERTIFICATE_FILE_PATH)
-					self.utils.changeFileFolderOwner(certificate_file_path, self.constants.USER, self.constants.GROUP, "640")
+					self.utils.copyFile(new_certificate_file_path, self.constants.SSL_CERTIFICATE_PATH)
+					self.utils.changeFileFolderOwner(certificate_file_path, self.constants.USER, self.constants.GROUP, "644")
 				else:
 					telk_alert_data.update({"verificate_certificate_ssl" : False})
 		return telk_alert_data
@@ -273,7 +273,7 @@ class TelkAlertConfiguration:
 					del telk_alert_data["api_key_id"]
 				del telk_alert_data["authentication_method"]
 			elif option_authentication_true == "Method":
-				passphrase = self.utils.getPassphraseKeyFromFile(self.constants.KEY_FILE_PATH)
+				passphrase = self.utils.getPassphraseKeyFromFile(self.constants.KEY_PATH)
 				if telk_alert_data["authentication_method"] == "HTTP Authentication":
 					option_authentication_method_update = self.dialog.createRadioListDialog("Select a option:", 9, 55, self.constants.OPTIONS_AUTHENTICATION_METHOD_UPDATE, "HTTP Authentication")
 					if option_authentication_method_update == "Disable":
@@ -311,7 +311,7 @@ class TelkAlertConfiguration:
 		else:
 			option_authentication_false = self.dialog.createRadioListDialog("Select a option:", 8, 55, self.constants.OPTIONS_AUTHENTICATION_FALSE, "Authentication Method")
 			if option_authentication_false == "Enable":
-				passphrase = self.utils.getPassphraseKeyFromFile(self.constants.KEY_FILE_PATH)
+				passphrase = self.utils.getPassphraseKeyFromFile(self.constants.KEY_PATH)
 				telk_alert_data["use_authentication_method"] = True
 				option_authentication_method = self.dialog.createRadioListDialog("Select a option:", 9, 55, self.constants.OPTIONS_AUTHENTICATION_METHOD, "Authentication Method")
 				telk_alert_data.update({"authentication_method" : option_authentication_method})

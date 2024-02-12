@@ -1,5 +1,5 @@
 """
-Class that manages the constant values of Telk-Alert-Tool.
+Class that manages Telk-Alert-Tool constants.
 """
 class Constants:
 	"""
@@ -23,9 +23,9 @@ class Constants:
 	TELK_ALERT_AGENT_CONFIGURATION_FILE_PATH = "/etc/Telk-Alert-Suite/Telk-Alert-Agent/configuration/telk_alert_agent_conf.yaml"
 
 	"""
-	Absolute path of the file where the encryption key is stored.
+	Encryption key path.
 	"""
-	KEY_FILE_PATH = "/etc/Telk-Alert-Suite/Telk-Alert/configuration/key"
+	KEY_PATH = "/etc/Telk-Alert-Suite/Telk-Alert/configuration/key"
 
 	"""
 	SSL certificate path.
