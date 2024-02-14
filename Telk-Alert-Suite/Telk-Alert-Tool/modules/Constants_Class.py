@@ -207,7 +207,7 @@ class Constants:
 	"""
 	Options that are displayed when the option to update an alert rule is chosen.
 	"""
-	OPTIONS_ALERT_RULE_UPDATE = [("Name", "Alert rule's name", 0),
+	OPTIONS_ALERT_RULE_FIELDS = [("Name", "Alert rule's name", 0),
 							  	 ("Level", "Alert rule's level", 0),
 							  	 ("Index", "ElasticSearch's index pattern", 0),
 							  	 ("Total Events", "Number of events to which the alert is sent", 0),
@@ -219,6 +219,24 @@ class Constants:
 							  	 ("Delivery", "How the alert is sent", 0),
 							  	 ("Bot Token", "Telegram Bot Token", 0),
 							  	 ("Chat ID", "Telegram channel identifier", 0)]
+
+	"""
+	Options that are displayed when the Query Type is Query String in the update option.
+	"""
+	OPTIONS_QUERY_STRING_UPDATE = [("Wildcard Query", "Change to Wildcard Query", 0),
+								   ("Query String", "Update Query String", 0)]
+
+	"""
+	Options that are displayed when the Query Type is Wildcard Query in the update option.
+	"""
+	OPTIONS_WILDCARD_QUERY_UPDATE = [("Query String", "Change to Query String", 0),
+									 ("Data", "Update configured data", 0)]
+
+	"""
+	Options that are displayed when the data configured for the Wildcard Query option is updated.
+	"""
+	OPTIONS_WILDCARD_QUERY_DATA = [("Field", "Modify the field name", 0),
+								   ("Query", "Modify the wildcard query", 0)]	
 
 	"""
 	Options displayed when the use of field selection is disabled.

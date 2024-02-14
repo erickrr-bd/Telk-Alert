@@ -106,7 +106,7 @@ class AlertRules:
 				self.dialog.createMessageDialog("\nAlert rule created: " + alert_rule_name, 7, 50, "Notification Message")
 				self.logger.generateApplicationLog("Alert rule created: " + alert_rule_name, 1, "__createAlertRule", use_file_handler = True, log_file_name = self.constants.LOG_FILE_NAME, user = self.constants.USER, group = self.constants.GROUP)
 		except Exception as exception:
-			self.dialog.createMessageDialog("\nError creating the alert rule.For more information, see the logs.", 8, 50, "Error Message")
+			self.dialog.createMessageDialog("\nError creating the alert rule. For more information, see the logs.", 8, 50, "Error Message")
 			self.logger.generateApplicationLog(exception, 3, "__createAlertRule", use_file_handler = True, log_file_name = self.constants.LOG_FILE_NAME, user = self.constants.USER, group = self.constants.GROUP)
 		except KeyboardInterrupt:
 			pass
@@ -122,43 +122,43 @@ class AlertRules:
 			alert_rules_list = self.utils.getListYamlFilesInFolder(self.constants.ALERT_RULES_PATH)
 			if alert_rules_list:
 				list_checklist_radiolist = self.utils.convertListToDialogList(alert_rules_list, "Alert rule name")
-				option_alert_rule_update =self.dialog.createRadioListDialog("Select a option:", 18, 70, list_checklist_radiolist, "Alert Rules")
-				options_alert_rule_update = self.dialog.createCheckListDialog("Select one or more options:", 19, 70, self.constants.OPTIONS_ALERT_RULE_UPDATE, "Alert Rule Fields")
-				alert_rule_path = self.constants.ALERT_RULES_PATH + '/' + option_alert_rule_update
+				alert_rule_update =self.dialog.createRadioListDialog("Select a option:", 18, 70, list_checklist_radiolist, "Alert Rules")
+				alert_rule_fields = self.dialog.createCheckListDialog("Select one or more options:", 19, 70, self.constants.OPTIONS_ALERT_RULE_FIELDS, "Alert Rule Fields")
+				alert_rule_path = self.constants.ALERT_RULES_PATH + '/' + alert_rule_update
 				alert_rule_data = self.utils.readYamlFile(alert_rule_path)
 				file_hash_original = self.utils.getHashFunctionOfFile(alert_rule_path)
-				if "Name" in options_alert_rule_update:
+				if "Name" in alert_rule_fields:
 					self.update_alert_rule_name(alert_rule_data)
-				if "Level" in options_alert_rule_update:
+				if "Level" in alert_rule_fields:
 					self.update_alert_rule_level(alert_rule_data)
-				if "Index" in options_alert_rule_update:
+				if "Index" in alert_rule_fields:
 					self.update_index_pattern(alert_rule_data)
-				if "Total Events" in options_alert_rule_update:
-					self.update_total_number_events(alert_rule_data)
-				if "Search Time" in options_alert_rule_update:
+				if "Total Events" in alert_rule_fields:
+					self.update_total_events(alert_rule_data)
+				if "Search Time" in alert_rule_fields:
 					self.update_search_time(alert_rule_data)
-				if "Range Time" in options_alert_rule_update:
+				if "Range Time" in alert_rule_fields:
 					self.update_range_time(alert_rule_data)
-				if "Query" in options_alert_rule_update:
+				if "Query" in alert_rule_fields:
 					self.update_query_type(alert_rule_data)
-				if "Fields Selection" in options_alert_rule_update:
+				if "Fields Selection" in alert_rule_fields:
 					self.update_fields_selection(alert_rule_data)
-				if "Custom Search" in options_alert_rule_update:
+				if "Custom Search" in alert_rule_fields:
 					self.update_custom_search(alert_rule_data)
-				if "Delivery" in options_alert_rule_update:
+				if "Delivery" in alert_rule_fields:
 					self.update_alert_delivery_type(alert_rule_data)
-				if "Bot Token" in options_alert_rule_update:
+				if "Bot Token" in alert_rule_fields:
 					self.update_telegram_bot_token(alert_rule_data)
-				if "Chat ID" in options_alert_rule_update:
+				if "Chat ID" in alert_rule_fields:
 					self.update_telegram_chat_id(alert_rule_data)
 				alert_rule_new_path = self.constants.ALERT_RULES_PATH + '/' + alert_rule_data["alert_rule_name"] + ".yaml"
 				self.utils.createYamlFile(alert_rule_data, alert_rule_new_path)
 				files_hash_new = self.utils.getHashFunctionOfFile(alert_rule_new_path)
 				if file_hash_original == files_hash_new:
-					self.dialog.createMessageDialog("\nAlert rule wasn't updated: " + alert_rule_data["alert_rule_name"], 7, 50, "Notification Message")
+					self.dialog.createMessageDialog("\nAlert rule not updated: " + alert_rule_data["alert_rule_name"], 7, 50, "Notification Message")
 				else:
-					self.dialog.createMessageDialog("\nAlert rule was updated: " + alert_rule_data["alert_rule_name"], 7, 50, "Notification Message")
-					self.logger.generateApplicationLog("Alert rule was updated: " + alert_rule_data["alert_rule_name"], 2, "__updateAlertRule", use_file_handler = True, log_file_name = self.constants.LOG_FILE_NAME, user = self.constants.USER, group = self.constants.GROUP)
+					self.dialog.createMessageDialog("\nUpdated alert rule: " + alert_rule_data["alert_rule_name"], 7, 50, "Notification Message")
+					self.logger.generateApplicationLog("Updated alert rule: " + alert_rule_data["alert_rule_name"], 2, "__updateAlertRule", use_file_handler = True, log_file_name = self.constants.LOG_FILE_NAME, user = self.constants.USER, group = self.constants.GROUP)
 			else:
 				self.dialog.createMessageDialog("\nNo alert rules found.", 7, 50, "Notification Message")
 		except Exception as exception:
@@ -246,7 +246,7 @@ class AlertRules:
 		"""
 		Method that creates the YAML file corresponding to the new alert rule.
 
-		:arg alert_rule_data (list): List with the data that will be stored in the YAML file.
+		:arg alert_rule_data (list): List with the configuration of the new alert rule.
 		"""
 		alert_rule_data_json = {
 			"alert_rule_name" : alert_rule_data[0],
@@ -304,9 +304,9 @@ class AlertRules:
 		"""
 		Method that updates the name of the alert rule.
 
-		Returns the dictionary with the updated data of the alert rule.
+		Returns the dictionary with the updated alert rule configuration.
 
-		:arg alert_rule_data (dict): Dictionary with the data stored in the alert rule.
+		:arg alert_rule_data (dict): Dictionary with alert rule configuration.
 		"""
 		alert_rule_name = self.dialog.createFolderOrFileNameDialog("Enter the name of the alert rule:", 8, 50, alert_rule_data["alert_rule_name"])
 		if not alert_rule_data["alert_rule_name"] == alert_rule_name:
@@ -317,11 +317,11 @@ class AlertRules:
 
 	def update_alert_rule_level(self, alert_rule_data):
 		"""
-		Method that updates the level of the alert rule.
+		Method that updates the criticality level of the alert rule.
 
-		Returns the dictionary with the updated data of the alert rule.
+		Returns the dictionary with the updated alert rule configuration.
 
-		:arg alert_rule_data (dict): Dictionary with the data stored in the alert rule.
+		:arg alert_rule_data (dict): Dictionary with alert rule configuration.
 		"""
 		for item in self.constants.OPTIONS_ALERT_RULE_LEVEL:
 			if item[0] == alert_rule_data["alert_rule_level"]:
@@ -337,22 +337,22 @@ class AlertRules:
 		"""
 		Method that updates the index pattern.
 
-		Returns the dictionary with the updated data of the alert rule.
+		Returns the dictionary with the updated alert rule configuration.
 
-		:arg alert_rule_data (dict): Dictionary with the data stored in the alert rule.
+		:arg alert_rule_data (dict): Dictionary with alert rule configuration.
 		"""
 		index_pattern = self.dialog.createInputBoxDialog("Enter the index pattern:", 8, 50, alert_rule_data["index_pattern"])
 		alert_rule_data["index_pattern"] = index_pattern
 		return alert_rule_data
 
 
-	def update_total_number_events(self, alert_rule_data):
+	def update_total_events(self, alert_rule_data):
 		"""
-		Method that updates how many events found the alert is sent.
+		Method that updates the number of events to which the alert is sent.
 
-		Returns the dictionary with the updated data of the alert rule.
+		Returns the dictionary with the updated alert rule configuration.
 
-		:arg alert_rule_data (dict): Dictionary with the data stored in the alert rule.
+		:arg alert_rule_data (dict): Dictionary with alert rule configuration.
 		"""
 		total_events = self.dialog.createInputBoxToNumberDialog("Enter the total events to which the alert will be sent:", 9, 50, str(alert_rule_data["total_events"]))
 		alert_rule_data["total_events"] = int(total_events)
@@ -361,11 +361,11 @@ class AlertRules:
 
 	def update_search_time(self, alert_rule_data):
 		"""
-		Method that updates the time at which the search is repeated.
+		Method that updates the search repetition time.
 
-		Returns the dictionary with the updated data of the alert rule.
+		Returns the dictionary with the updated alert rule configuration.
 
-		:arg alert_rule_data (dict): Dictionary with the data stored in the alert rule.
+		:arg alert_rule_data (dict): Dictionary with alert rule configuration.
 		"""
 		current_unit_time = list(alert_rule_data["search_time"].keys())[0]
 		for item in self.constants.OPTIONS_UNIT_TIME:
@@ -381,11 +381,11 @@ class AlertRules:
 
 	def update_range_time(self, alert_rule_data):
 		"""
-		Method that updates the search range time.
+		Method that updates the time range of the search.
 
-		Returns the dictionary with the updated data of the alert rule.
+		Returns the dictionary with the updated alert rule configuration.
 
-		:arg alert_rule_data (dict): Dictionary with the data stored in the alert rule.
+		:arg alert_rule_data (dict): Dictionary with alert rule configuration.
 		"""
 		current_unit_time = list(alert_rule_data["range_time"].keys())[0]
 		for item in self.constants.OPTIONS_UNIT_TIME:
@@ -402,22 +402,39 @@ class AlertRules:
 
 	def update_query_type(self, alert_rule_data):
 		"""
-		Method that updates the query type.
+		Method that updates the ElasticSearch Query Type.
 
-		Returns the dictionary with the updated data of the alert rule.
+		Returns the dictionary with the updated alert rule configuration.
 
-		:arg alert_rule_data (dict): Dictionary with the data stored in the alert rule.
+		:arg alert_rule_data (dict): Dictionary with alert rule configuration.
 		"""
-		query_type = list(alert_rule_data["query_type"][0].keys())[0]
-		if query_type == "query_string":
-			query_string = self.dialog.createInputBoxDialog("Enter the query string:", 8, 50, alert_rule_data["query_type"][0]["query_string"]["query"])
-			alert_rule_data["query_type"] = [{"query_string" : {"query" : query_string}}]
-		elif query_type == "wildcard_query":
-			print(list(alert_rule_data["query_type"][0]["wildcard_query"].keys())[0])
-			field_name = list(alert_rule_data["query_type"][0]["wildcard_query"].keys())[0]
-			print(alert_rule_data["query_type"][0]["wildcard_query"][field_name])
-			#field_name = self.dialog.createInputBoxDialog("Enter the name of the field:", 8, 50, "PATH.name")
-			#wildcard_query = self.dialog.createInputBoxDialog("Enter the wildcard query:", 8, 50, "*key")
+		current_query_type = list(alert_rule_data["query_type"][0].keys())[0]
+		if current_query_type == "query_string":
+			query_string_update = self.dialog.createRadioListDialog("Select a option:", 9, 50, self.constants.OPTIONS_QUERY_STRING_UPDATE, "Query String")
+			if query_string_update == "Wildcard Query":
+				del alert_rule_data["query_type"]
+				field_name = self.dialog.createInputBoxDialog("Enter the name of the field:", 8, 50, "PATH.name")
+				wildcard_query = self.dialog.createInputBoxDialog("Enter the wildcard query:", 8, 50, "*key")
+				alert_rule_data.update({"query_type" : [{"wildcard_query" : {field_name : wildcard_query}}]})
+			elif query_string_update == "Query String":
+				query_string = self.dialog.createInputBoxDialog("Enter the query string:", 8, 50, alert_rule_data["query_type"][0]["query_string"]["query"])
+				alert_rule_data["query_type"] = [{"query_string" : {"query" : query_string}}]
+		elif current_query_type == "wildcard_query":
+			wildcard_query_update = self.dialog.createRadioListDialog("Select a option:", 9, 50, self.constants.OPTIONS_WILDCARD_QUERY_UPDATE, "Wildcard Query")
+			if wildcard_query_update == "Query String":
+				del alert_rule_data["query_type"]
+				query_string = self.dialog.createInputBoxDialog("Enter the query string:", 8, 50, "event.code: 4625")
+				alert_rule_data.update({"query_type" : [{"query_string" : {"query" : query_string}}]})
+			elif wildcard_query_update == "Data":
+				wildcard_query_data = self.dialog.createCheckListDialog("Select one or more options:", 9, 50, self.constants.OPTIONS_WILDCARD_QUERY_DATA, "Wildcard Query")
+				field_name = list(alert_rule_data["query_type"][0]["wildcard_query"].keys())[0]
+				wildcard_query = alert_rule_data["query_type"][0]["wildcard_query"][field_name]
+				if "Field" in wildcard_query_data:
+					field_name = self.dialog.createInputBoxDialog("Enter the name of the field:", 8, 50, field_name)
+				if "Query" in wildcard_query_data:
+					wildcard_query = self.dialog.createInputBoxDialog("Enter the wildcard query:", 8, 50, wildcard_query)
+				del alert_rule_data["query_type"]
+				alert_rule_data.update({"query_type" : [{"wildcard_query" : {field_name : wildcard_query}}]})
 		return alert_rule_data
 
 
@@ -425,9 +442,9 @@ class AlertRules:
 		"""
 		Method that updates the field selection option.
 
-		Returns the dictionary with the updated data of the alert rule.
+		Returns the dictionary with the updated alert rule configuration.
 
-		:arg alert_rule_data (dict): Dictionary with the data stored in the alert rule.
+		:arg alert_rule_data (dict): Dictionary with alert rule configuration.
 		"""
 		if alert_rule_data["use_fields_selection"]:
 			option_fields_selection_true = self.dialog.createRadioListDialog("Select a option:", 9, 50, self.constants.OPTIONS_FIELDS_SELECTION_TRUE, "Fields Selection")
@@ -468,9 +485,9 @@ class AlertRules:
 		"""
 		Method that updates the custom search option.
 
-		Returns the dictionary with the updated data of the alert rule.
+		Returns the dictionary with the updated alert rule configuration.
 
-		:arg alert_rule_data (dict): Dictionary with the data stored in the alert rule.
+		:arg alert_rule_data (dict): Dictionary with alert rule configuration.
 		"""
 		if alert_rule_data["use_custom_search"]:
 			option_custom_search_true = self.dialog.createRadioListDialog("Select a option:", 9 , 55, self.constants.OPTIONS_CUSTOM_SEARCH_TRUE, "Custom Search")
@@ -557,9 +574,9 @@ class AlertRules:
 		"""
 		Method that updates the type of alert delivery.
 
-		Returns the dictionary with the updated data of the alert rule.
+		Returns the dictionary with the updated alert rule configuration.
 
-		:arg alert_rule_data (dict): Dictionary with the data stored in the alert rule.
+		:arg alert_rule_data (dict): Dictionary with alert rule configuration.
 		"""
 		for item in self.constants.OPTIONS_ALERT_DELIVERY_TYPE:
 			if item[0] == alert_rule_data["alert_delivery_type"]:
@@ -575,11 +592,11 @@ class AlertRules:
 		"""
 		Method that updates the Telegram Bot Token.
 
-		Returns the dictionary with the updated data of the alert rule.
+		Returns the dictionary with the updated alert rule configuration.
 
-		:arg alert_rule_data (dict): Dictionary with the data stored in the alert rule.
+		:arg alert_rule_data (dict): Dictionary with alert rule configuration.
 		"""
-		passphrase = self.utils.getPassphraseKeyFromFile(self.constants.KEY_FILE_PATH)
+		passphrase = self.utils.getPassphraseKeyFromFile(self.constants.KEY_PATH)
 		telegram_bot_token = self.utils.encryptDataWithAES(self.dialog.createInputBoxDialog("Enter the Telegram bot token:", 8, 50, self.utils.decryptDataWithAES(alert_rule_data["telegram_bot_token"], passphrase).decode("utf-8")), passphrase)
 		alert_rule_data["telegram_bot_token"] = telegram_bot_token
 		return alert_rule_data
@@ -589,11 +606,11 @@ class AlertRules:
 		"""
 		Method that updates the Telegram Chat ID.
 
-		Returns the dictionary with the updated data of the alert rule.
+		Returns the dictionary with the updated alert rule configuration.
 
-		:arg alert_rule_data (dict): Dictionary with the data stored in the alert rule.
+		:arg alert_rule_data (dict): Dictionary with alert rule configuration.
 		"""
-		passphrase = self.utils.getPassphraseKeyFromFile(self.constants.KEY_FILE_PATH)
+		passphrase = self.utils.getPassphraseKeyFromFile(self.constants.KEY_PATH)
 		telegram_chat_id = self.utils.encryptDataWithAES(self.dialog.createInputBoxDialog("Enter the Telegram channel identifier:", 8, 50, self.utils.decryptDataWithAES(alert_rule_data["telegram_chat_id"], passphrase).decode("utf-8")), passphrase)
 		alert_rule_data["telegram_chat_id"] = telegram_chat_id
 		return alert_rule_data
