@@ -18,9 +18,9 @@ class Constants:
 	TELK_ALERT_CONFIGURATION_PATH = "/etc/Telk-Alert-Suite/Telk-Alert/configuration/telk_alert_conf.yaml"
 
 	"""
-	Absolute path of the Telk-Alert-Agent configuration file.
+	Telk-Alert-Agent configuration file path.
 	"""
-	TELK_ALERT_AGENT_CONFIGURATION_FILE_PATH = "/etc/Telk-Alert-Suite/Telk-Alert-Agent/configuration/telk_alert_agent_conf.yaml"
+	TELK_ALERT_AGENT_CONFIGURATION_PATH = "/etc/Telk-Alert-Suite/Telk-Alert-Agent/configuration/telk_alert_agent_conf.yaml"
 
 	"""
 	Encryption key path.
@@ -38,7 +38,7 @@ class Constants:
 	ALERT_RULES_PATH = "/etc/Telk-Alert-Suite/Telk-Alert/alert_rules"
 
 	"""
-	Absolute path of the Telk-Alert-Tool log file.
+	Telk-Alert-Tool log path.
 	"""
 	LOG_FILE_NAME = "/var/log/Telk-Alert/telk-alert-tool-log-"
 
@@ -174,7 +174,7 @@ class Constants:
 					 			("5", "Show all alert rules")]
 
 	"""
-	Options that display the criticality levels of the alert rules.
+	Alert rule criticality options.
 	"""
 	OPTIONS_ALERT_RULE_LEVEL = [["Low", "Low level alert", 1],
 							 	["Medium", "Medium level alert", 0],
@@ -186,14 +186,16 @@ class Constants:
 	OPTIONS_ALERT_RULE_TYPE = [("Frequency", "Search for events periodically", 1)]
 
 	"""
-	Options that display the query types.
+	Options to choose from ElasticSearch query types.
 	"""
-	OPTIONS_QUERY_TYPE = [("query_string", "Perform the search using Query String", 0)]
+	OPTIONS_QUERY_TYPE = [("query_string", "Perform the search using Query String", 0),
+						  ("wildcard_query", "Perform the search using Wildcard Query", 0)]
 
 	"""
-	Options that show when the custom search option is chosen.
+	Options to choose from for the custom search.
 	"""
-	OPTIONS_CUSTOM_SEARCH = [("Hostname", "Restrict by hostname", 0),
+	OPTIONS_CUSTOM_SEARCH = [("Source", "Restrict by source", 0),
+							 ("Destination", "Restrict by destination", 0),
 					 	     ("Username", "Restrict by username", 0)]
 
 	"""
