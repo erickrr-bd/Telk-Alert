@@ -94,8 +94,8 @@ class AlertRules:
 						alert_rule_data.append(False)
 				else:
 					alert_rule_data.append(False)
-				alert_delivery_type = self.dialog.createRadioListDialog("Select a option:", 9, 50, self.constants.OPTIONS_ALERT_DELIVERY_TYPE, "Alert Delivery Type")
-				alert_rule_data.append(alert_delivery_type)
+				total_alerts_to_send = self.dialog.createRadioListDialog("Select a option:", 9, 50, self.constants.OPTIONS_TOTAL_ALERTS_SEND, "Total Alerts to Send")
+				alert_rule_data.append(total_alerts_to_send)
 				passphrase = self.utils.getPassphraseKeyFromFile(self.constants.KEY_PATH)
 				telegram_bot_token = self.utils.encryptDataWithAES(self.dialog.createInputBoxDialog("Enter the Telegram bot token:", 8, 50, "751988420:AAHrzn7RXWxVQQNha0tQUzyouE5lUcPde1g"), passphrase)
 				alert_rule_data.append(telegram_bot_token)
@@ -145,8 +145,8 @@ class AlertRules:
 					self.update_fields_selection(alert_rule_data)
 				if "Custom Search" in alert_rule_fields:
 					self.update_custom_search(alert_rule_data)
-				if "Delivery" in alert_rule_fields:
-					self.update_alert_delivery_type(alert_rule_data)
+				if "Total Alerts" in alert_rule_fields:
+					self.update_total_alerts_send(alert_rule_data)
 				if "Bot Token" in alert_rule_fields:
 					self.update_telegram_bot_token(alert_rule_data)
 				if "Chat ID" in alert_rule_fields:
@@ -172,7 +172,7 @@ class AlertRules:
 
 	def display_alert_rule(self):
 		"""
-		Method that displays the data of an alert rule.
+		Method that displays the current configuration of an alert rule.
 		"""
 		try:
 			alert_rules_list = self.utils.getListYamlFilesInFolder(self.constants.ALERT_RULES_PATH)
@@ -181,11 +181,11 @@ class AlertRules:
 				option_alert_rule =self.dialog.createRadioListDialog("Select a option:", 18, 70, list_checklist_radiolist, "Alert Rules")
 				yaml_file_data = self.utils.convertYamlFileToString(self.constants.ALERT_RULES_PATH + '/' + option_alert_rule)
 				message_to_display = '\n' + option_alert_rule[:-5] + "\n\n" + yaml_file_data
-				self.dialog.createScrollBoxDialog(message_to_display, 18, 70, "Alert Rule Data")
+				self.dialog.createScrollBoxDialog(message_to_display, 18, 70, "Alert Rule Configuration")
 			else:
 				self.dialog.createMessageDialog("\nNo alert rules found.", 7, 50, "Notification Message")
 		except Exception as exception:
-			self.dialog.createMessageDialog("\nError displaying the alert rule data. For more information, see the logs.", 8, 50, "Error Message")
+			self.dialog.createMessageDialog("\nError displaying the alert rule configuration. For more information, see the logs.", 8, 50, "Error Message")
 			self.logger.generateApplicationLog(exception, 3, "__displayAlertRule", use_file_handler = True, log_file_name = self.constants.LOG_FILE_NAME, user = self.constants.USER, group = self.constants.GROUP)
 		except KeyboardInterrupt:
 			pass
@@ -293,7 +293,7 @@ class AlertRules:
 				last_index += 1
 		else:
 			last_index += 1
-		alert_rule_data_json.update({"alert_delivery_type" : alert_rule_data[last_index + 1], "telegram_bot_token" : alert_rule_data[last_index + 2], "telegram_chat_id" : alert_rule_data[last_index + 3]})
+		alert_rule_data_json.update({"total_alerts_to_send" : alert_rule_data[last_index + 1], "telegram_bot_token" : alert_rule_data[last_index + 2], "telegram_chat_id" : alert_rule_data[last_index + 3]})
 
 		alert_rule_path = self.constants.ALERT_RULES_PATH + '/' + alert_rule_data[0] + ".yaml"
 		self.utils.createYamlFile(alert_rule_data_json, alert_rule_path)
@@ -440,29 +440,29 @@ class AlertRules:
 
 	def update_fields_selection(self, alert_rule_data):
 		"""
-		Method that updates the field selection option.
+		Method that updates the 'Field Selection' option.
 
 		Returns the dictionary with the updated alert rule configuration.
 
 		:arg alert_rule_data (dict): Dictionary with alert rule configuration.
 		"""
 		if alert_rule_data["use_fields_selection"]:
-			option_fields_selection_true = self.dialog.createRadioListDialog("Select a option:", 9, 50, self.constants.OPTIONS_FIELDS_SELECTION_TRUE, "Fields Selection")
-			if option_fields_selection_true == "Disable":
+			fields_selection_true = self.dialog.createRadioListDialog("Select a option:", 9, 50, self.constants.OPTIONS_FIELDS_SELECTION_TRUE, "Fields Selection")
+			if fields_selection_true == "Disable":
 				alert_rule_data["use_fields_selection"] = False
 				del alert_rule_data["fields_name"]
-			elif option_fields_selection_true == "Data":
-				option_fields_selection_update = self.dialog.createMenuDialog("Select a option:", 10, 50, self.constants.OPTIONS_FIELDS_SELECTION_UPDATE, "Fields Selection")
-				if option_fields_selection_update == "1":
+			elif fields_selection_true == "Data":
+				fields_selection_update = self.dialog.createMenuDialog("Select a option:", 10, 50, self.constants.OPTIONS_FIELDS_SELECTION_UPDATE, "Fields Selection")
+				if fields_selection_update == "1":
 					total_fields = self.dialog.createInputBoxToNumberDialog("Enter the total fields:", 8, 50, "3")
 					list_form = self.utils.createListToDialogForm(int(total_fields), "Field name")
 					fields_list = self.dialog.createFormDialog("Enter the field's names:", list_form, 15 ,50, "Fields Form", False)
 					alert_rule_data["fields_name"].extend(fields_list)
-				elif option_fields_selection_update == "2":
+				elif fields_selection_update == "2":
 					list_form = self.utils.convertListToDialogForm(alert_rule_data["fields_name"], "Field name")
 					fields_list = self.dialog.createFormDialog("Enter the field's names:", list_form, 15, 50, "Fields Form", False)
 					alert_rule_data["fields_name"] = fields_list
-				elif option_fields_selection_update == "3":
+				elif fields_selection_update == "3":
 					list_checklist_radiolist = self.utils.convertListToDialogList(alert_rule_data["fields_name"], "Field name")
 					options_remove_fields = self.dialog.createCheckListDialog("Select one or more options:", 15, 50, list_checklist_radiolist, "Remove Fields")
 					message_to_display = self.utils.getStringFromList(options_remove_fields, "Selected Fields:")
@@ -471,8 +471,8 @@ class AlertRules:
 					if remove_fields == "ok":
 						[alert_rule_data["fields_name"].remove(item) for item in options_remove_fields]
 		else:
-			option_fields_selection_false = self.dialog.createRadioListDialog("Select a option:", 8, 50, self.constants.OPTIONS_FIELDS_SELECTION_FALSE, "Fields Selection")
-			if option_fields_selection_false == "Enable":
+			fields_selection_false = self.dialog.createRadioListDialog("Select a option:", 8, 50, self.constants.OPTIONS_FIELDS_SELECTION_FALSE, "Fields Selection")
+			if fields_selection_false == "Enable":
 				alert_rule_data["use_fields_selection"] = True
 				total_fields = self.dialog.createInputBoxToNumberDialog("Enter the total fields:", 8, 50, "3")
 				list_form = self.utils.createListToDialogForm(int(total_fields), "Field name")
@@ -483,108 +483,140 @@ class AlertRules:
 
 	def update_custom_search(self, alert_rule_data):
 		"""
-		Method that updates the custom search option.
+		Method that updates the 'Custom Search' option.
 
 		Returns the dictionary with the updated alert rule configuration.
 
 		:arg alert_rule_data (dict): Dictionary with alert rule configuration.
 		"""
 		if alert_rule_data["use_custom_search"]:
-			option_custom_search_true = self.dialog.createRadioListDialog("Select a option:", 9 , 55, self.constants.OPTIONS_CUSTOM_SEARCH_TRUE, "Custom Search")
-			if option_custom_search_true == "Disable":
+			custom_search_true = self.dialog.createRadioListDialog("Select a option:", 9 , 55, self.constants.OPTIONS_CUSTOM_SEARCH_TRUE, "Custom Search")
+			if custom_search_true == "Disable":
 				alert_rule_data["use_custom_search"] = False
-				if "restriction_by_hostname" in alert_rule_data:
-					del alert_rule_data["field_name_hostname"]
-					del alert_rule_data["total_events_by_hostname"]
-					del alert_rule_data["restriction_by_hostname"]
+				if "restriction_by_source" in alert_rule_data:
+					del alert_rule_data["source_field"]
+					del alert_rule_data["total_events_by_source"]
+					del alert_rule_data["restriction_by_source"]
+				if "restriction_by_destination" in alert_rule_data:
+					del alert_rule_data["destination_field"]
+					del alert_rule_data["total_events_by_destination"]
+					del alert_rule_data["restriction_by_destination"]
 				if "restriction_by_username" in alert_rule_data:
-					del alert_rule_data["field_name_username"]
+					del alert_rule_data["username_field"]
 					del alert_rule_data["total_events_by_username"]
 					del alert_rule_data["restriction_by_username"]
-				total_number_events = self.dialog.createInputBoxToNumberDialog("Enter the total number of events to which the alert will be sent:", 9, 50, "1")
-				alert_rule_data.update({"total_number_events" : int(total_number_events)})
-			elif option_custom_search_true == "Data":
-				options_custom_search = self.dialog.createCheckListDialog("Select one or more options:", 9, 50, self.constants.OPTIONS_CUSTOM_SEARCH, "Custom Search")
-				if "Hostname" in options_custom_search:
-					if "restriction_by_hostname" in alert_rule_data:
-						option_restriction_by_hostname_true = self.dialog.createRadioListDialog("Select a option:", 8, 55, self.constants.OPTIONS_RESTRICTION_BY_HOSTNAME_TRUE, "Custom Search")
-						if option_restriction_by_hostname_true == "Disable":
-							del alert_rule_data["restriction_by_hostname"]
-							del alert_rule_data["field_name_hostname"]
-							del alert_rule_data["total_events_by_hostname"]
-							field_name_username = self.dialog.createInputBoxDialog("Enter the field name for the username:", 8, 50, "user.name")
-							total_events_by_username = self.dialog.createInputBoxToNumberDialog("Enter the total number of events by username:", 8, 50, "5")
-							alert_rule_data.update({"restriction_by_username" : True, "field_name_username" : field_name_username, "total_events_by_username" : int(total_events_by_username)})
-						elif option_restriction_by_hostname_true == "Data":
-							options_restriction_update = self.dialog.createCheckListDialog("Select one or more options:", 9, 55, self.constants.OPTIONS_RESTRICTION_UPDATE, "Custom Search")
-							if "Field" in options_restriction_update:
-								field_name_hostname = self.dialog.createInputBoxDialog("Enter the field name for the hostname:", 8, 50, alert_rule_data["field_name_hostname"])
-								alert_rule_data["field_name_hostname"] = field_name_hostname
-							if "Events" in options_restriction_update:
-								total_events_by_hostname = self.dialog.createInputBoxToNumberDialog("Enter the total number of events by hostname:", 8, 50, str(alert_rule_data["total_events_by_hostname"]))
-								alert_rule_data["total_events_by_hostname"] = int(total_events_by_hostname)
+				total_events = self.dialog.createInputBoxToNumberDialog("Enter the total events to which the alert will be sent:", 9, 50, "1")
+				alert_rule_data.update({"total_events" : int(total_events)})
+			elif custom_search_true == "Data":
+				custom_search = self.dialog.createCheckListDialog("Select one or more options:", 10, 50, self.constants.OPTIONS_CUSTOM_SEARCH, "Custom Search")
+				if "Source" in custom_search:
+					if "restriction_by_source" in alert_rule_data:
+						restriction_true = self.dialog.createRadioListDialog("Select a option:", 9, 50, self.constants.OPTIONS_RESTRICTION_TRUE, "Restriction by Source")
+						if restriction_true == "Disable":
+							if alert_rule_data["restriction_by_destination"] or alert_rule_data["restriction_by_username"]:
+								del alert_rule_data["restriction_by_source"]
+								del alert_rule_data["source_field"]
+								del alert_rule_data["total_events_by_source"]
+							else:
+								self.dialog.createMessageDialog("\nCould not be disabled. There must be at least one restriction.", 8, 50, "Notification Message")
+						elif restriction_true == "Data":
+							restriction_data = self.dialog.createCheckListDialog("Select on or more options:", 9, 55, self.constants.OPTIONS_RESTRICTION_DATA, "Restriction by Source")
+							if "Field" in restriction_data:
+								source_field = self.dialog.createInputBoxDialog("Enter the field name for the source:", 8, 50, alert_rule_data["source_field"])
+								alert_rule_data["source_field"] = source_field
+							if "Events" in restriction_data:
+								total_events_by_source = self.dialog.createInputBoxToNumberDialog("Enter the total events by source:", 8, 50, str(alert_rule_data["total_events_by_source"]))
+								alert_rule_data["total_events_by_source"] = int(total_events_by_source)
 					else:
-						option_restriction_by_hostname_false = self.dialog.createRadioListDialog("Select a option:", 8, 55, self.constants.OPTIONS_RESTRICTION_BY_HOSTNAME_FALSE, "Custom Search")
-						if option_restriction_by_hostname_false == "Enable":
-							field_name_hostname = self.dialog.createInputBoxDialog("Enter the field name for the hostname:", 8, 50, "host.hostname")
-							total_events_by_hostname = self.dialog.createInputBoxToNumberDialog("Enter the total number of events by hostname:", 8, 50, "5")
-							alert_rule_data.update({"restriction_by_hostname" : True, "field_name_hostname" : field_name_hostname, "total_events_by_hostname" : int(total_events_by_hostname)})
-				if "Username" in options_custom_search:
+						restriction_false = self.dialog.createRadioListDialog("Select a option:", 8, 55, self.constants.OPTIONS_RESTRICTION_FALSE, "Restriction by Source")
+						if restriction_false == "Enable":
+							source_field = self.dialog.createInputBoxDialog("Enter the field name for the source:", 8, 50, "source_ip")
+							total_events_by_source = self.dialog.createInputBoxToNumberDialog("Enter the total events by source:", 8, 50, "5")
+							alert_rule_data.update({"restriction_by_source" : True, "source_field" : source_field, "total_events_by_source": int(total_events_by_source)})
+				if "Destination" in custom_search:
+					if "restriction_by_destination" in alert_rule_data:
+						restriction_true = self.dialog.createRadioListDialog("Select a option:", 9, 50, self.constants.OPTIONS_RESTRICTION_TRUE, "Restriction by Destination")
+						if restriction_true == "Disable":
+							if alert_rule_data["restriction_by_source"] or alert_rule_data["restriction_by_username"]:
+								del alert_rule_data["restriction_by_destination"]
+								del alert_rule_data["destination_field"]
+								del alert_rule_data["total_events_by_destination"]
+							else:
+								self.dialog.createMessageDialog("\nCould not be disabled. There must be at least one restriction.", 8, 50, "Notification Message")
+						elif restriction_true == "Data":
+							restriction_data = self.dialog.createCheckListDialog("Select on or more options:", 9, 55, self.constants.OPTIONS_RESTRICTION_DATA, "Restriction by Destination")
+							if "Field" in restriction_data:
+								destination_field = self.dialog.createInputBoxDialog("Enter the field name for the destination:", 8, 50, alert_rule_data["destination_field"])
+								alert_rule_data["destination_field"] = destination_field
+							if "Events" in restriction_data:
+								total_events_by_destination = self.dialog.createInputBoxToNumberDialog("Enter the total events by destination:", 8, 50, str(alert_rule_data["total_events_by_destination"]))
+								alert_rule_data["total_events_by_destination"] = int(total_events_by_destination)
+					else:
+						restriction_false = self.dialog.createRadioListDialog("Select a option:", 8, 55, self.constants.OPTIONS_RESTRICTION_FALSE, "Restriction by Destination")
+						if restriction_false == "Enable":
+							destination_field = self.dialog.createInputBoxDialog("Enter the field name for the destination:", 8, 50, "dst_ip")
+							total_events_by_destination = self.dialog.createInputBoxToNumberDialog("Enter the total events by destination:", 8, 50, "5")
+							alert_rule_data.update({"restriction_by_destination" : True, "destination_field" : destination_field, "total_events_by_destination": int(total_events_by_destination)})
+				if "Username" in custom_search:
 					if "restriction_by_username" in alert_rule_data:
-						option_restriction_by_username_true = self.dialog.createRadioListDialog("Select a option:", 8, 55, self.constants.OPTIONS_RESTRICTION_BY_USERNAME_TRUE, "Custom Search")
-						if option_restriction_by_username_true == "Disable":
-							del alert_rule_data["field_name_username"]
-							del alert_rule_data["total_events_by_username"]
-							del alert_rule_data["restriction_by_username"]
-							field_name_username = self.dialog.createInputBoxDialog("Enter the field name for the username:", 8, 50, "user.name")
-							total_events_by_username = self.dialog.createInputBoxToNumberDialog("Enter the total number of events by username:", 8, 50, "5")
-							alert_rule_data.update({"restriction_by_username" : True, "field_name_username" : field_name_username, "total_events_by_username" : int(total_events_by_username)})
-						elif option_restriction_by_username_true  == "Data":
-							options_restriction_update = self.dialog.createCheckListDialog("Select one or more options:", 9, 55, self.constants.OPTIONS_RESTRICTION_UPDATE, "Custom Search")
-							if "Field" in options_restriction_update:
-								field_name_username = self.dialog.createInputBoxDialog("Enter the field name for the username:", 8, 50, alert_rule_data["field_name_username"])
-								alert_rule_data["field_name_username"] = field_name_username
-							if "Events" in options_restriction_update:
-								total_events_by_username = self.dialog.createInputBoxToNumberDialog("Enter the total number of events by username:", 8, 50, str(alert_rule_data["total_events_by_username"]))
+						restriction_true = self.dialog.createRadioListDialog("Select a option:", 9, 50, self.constants.OPTIONS_RESTRICTION_TRUE, "Restriction by Username")
+						if restriction_true == "Disable":
+							if alert_rule_data["restriction_by_source"] or alert_rule_data["restriction_by_destination"]:
+								del alert_rule_data["restriction_by_username"]
+								del alert_rule_data["username_field"]
+								del alert_rule_data["total_events_by_username"]
+							else:
+								self.dialog.createMessageDialog("\nCould not be disabled. There must be at least one restriction.", 8, 50, "Notification Message")
+						elif restriction_true == "Data":
+							restriction_data = self.dialog.createCheckListDialog("Select on or more options:", 9, 55, self.constants.OPTIONS_RESTRICTION_DATA, "Restriction by Username")
+							if "Field" in restriction_data:
+								username_field = self.dialog.createInputBoxDialog("Enter the field name for the username:", 8, 50, alert_rule_data["username_field"])
+								alert_rule_data["username_field"] = username_field
+							if "Events" in restriction_data:
+								total_events_by_username = self.dialog.createInputBoxToNumberDialog("Enter the total events by username:", 8, 50, str(alert_rule_data["total_events_by_username"]))
 								alert_rule_data["total_events_by_username"] = int(total_events_by_username)
 					else:
-						option_restriction_by_username_false = self.dialog.createRadioListDialog("Select a option:", 8, 55, self.constants.OPTIONS_RESTRICTION_BY_USERNAME_FALSE, "Restriction By Username")
-						if option_restriction_by_username_false == "Enable":
-							field_name_username = self.dialog.createInputBoxDialog("Enter the field name for the username:", 8, 50, "user.name")
-							total_events_by_username = self.dialog.createInputBoxToNumberDialog("Enter the total number of events by username:", 8, 50, "5")
-							alert_rule_data.update({"restriction_by_username" : True, "field_name_username" : field_name_username, "total_events_by_username" : int(total_events_by_username)})
+						restriction_false = self.dialog.createRadioListDialog("Select a option:", 8, 55, self.constants.OPTIONS_RESTRICTION_FALSE, "Restriction by Username")
+						if restriction_false == "Enable":
+							username_field = self.dialog.createInputBoxDialog("Enter the field name for the username:", 8, 50, "user.name")
+							total_events_by_username = self.dialog.createInputBoxToNumberDialog("Enter the total events by username:", 8, 50, "5")
+							alert_rule_data.update({"restriction_by_username" : True, "username_field" : username_field, "total_events_by_username": int(total_events_by_username)})		
 		else:
-			option_custom_search_false = self.dialog.createRadioListDialog("Select a option:", 8, 55, self.constants.OPTIONS_CUSTOM_SEARCH_FALSE, "Custom Search")
-			if option_custom_search_false == "Enable":
+			custom_search_false = self.dialog.createRadioListDialog("Select a option:", 8, 55, self.constants.OPTIONS_CUSTOM_SEARCH_FALSE, "Custom Search")
+			if custom_search_false == "Enable":
 				alert_rule_data["use_custom_search"] = True
-				del alert_rule_data["total_number_events"]
-				options_custom_search = self.dialog.createCheckListDialog("Select one or more options:", 9, 50, self.constants.OPTIONS_CUSTOM_SEARCH, "Custom Search")
-				if "Hostname" in options_custom_search:
-					field_name_hostname = self.dialog.createInputBoxDialog("Enter the field name for the hostname:", 8, 50, "host.hostname")
-					total_events_by_hostname = self.dialog.createInputBoxToNumberDialog("Enter the total number of events by hostname:", 8, 50, "5")
-					alert_rule_data.update({"restriction_by_hostname" : True, "field_name_hostname" : field_name_hostname, "total_events_by_hostname" : int(total_events_by_hostname)})
-				if "Username" in options_custom_search:
-					field_name_username = self.dialog.createInputBoxDialog("Enter the field name for the username:", 8, 50, "user.name")
-					total_events_by_username = self.dialog.createInputBoxToNumberDialog("Enter the total number of events by username:", 8, 50, "5")
-					alert_rule_data.update({"restriction_by_username" : True, "field_name_username" : field_name_username, "total_events_by_username" : int(total_events_by_username)})
+				del alert_rule_data["total_events"]
+				custom_search = self.dialog.createCheckListDialog("Select one or more options:", 10, 50, self.constants.OPTIONS_CUSTOM_SEARCH, "Custom Search")
+				if "Source" in custom_search:
+					source_field = self.dialog.createInputBoxDialog("Enter the field name for the source:", 8, 50, "source_ip")
+					total_events_by_source = self.dialog.createInputBoxToNumberDialog("Enter the total events by source:", 8, 50, "5")
+					alert_rule_data.update({"restriction_by_source" : True, "source_field" : source_field, "total_events_by_source": int(total_events_by_source)})
+				if "Destination" in custom_search:
+					destination_field = self.dialog.createInputBoxDialog("Enter the field name for the destination:", 8, 50, "dst_ip")
+					total_events_by_destination = self.dialog.createInputBoxToNumberDialog("Enter the total events by destination:", 8, 50, "5")
+					alert_rule_data.update({"restriction_by_destination" : True, "destination_field" : destination_field, "total_events_by_destination" : int(total_events_by_destination)})
+				if "Username" in custom_search:
+					username_field = self.dialog.createInputBoxDialog("Enter the field name for the username:", 8, 50, "user.name")
+					total_events_by_username = self.dialog.createInputBoxToNumberDialog("Enter the total events by username:", 8, 50, "5")
+					alert_rule_data.update({"restriction_by_username" : True, "username_field" : username_field, "total_events_by_username" : int(total_events_by_username)})
 		return alert_rule_data
 
 
-	def update_alert_delivery_type(self, alert_rule_data):
+	def update_total_alerts_send(self, alert_rule_data):
 		"""
-		Method that updates the type of alert delivery.
+		Method that updates the total number of alerts to send.
 
 		Returns the dictionary with the updated alert rule configuration.
 
 		:arg alert_rule_data (dict): Dictionary with alert rule configuration.
 		"""
-		for item in self.constants.OPTIONS_ALERT_DELIVERY_TYPE:
-			if item[0] == alert_rule_data["alert_delivery_type"]:
+		for item in self.constants.OPTIONS_TOTAL_ALERTS_SEND:
+			if item[0] == alert_rule_data["total_alerts_to_send"]:
 				item[2] = 1
 			else:
 				item[2] = 0
-		option_alert_delivery_type = self.dialog.createRadioListDialog("Select a option:", 9, 50, self.constants.OPTIONS_ALERT_DELIVERY_TYPE, "Alert Delivery Type")
-		alert_rule_data["alert_delivery_type"] = option_alert_delivery_type
+		total_alerts_to_send = self.dialog.createRadioListDialog("Select a option:", 9, 50, self.constants.OPTIONS_TOTAL_ALERTS_SEND, "Total Alerts to Send")
+		alert_rule_data["total_alerts_to_send"] = total_alerts_to_send
 		return alert_rule_data
 
 

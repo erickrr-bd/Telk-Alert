@@ -85,7 +85,7 @@ class Constants:
 								     ("API Key", "Use API Key", 0)]
 
 	"""
-	Options that are displayed when the option to update the Telk-Alert configuration file is chosen.
+	Options displayed when the Telk-Alert configuration is updated. They correspond to the fields of the configuration.
 	"""
 	OPTIONS_TELK_ALERT_CONFIGURATION_UPDATE = [("Host", "ElasticSearch Host", 0),
 							 	 			   ("Port", "ElasticSearch Port", 0),
@@ -158,7 +158,7 @@ class Constants:
 					  	 ["days", "Time expressed in days", 0]]
 
 	"""
-	Options that are displayed when the option to update the Telk-Alert-Agent configuration file is chosen.
+	Options displayed when the Telk-Alert-Agent configuration is updated. They correspond to the fields of the configuration.
 	"""
 	OPTIONS_TELK_ALERT_AGENT_CONFIGURATION_UPDATE = [("Time", "Service validation time", 0),
 							       					 ("Bot Token", "Telegram bot token", 0),
@@ -174,38 +174,38 @@ class Constants:
 					 			("5", "Show all alert rules")]
 
 	"""
-	Alert rule criticality options.
+	Options showing the criticality levels of the alert rules.
 	"""
 	OPTIONS_ALERT_RULE_LEVEL = [["Low", "Low level alert", 1],
 							 	["Medium", "Medium level alert", 0],
 							 	["High", "High level alert", 0]]
 
 	"""
-	Options that display alert rule types.
+	Options showing the types of alert rules.
 	"""
 	OPTIONS_ALERT_RULE_TYPE = [("Frequency", "Search for events periodically", 1)]
 
 	"""
-	Options to choose from ElasticSearch query types.
+	Options showing the ElasticSearch's query types.
 	"""
 	OPTIONS_QUERY_TYPE = [("query_string", "Perform the search using Query String", 0),
 						  ("wildcard_query", "Perform the search using Wildcard Query", 0)]
 
 	"""
-	Options to choose from for the custom search.
+	Options displayed for the 'Custom Search' option.
 	"""
 	OPTIONS_CUSTOM_SEARCH = [("Source", "Restrict by source", 0),
 							 ("Destination", "Restrict by destination", 0),
 					 	     ("Username", "Restrict by username", 0)]
 
 	"""
-	Options that show the types of alert delivery.
+	Options that show the total number of alerts to send.
 	"""
-	OPTIONS_ALERT_DELIVERY_TYPE = [["only", "A single alert with the total of events found", 1],
-						           ["multiple", "An alert for each event found", 0]]
+	OPTIONS_TOTAL_ALERTS_SEND = [["only", "A single alert with the total of events found", 1],
+						         ["multiple", "An alert for each event found", 0]]
 
 	"""
-	Options that are displayed when the option to update an alert rule is chosen.
+	Options displayed when an alert rule is updated. They correspond to the fields of an alert rule.
 	"""
 	OPTIONS_ALERT_RULE_FIELDS = [("Name", "Alert rule's name", 0),
 							  	 ("Level", "Alert rule's level", 0),
@@ -216,7 +216,7 @@ class Constants:
 							  	 ("Query", "Query type", 0),
 							  	 ("Fields Selection", "Enable or disable fields selection", 0),
 							  	 ("Custom Search", "Enable or disable custom search option", 0),
-							  	 ("Delivery", "How the alert is sent", 0),
+							  	 ("Total Alerts", "Total Alerts to send", 0),
 							  	 ("Bot Token", "Telegram Bot Token", 0),
 							  	 ("Chat ID", "Telegram channel identifier", 0)]
 
@@ -239,61 +239,50 @@ class Constants:
 								   ("Query", "Modify the wildcard query", 0)]	
 
 	"""
-	Options displayed when the use of field selection is disabled.
+	Options displayed when the 'Field Selection' option is disabled.
 	"""
 	OPTIONS_FIELDS_SELECTION_FALSE = [("Enable", "Enable fields selection", 0)]
 
 	"""
-	Options displayed when the use of field selection is enabled.
+	Options displayed when the 'Field Selection' option is enabled.
 	"""
 	OPTIONS_FIELDS_SELECTION_TRUE = [("Disable", "Disable fields selection", 0),
-								     ("Data", "Modify data", 0)]
+								     ("Data", "Update configured data", 0)]
 
 	"""
-	Options displayed when the field selection usage is to be modified.
+	Options that are displayed when the 'Field Selection' option is updated.
 	"""
 	OPTIONS_FIELDS_SELECTION_UPDATE = [("1", "Add New Field(s)"),
 									   ("2", "Modify Field(s)"),
 									   ("3", "Remove Field(s)")]
 
 	"""
-	Options that are displayed when the use of custom search is disabled.
+	Options displayed when the 'Custom Search' option is disabled.
 	"""
 	OPTIONS_CUSTOM_SEARCH_FALSE = [("Enable", "Enable custom search", 0)]
 
 	"""
-	Options that are displayed when the use of custom search is enabled.
+	Options displayed when the 'Custom Search' option is enabled.
 	"""
 	OPTIONS_CUSTOM_SEARCH_TRUE = [("Disable", "Disable custom search", 0),
-								  ("Data", "Modify data", 0)]
+								  ("Data", "Update configured data", 0)]
 
 	"""
-	Options displayed when hostname restriction is disabled.
+	Options displayed when a restriction is disabled.
 	"""
-	OPTIONS_RESTRICTION_BY_HOSTNAME_FALSE = [("Enable", "Enable restriction by hostname", 0)]
+	OPTIONS_RESTRICTION_FALSE = [("Enable", "Enable restriction", 0)]
 
 	"""
-	Options displayed when hostname restriction is enabled.
+	Options displayed when a restriction is enabled.
 	"""
-	OPTIONS_RESTRICTION_BY_HOSTNAME_TRUE = [("Disable", "Disable restriction by hostname", 0),
-								 		    ("Data", "Modify configured data", 0)]
-
-	"""
-	Options displayed when username restriction is disabled.
-	"""
-	OPTIONS_RESTRICTION_BY_USERNAME_FALSE = [("Enable", "Enable restriction by username", 0)]
-
-	"""
-	Options that are displayed when username restriction is enabled.
-	"""
-	OPTIONS_RESTRICTION_BY_USERNAME_TRUE = [("Disable", "Disable restriction by username", 0),
-								 		    ("Data", "Modify configured data", 0)]
+	OPTIONS_RESTRICTION_TRUE = [("Disable", "Disable restriction", 0),
+								("Data", "Update configured data", 0)]
 	
 	"""
-	Options that are displayed when a value of a restriction type is to be updated.
+	Options that are displayed when the a restriction is updated.
 	"""
-	OPTIONS_RESTRICTION_UPDATE = [("Field", "Field's name in the index", 0),
-								  ("Events", "Number of events", 0)]
+	OPTIONS_RESTRICTION_DATA = [("Field", "Field's name", 0),
+								("Events", "Total events", 0)]
 
 	"""
 	Options displayed in the "Service" menu.

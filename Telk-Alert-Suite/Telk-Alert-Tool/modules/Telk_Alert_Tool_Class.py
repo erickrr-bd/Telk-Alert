@@ -163,7 +163,7 @@ class TelkAlertTool:
 
 	def define_telk_alert_configuration(self):
 		"""
-		Method that defines actions to perform on the Telk-Alert configuration.
+		Method that defines the actions to be performed regarding the Telk-Alert configuration.
 		"""
 		telk_alert_configuration = TelkAlertConfiguration()
 		if not path.exists(self.constants.TELK_ALERT_CONFIGURATION_PATH):
@@ -177,7 +177,7 @@ class TelkAlertTool:
 
 	def define_telk_alert_agent_configuration(self):
 		"""
-		Method that defines actions to perform on the Telk-Alert-Agent configuration.
+		Method that defines the actions to be performed regarding the Telk-Alert-Agent configuration.
 		"""
 		telk_alert_agent_configuration = TelkAlertAgentConfiguration()
 		if not path.exists(self.constants.TELK_ALERT_AGENT_CONFIGURATION_FILE_PATH):
@@ -191,7 +191,7 @@ class TelkAlertTool:
 
 	def display_about(self):
 		"""
-		Method that shows the Telk-Alert about.
+		Method that shows the about of the application.
 		"""
 		try:
 			message_to_display = "\nCopyright@2024 Tekium. All rights reserved.\nAuthor: Erick Roberto Rodríguez Rodríguez\nEmail: erickrr.tbd93@gmail.com, erodriguez@tekium.mx\nGithub: https://github.com/erickrr-bd/Telk-Alert\nTelk-Alert v3.3 - February 2024" + "\n\nEasy alerting with ElasticSearch and Python."
