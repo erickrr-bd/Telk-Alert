@@ -43,12 +43,12 @@ class Constants:
 	LOG_FILE_NAME = "/var/log/Telk-Alert/telk-alert-tool-log-"
 
 	"""
-	Owner user of the application files.
+	Owner user of the application.
 	"""
 	USER = "telk_alert"
 
 	"""
-	Owner group of the application files.
+	Owner group of the application.
 	"""
 	GROUP = "telk_alert"
 
@@ -160,9 +160,9 @@ class Constants:
 	"""
 	Options displayed when the Telk-Alert-Agent configuration is updated. They correspond to the fields of the configuration.
 	"""
-	OPTIONS_TELK_ALERT_AGENT_CONFIGURATION_UPDATE = [("Time", "Service validation time", 0),
-							       					 ("Bot Token", "Telegram bot token", 0),
-							       					 ("Chat ID", "Telegram chat id", 0)]
+	OPTIONS_TELK_ALERT_AGENT_FIELDS = [("Time", "Service validation time", 0),
+							       	   ("Bot Token", "Telegram bot token", 0),
+							       	   ("Chat ID", "Telegram chat id", 0)]
 
 	"""
 	Options that are displayed in the "Alert Rules" menu.

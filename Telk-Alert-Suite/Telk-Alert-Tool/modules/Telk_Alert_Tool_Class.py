@@ -180,12 +180,12 @@ class TelkAlertTool:
 		Method that defines the actions to be performed regarding the Telk-Alert-Agent configuration.
 		"""
 		telk_alert_agent_configuration = TelkAlertAgentConfiguration()
-		if not path.exists(self.constants.TELK_ALERT_AGENT_CONFIGURATION_FILE_PATH):
-			option_configuration_false = self.dialog.createRadioListDialog("Select a option:", 8, 50, self.constants.OPTIONS_CONFIGURATION_FALSE, "Telk-Alert-Agent Configuration Options")
+		if not path.exists(self.constants.TELK_ALERT_AGENT_CONFIGURATION_PATH):
+			option_configuration_false = self.dialog.createRadioListDialog("Select a option:", 8, 50, self.constants.OPTIONS_CONFIGURATION_FALSE, "Telk-Alert-Agent Configuration")
 			if option_configuration_false == "Create":
 				telk_alert_agent_configuration.create_configuration()
 		else:
-			option_configuration_true = self.dialog.createRadioListDialog("Select a option:", 9, 50, self.constants.OPTIONS_CONFIGURATION_TRUE, "Telk-Alert-Agent Configuration Options")
+			option_configuration_true = self.dialog.createRadioListDialog("Select a option:", 9, 50, self.constants.OPTIONS_CONFIGURATION_TRUE, "Telk-Alert-Agent Configuration")
 			telk_alert_agent_configuration.update_configuration() if option_configuration_true == "Update" else telk_alert_agent_configuration.display_configuration()
 
 
