@@ -60,6 +60,11 @@ if [ $opc = "I" ] || [ $opc = "i" ]; then
 		useradd -M -s /bin/nologin -g telk_alert_group -d /opt/Telk-Alert-Suite telk_alert_user
 		echo -e "[*] \e[0;32m\"telk_alert_user\" user created\e[0m\n"
 	fi
+	# Copy the files necessary for Telk-Alert to work.
+	banner "Installation of Telk-Alert"
+	echo ''
+	cp -r Telk-Alert-Suite /opt
+	echo -e "[*] \e[0;32mInstallation complete\e[0m\n"
 	# Creation of required folders and files
 	banner "Creation of folders and files"
 	echo ''
@@ -76,6 +81,24 @@ EOF
 	banner "Change of permissions and owner"
 	echo ''
 	chown telk_alert_user:telk_alert_group -R /etc/Telk-Alert-Suite
+	chown telk_alert_user:telk_alert_group -R /opt/Telk-Alert-Suite
+	chmod +x /opt/Telk-Alert-Suite/Telk-Alert/Telk_Alert.py
+	chmod +x /opt/Telk-Alert-Suite/Telk-Alert-Tool/Telk_Alert_Tool.py
+	chmod +x /opt/Telk-Alert-Suite/Telk-Alert-Agent/Telk_Alert_Agent.py
 	chown telk_alert_user:telk_alert_group -R $TELK_ALERT_LOGS_FOLDER
 	echo -e "[*] \e[0;32mChanges made\e[0m\n"
+	# Creation of services for Telk-Alert and Telk-Alert-Agent.
+	banner "Creation of services for Telk-Alert and Telk-Alert-Agent"
+	echo ''
+	cp telk-alert.service /etc/systemd/system/
+	cp telk-alert-agent.service /etc/systemd/system
+	systemctl daemon-reload
+	systemctl enable telk-alert.service
+	systemctl enable telk-alert-agent.service
+	echo -e "[*] \e[0;32mServices created\e[0m\n"
+	# Creating aliases for Telk-Alert-Tool
+	banner "Creating aliases for Telk-Alert-Tool"
+	echo ''
+	echo "alias Telk-Alert-Tool='/opt/Telk-Alert-Suite/Telk-Alert-Tool/Telk_Alert_Tool.py'" >> ~/.bashrc
+	echo -e "[*] \e[0;32mCreated alias\e[0m\n"
 fi
