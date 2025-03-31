@@ -1,4 +1,5 @@
 from os import path
+from json import dumps
 from libPyLog import libPyLog
 from libPyUtils import libPyUtils
 from libPyDialog import libPyDialog
@@ -11,9 +12,11 @@ class AlertRules:
 	Class that manages everything related to alert rules.
 	"""
 
+	is_custom_rule: bool = False
 	name: str = None
 	level: str = None
 	index_pattern: str = None
+	timestamp_field: str = None
 	total_events: int = 0
 	search_time: dict = field(default_factory = dict)
 	range_time: dict = field(default_factory = dict)
@@ -53,6 +56,13 @@ class AlertRules:
 		Method that defines the index pattern of the alert rule.
 		"""
 		self.index_pattern = self.dialog.create_inputbox("Enter the index pattern:", 8, 50, "winlogbeat-*")
+
+
+	def define_timestamp_field(self) -> None:
+		"""
+		Method that defines the name of the field corresponding to the index timestamp.
+		"""
+		self.timestamp_field = self.dialog.create_inputbox("Enter the name of the field that corresponds to the index timestamp:", 9, 50, "@timestamp")
 
 
 	def define_total_events(self) -> None:
@@ -103,19 +113,19 @@ class AlertRules:
 			self.fields = self.dialog.create_form("Enter the field's names:", tuple_to_form, 15, 50, "Fields", False)
 
 
-	def define_telegram_bot_token(self, key_file: str) -> None:
+	def define_telegram_bot_token(self) -> None:
 		"""
 		Method that defines the Telegram Bot Token.
 		"""
-		passphrase = self.utils.get_passphrase(key_file)
+		passphrase = self.utils.get_passphrase(self.constants.KEY_FILE)
 		self.telegram_bot_token = self.utils.encrypt_data(self.dialog.create_inputbox("Enter the Telegram Bot Token:", 8, 50, "751988420:AAHrzn7RXWxVQQNha0tQUzyouE5lUcPde1g"), passphrase)
 
 
-	def define_telegram_chat_id(self, key_file: str) -> None:
+	def define_telegram_chat_id(self) -> None:
 		"""
 		Method that defines the Telegram Chat ID.
 		"""
-		passphrase = self.utils.get_passphrase(key_file)
+		passphrase = self.utils.get_passphrase(self.constants.KEY_FILE)
 		self.telegram_chat_id = self.utils.encrypt_data(self.dialog.create_inputbox("Enter the Telegram Chat ID:", 8, 50, "-1002365478941"), passphrase)
 
 
@@ -127,9 +137,11 @@ class AlertRules:
 			alert_rule_data_json (dict): Dictionary with the object's data.
 		"""
 		alert_rule_data_json = {
+			"is_custom_rule" : self.is_custom_rule,
 			"name" :  self.name,
 			"level" :  self.level,
 			"index_pattern" : self.index_pattern,
+			"timestamp_field" : self.timestamp_field,
 			"total_events" : self.total_events,
 			"search_time" : self.search_time,
 			"range_time" : self.range_time,
@@ -143,26 +155,289 @@ class AlertRules:
 		return alert_rule_data_json
 
 
-	def create_file(self, alert_rule_data: dict, log_file_name: str, user: str = None, group: str = None) -> None:
+	def create_file(self, alert_rule_data: dict) -> None:
 		"""
 		Method that creates the YAML file corresponding to the alert rule.
 
 		Parameters:
 			alert_rule_data (dict): Data to save in the YAML file.
-			log_file_name (str): Log file path.
-			user (str): Owner user.
-			group (str): Owner group.
 		"""
 		try:
 			alert_rule_path = f"{self.constants.ALERT_RULES_FOLDER}/{alert_rule_data["name"]}.yaml"
 			self.utils.create_yaml_file(alert_rule_data, alert_rule_path)
-			self.utils.change_owner(alert_rule_path, user, group, "644")
+			self.utils.change_owner(alert_rule_path, self.constants.USER, self.constants.GROUP, "644")
 			if path.exists(alert_rule_path):
 				self.dialog.create_message(f"\nAlert rule created: {alert_rule_data["name"]}", 7, 50, "Notification Message")
-				self.logger.create_log(f"Alert rule created: {alert_rule_data["name"]}", 2, "__createAlertRule", use_file_handler = True, file_name = log_file_name, user = user, group = group)
+				self.logger.create_log(f"Alert rule created: {alert_rule_data["name"]}", 2, "__createAlertRule", use_file_handler = True, file_name = self.constants.LOG_FILE, user = self.constants.USER, group = self.constants.GROUP)
 		except Exception as exception:
 			self.dialog.create_message("\nError creating alert rule. For more information, see the logs.", 8, 50, "Error Message")
-			self.logger.create_log(exception, 4, "_createAlertRule", use_file_handler = True, file_name = log_file_name, user = user, group = group)
+			self.logger.create_log(exception, 4, "_createAlertRule", use_file_handler = True, file_name = self.constants.LOG_FILE, user = self.constants.USER, group = self.constants.GROUP)
+		except KeyboardInterrupt:
+			pass
+		finally:
+			raise KeyboardInterrupt("Exit")
+
+
+	def modify_alert_rule(self) -> None:
+		"""
+		Method that modifies the configuration of an alert rule.
+		"""
+		try:
+			alert_rules = self.utils.get_yaml_files_in_folder(self.constants.ALERT_RULES_FOLDER)
+			if alert_rules:
+				alert_rules.sort()
+				tuple_to_rc = self.utils.convert_list_to_tuple_rc(alert_rules, "Alert Rule Name")
+				option = self.dialog.create_radiolist("Select a option:", 18, 70, tuple_to_rc, "Alert Rules")
+				options = self.dialog.create_checklist("Select one or more options:", 18, 70, self.constants.ALERT_RULE_FIELDS, "Alert Rule Fields")
+				alert_rule_data = self.utils.read_yaml_file(f"{self.constants.ALERT_RULES_FOLDER}/{option}")
+				self.convert_dict_to_object(alert_rule_data)
+				original_hash = self.utils.get_hash_from_file(f"{self.constants.ALERT_RULES_FOLDER}/{option}")
+				if "Name" in options:
+					self.modify_name()
+				if "Level" in options:
+					self.modify_level()
+				if "Index" in options:
+					self.modify_index_pattern()
+				if "Timestamp" in options:
+					self.modify_timestamp_field()
+				if "Total Events" in options:
+					self.modify_total_events()
+				if "Bot Token" in options:
+					self.modify_telegram_bot_token()
+				if "Chat ID" in options:
+					self.modify_telegram_chat_id()
+				alert_rule_data = self.convert_object_to_dict()
+				self.utils.create_yaml_file(alert_rule_data, f"{self.constants.ALERT_RULES_FOLDER}/{self.name}.yaml")
+				new_hash = self.utils.get_hash_from_file(f"{self.constants.ALERT_RULES_FOLDER}/{self.name}.yaml")
+				self.dialog.create_message("\nAlert rule not modified.", 7, 50, "Notification Message") if new_hash == original_hash else self.dialog.create_message("\nAlert rule modified.", 7, 50, "Notification Message")
+			else:
+				self.dialog.create_message(f"\nNo alert rules in: {self.constants.ALERT_RULES_FOLDER}", 8, 50, "Notification Message")
+		except Exception as exception:
+			self.dialog.create_message("\nError modifying alert rule configuration. For more information, see the logs.", 8, 50, "Error Message")
+			self.logger.create_log(exception, 4, "_modifyAlertRule", use_file_handler = True, file_name = self.constants.LOG_FILE, user = self.constants.USER, group = self.constants.GROUP)
+		except KeyboardInterrupt:
+			pass
+		finally:
+			raise KeyboardInterrupt("Exit")
+
+
+	def modify_name(self) -> None:
+		"""
+		Method that modifies the name of an alert rule.
+		"""
+		old_name = self.name
+		new_name = self.dialog.create_filename_inputbox("Enter the name of the alert rule:", 8, 50, old_name)
+		if new_name == old_name:
+			self.dialog.create_message("\nThe name cannot be the same as the previous one.", 8, 50, "Notification Message")
+		else:
+			self.utils.rename_file_or_folder(f"{self.constants.ALERT_RULES_FOLDER}/{old_name}.yaml", f"{self.constants.ALERT_RULES_FOLDER}/{new_name}.yaml")
+			self.name = new_name
+			self.logger.create_log(f"Alert rule name modified: {new_name}", 3, f"_{old_name}", use_file_handler = True, file_name = self.constants.LOG_FILE, user = self.constants.USER, group = self.constants.GROUP)
+
+
+	def modify_level(self) -> None:
+		"""
+		Method that modifies the criticality level of an alert rule.
+		"""
+		for level in self.constants.ALERT_RULE_LEVEL:
+			if level[0] == self.level:
+				level[2] = 1
+			else:
+				level[2] = 0
+		self.level = self.dialog.create_radiolist("Select a option:", 10, 50, self.constants.ALERT_RULE_LEVEL, "Alert Rule Level")
+		self.logger.create_log(f"Alert rule level modified: {self.level}", 3, f"_{self.name}", use_file_handler = True, file_name = self.constants.LOG_FILE, user = self.constants.USER, group = self.constants.GROUP)
+
+
+	def modify_index_pattern(self) -> None:
+		"""
+		Method that modifies the index pattern.
+		"""
+		self.index_pattern = self.dialog.create_inputbox("Enter the index pattern:", 8, 50, self.index_pattern)
+		self.logger.create_log(f"Index pattern modified: {self.index_pattern}", 3, f"_{self.name}", use_file_handler = True, file_name = self.constants.LOG_FILE, user = self.constants.USER, group = self.constants.GROUP)
+
+
+	def modify_timestamp_field(self) -> None:
+		"""
+		Method that modifies the name of the field corresponding to the index timestamp.
+		"""
+		self.timestamp_field = self.dialog.create_inputbox("Enter the name of the field that corresponds to the index timestamp:", 9, 50, self.timestamp_field)
+		self.logger.create_log(f"Timestamp field modified: {self.timestamp_field}", 3, f"_{self.name}", use_file_handler = True, file_name = self.constants.LOG_FILE, user = self.constants.USER, group = self.constants.GROUP)
+
+
+	def modify_total_events(self) -> None:
+		"""
+		Method that modifies the total number of events to which the alert is sent.
+		"""
+		self.total_events = int(self.dialog.create_integer_inputbox("Enter the total events to which the alert will be sent:", 9, 50, str(self.total_events)))
+		self.logger.create_log(f"Total events modified: {self.total_events}", 3, f"_{self.name}", use_file_handler = True, file_name = self.constants.LOG_FILE, user = self.constants.USER, group = self.constants.GROUP)
+
+
+	def modify_telegram_bot_token(self) -> None:
+		"""
+		Method that modifies the Telegram Bot Token.
+		"""
+		passphrase = self.utils.get_passphrase(self.constants.KEY_FILE)
+		self.telegram_bot_token = self.utils.encrypt_data(self.dialog.create_inputbox("Enter the Telegram Bot Token:", 8, 50, self.utils.decrypt_data(self.telegram_bot_token, passphrase).decode("utf-8")), passphrase)
+		self.logger.create_log("Telegram Bot Token modified.", 3, f"_{self.name}", use_file_handler = True, file_name = self.constants.LOG_FILE, user = self.constants.USER, group = self.constants.GROUP)
+
+
+	def modify_telegram_chat_id(self) -> None:
+		"""
+		Method that modifies the Telegram Chat ID.
+		"""
+		passphrase = self.utils.get_passphrase(self.constants.KEY_FILE)
+		self.telegram_chat_id = self.utils.encrypt_data(self.dialog.create_inputbox("Enter the Telegram Chat ID:", 8, 50, self.utils.decrypt_data(self.telegram_chat_id, passphrase).decode("utf-8")), passphrase)
+		self.logger.create_log("Telegram Chat ID modified.", 3, f"_{self.name}", use_file_handler = True, file_name = self.constants.LOG_FILE, user = self.constants.USER, group = self.constants.GROUP)
+
+
+	def convert_dict_to_object(self, alert_rule_data: dict) -> None:
+		"""
+		Method that converts a dictionary into an object of type AlertRules.
+
+		Parameters:
+			alert_rule_data (dict): Dictionary to convert.
+		"""
+		self.is_custom_rule = alert_rule_data["is_custom_rule"]
+		self.name = alert_rule_data["name"]
+		self.level = alert_rule_data["level"]
+		self.index_pattern = alert_rule_data["index_pattern"]
+		self.timestamp_field = alert_rule_data["timestamp_field"]
+		self.total_events = alert_rule_data["total_events"]
+		self.search_time = dumps(alert_rule_data["search_time"])
+		self.range_time = dumps(alert_rule_data["range_time"])
+		self.query = dumps(alert_rule_data["query"])
+		self.use_fields = alert_rule_data["use_fields"]
+		if alert_rule_data["use_fields"]:
+			self.fields = alert_rule_data["fields"]
+		self.telegram_bot_token  = alert_rule_data["telegram_bot_token"]
+		self.telegram_chat_id = alert_rule_data["telegram_chat_id"]
+
+
+	def display_configuration(self) -> None:
+		"""
+		Method that displays the configuration of an alert rule.
+		"""
+		try:
+			alert_rules = self.utils.get_yaml_files_in_folder(self.constants.ALERT_RULES_FOLDER)
+			if alert_rules:
+				alert_rules.sort()
+				tuple_to_rc = self.utils.convert_list_to_tuple_rc(alert_rules, "Alert Rule Name")
+				option = self.dialog.create_radiolist("Select a option:", 18, 70, tuple_to_rc, "Alert Rules")
+				alert_rule_str = self.utils.convert_yaml_to_str(f"{self.constants.ALERT_RULES_FOLDER}/{option}")
+				text = f"\n{option[:-5]}\n\n{alert_rule_str}"
+				self.dialog.create_scrollbox(text, 18, 70, "Alert Rule Configuration") 
+			else:
+				self.dialog.create_message(f"\nNo alert rules in: {self.constants.ALERT_RULES_FOLDER}", 8, 50, "Notification Message")
+		except Exception as exception:
+			self.dialog.create_message("\nError displaying alert rule configuration. For more information, see the logs.", 8, 50, "Error Message")
+			self.logger.create_log(exception, 4, "_displayAlertRuleConfig", use_file_handler = True, file_name = self.constants.LOG_FILE, user = self.constants.USER, group = self.constants.GROUP)
+		except KeyboardInterrupt:
+			pass
+		finally:
+			raise KeyboardInterrupt("Exit")
+
+
+	def delete_alert_rules(self) -> None:
+		"""
+		Method that deletes one or more alert rules.
+		"""
+		try:
+			alert_rules = self.utils.get_yaml_files_in_folder(self.constants.ALERT_RULES_FOLDER)
+			if alert_rules:
+				alert_rules.sort()
+				tuple_to_rc = self.utils.convert_list_to_tuple_rc(alert_rules, "Alert Rule Name")
+				options = self.dialog.create_checklist("Select one or more options::", 18, 70, tuple_to_rc, "Delete Alert Rules")
+				text = self.utils.get_str_from_list(options, "Alert rules selected to remove:")
+				self.dialog.create_scrollbox(text, 14, 50, "Delete Alert Rules")
+				delete_alert_rules_yn = self.dialog.create_yes_or_no("\nAre you sure to delete the selected alert rules?\n\n**Note: This action cannot be undone.", 10, 50, "Delete Alert Rules")
+				if delete_alert_rules_yn == "ok":
+					[self.utils.delete_file(f"{self.constants.ALERT_RULES_FOLDER}/{alert_rule}") for alert_rule in options]
+					self.dialog.create_message("\nAlert rule(s) deleted.", 7, 50, "Notification Message")
+					self.logger.create_log(f"Alert rule(s) deleted: {','.join(options)}", 3, "_deleteAlertRules", use_file_handler = True, file_name = self.constants.LOG_FILE, user = self.constants.USER, group = self.constants.GROUP)
+			else:
+				self.dialog.create_message(f"\nNo alert rules in: {self.constants.ALERT_RULES_FOLDER}", 8, 50, "Notification Message")
+		except Exception as exception:
+			self.dialog.create_message("\nError deleting alert rule(s). For more information, see the logs.", 8, 50, "Error Message")
+			self.logger.create_log(exception, 4, "_deleteAlertRules", use_file_handler = True, file_name = self.constants.LOG_FILE, user = self.constants.USER, group = self.constants.GROUP)
+		except KeyboardInterrupt:
+			pass
+		finally:
+			raise KeyboardInterrupt("Exit")
+
+
+	def disable_alert_rule(self)-> None:
+		"""
+		Method that disables one or more alert rules.
+		"""
+		try:
+			alert_rules = self.utils.get_yaml_files_in_folder(self.constants.ALERT_RULES_FOLDER)
+			if alert_rules:
+				alert_rules.sort()
+				tuple_to_rc = self.utils.convert_list_to_tuple_rc(alert_rules, "Alert Rule Name")
+				options = self.dialog.create_checklist("Select one or more options::", 18, 70, tuple_to_rc, "Disable Alert Rules")
+				text = self.utils.get_str_from_list(options, "Alert rules selected to disable:")
+				self.dialog.create_scrollbox(text, 14, 50, "Disable Alert Rules")
+				disable_alert_rules_yn = self.dialog.create_yes_or_no("\nAre you sure to disable the selected alert rules?", 8, 50, "Disable Alert Rules")
+				if disable_alert_rules_yn == "ok":
+					[self.utils.rename_file_or_folder(f"{self.constants.ALERT_RULES_FOLDER}/{alert_rule}", f"{self.constants.ALERT_RULES_FOLDER}/{alert_rule}.bck") for alert_rule in options]
+					self.dialog.create_message("\nAlert rule(s) disabled.", 7, 50, "Notification Message")
+					self.logger.create_log(f"Alert rule(s) disabled: {','.join(options)}", 3, "_disableAlertRules", use_file_handler = True, file_name = self.constants.LOG_FILE, user = self.constants.USER, group = self.constants.GROUP)
+			else:
+				self.dialog.create_message(f"\nNo alert rules in: {self.constants.ALERT_RULES_FOLDER}", 8, 50, "Notification Message")
+		except Exception as exception:
+			self.dialog.create_message("\nError disabling alert rule(s). For more information, see the logs.", 8, 50, "Error Message")
+			self.logger.create_log(exception, 4, "_disableAlertRules", use_file_handler = True, file_name = self.constants.LOG_FILE, user = self.constants.USER, group = self.constants.GROUP)
+		except KeyboardInterrupt:
+			pass
+		finally:
+			raise KeyboardInterrupt("Exit")
+
+
+	def enable_alert_rule(self)-> None:
+		"""
+		Method that enables one or more alert rules.
+		"""
+		try:
+			alert_rules = self.utils.get_bck_files_in_folder(self.constants.ALERT_RULES_FOLDER)
+			if alert_rules:
+				alert_rules.sort()
+				tuple_to_rc = self.utils.convert_list_to_tuple_rc(alert_rules, "Alert Rule Name")
+				options = self.dialog.create_checklist("Select one or more options::", 18, 70, tuple_to_rc, "Enable Alert Rules")
+				text = self.utils.get_str_from_list(options, "Alert rules selected to enable:")
+				self.dialog.create_scrollbox(text, 14, 50, "Enable Alert Rules")
+				enable_alert_rules_yn = self.dialog.create_yes_or_no("\nAre you sure to enable the selected alert rules?", 8, 50, "Enable Alert Rules")
+				if enable_alert_rules_yn == "ok":
+					[self.utils.rename_file_or_folder(f"{self.constants.ALERT_RULES_FOLDER}/{alert_rule}", f"{self.constants.ALERT_RULES_FOLDER}/{alert_rule[:-4]}") for alert_rule in options]
+					self.dialog.create_message("\nAlert rule(s) enabled.", 7, 50, "Notification Message")
+					self.logger.create_log(f"Alert rule(s) enabled: {','.join(options)}", 3, "_enableAlertRules", use_file_handler = True, file_name = self.constants.LOG_FILE, user = self.constants.USER, group = self.constants.GROUP)
+			else:
+				self.dialog.create_message(f"\nNo disabled alert rules in: {self.constants.ALERT_RULES_FOLDER}", 8, 50, "Notification Message")
+		except Exception as exception:
+			self.dialog.create_message("\nError enabling alert rule(s). For more information, see the logs.", 8, 50, "Error Message")
+			self.logger.create_log(exception, 4, "_enableAlertRules", use_file_handler = True, file_name = self.constants.LOG_FILE, user = self.constants.USER, group = self.constants.GROUP)
+		except KeyboardInterrupt:
+			pass
+		finally:
+			raise KeyboardInterrupt("Exit")
+
+
+	def display_alert_rules(self) -> None:
+		"""
+		Method that shows all created alert rules.
+		"""
+		try:
+			alert_rules = self.utils.get_yaml_files_in_folder(self.constants.ALERT_RULES_FOLDER)
+			if alert_rules:
+				alert_rules.sort()
+				text = "\nAlert Rules\n"
+				for alert_rule in alert_rules:
+					text += "\n-" + alert_rule[:-5]
+				self.dialog.create_scrollbox(text, 18, 70, "Alert Rules")
+			else:
+				self.dialog.create_message(f"\nNo alert rules in: {self.constants.ALERT_RULES_FOLDER}", 8, 50, "Notification Message")
+		except Exception as exception:
+			self.dialog.create_message("\nError displaying alert rule(s). For more information, see the logs.", 8, 50, "Error Message")
+			self.logger.create_log(exception, 4, "_deleteAlertRules", use_file_handler = True, file_name = self.constants.LOG_FILE, user = self.constants.USER, group = self.constants.GROUP)
 		except KeyboardInterrupt:
 			pass
 		finally:

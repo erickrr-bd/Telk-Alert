@@ -1,5 +1,8 @@
 #! /usr/bin/env python3.12
 
+"""
+Main function.
+"""
 from modules.Telk_Alert_Tool_Class import TelkAlertTool
 
 if __name__ == "__main__":

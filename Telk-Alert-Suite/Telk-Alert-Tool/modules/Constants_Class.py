@@ -61,12 +61,17 @@ class Constants:
 	"""
 	Options displayed in the "Alert Rules" menu.
 	"""
-	ALERT_RULES_MENU_OPTIONS: List = field(default_factory = lambda : [("1", "Create alert rule"), ("2", "Modify alert rule"), ("3", "Display alert rule configuration"), ("4", "Delete alert rule(s)"), ("5", "Display alert rule(s)")])
+	ALERT_RULES_MENU_OPTIONS: List = field(default_factory = lambda : [("1", "Create alert rule"), ("2", "Modify alert rule"), ("3", "Display alert rule configuration"), ("4", "Delete alert rule(s)"), ("5", "Disable/Enable Alert Rule(s)"), ("6", "Display alert rule(s)")])
 
 	"""
 	Options displayed in the "Create Alert Rule" menu.
 	"""
 	CREATE_ALERT_RULE_MENU_OPTIONS: List = field(default_factory = lambda: [("1", "Create Alert Rule"), ("2", "Create Custom Alert Rule"), ("3", "Load from template")])
+
+	"""
+	Options displayed in the "Disable/Enable Alert Rule(s)" menu.
+	"""
+	DISABLE_ENABLE_MENU_OPTIONS: List = field(default_factory = lambda : [("1", "Disable Alert Rule(s)"), ("2", "Enable Alert Rule(s)")])
 
 	"""
 	Alert rule level.
@@ -82,3 +87,8 @@ class Constants:
 	Query type.
 	"""
 	QUERY_TYPE: List = field(default_factory = lambda : [("query_string", "Using Query String", 0), ("wildcard_query", "Using Wildcard Query", 0)])
+
+	"""
+	Alert rule fields.
+	"""
+	ALERT_RULE_FIELDS: List = field(default_factory = lambda : [("Name", "Alert rule's name", 0), ("Level", "Alert rule's level", 0), ("Index", "ElasticSearch's index pattern", 0), ("Timestamp", "Timestamp's Field", 0), ("Total Events", "Number of events to which the alert is sent", 0), ("Search Time", "Time in which the search is repeated", 0), ("Range Time", "Search range time", 0), ("Query", "Query type", 0), ("Fields Selection", "Enable or disable fields selection", 0), ("Bot Token", "Telegram Bot Token", 0), ("Chat ID", "Telegram channel identifier", 0)])

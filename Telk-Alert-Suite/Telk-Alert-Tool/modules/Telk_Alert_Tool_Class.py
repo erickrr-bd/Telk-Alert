@@ -43,7 +43,7 @@ class TelkAlertTool:
 		"""
 		Alert rules menu.
 		"""
-		option = self.dialog.create_menu("Select a option:", 12, 50, self.constants.ALERT_RULES_MENU_OPTIONS, "Alert Rules Menu")
+		option = self.dialog.create_menu("Select a option:", 13, 50, self.constants.ALERT_RULES_MENU_OPTIONS, "Alert Rules Menu")
 		self.switch_alert_rules_menu(int(option))
 
 
@@ -53,6 +53,14 @@ class TelkAlertTool:
 		"""
 		option = self.dialog.create_menu("Select a option:", 10, 50, self.constants.CREATE_ALERT_RULE_MENU_OPTIONS, "Create Alert Rule Menu")
 		self.switch_create_alert_rule_menu(int(option))
+
+
+	def disable_enable_alert_rule_menu(self) -> None:
+		"""
+		Disable/Enable Alert Rule menu.
+		"""
+		option = self.dialog.create_menu("Select a option:", 9, 50, self.constants.DISABLE_ENABLE_MENU_OPTIONS, "Disable/Enable Alert Rule Menu")
+		self.switch_disable_enable_alert_rule_menu(int(option))
 
 
 	def switch_main_menu(self, option: int) -> None:
@@ -88,17 +96,20 @@ class TelkAlertTool:
 		Parameters:
     		option (int): Chosen option.
 		"""
+		alert_rule = AlertRules()
 		match option:
 			case 1:
 				self.create_alert_rule_menu()
 			case 2:
-				print("Hola2")
+				alert_rule.modify_alert_rule()
 			case 3:
-				print("Hola 3")
+				alert_rule.display_configuration()
 			case 4:
-				print("Hola 4")
+				alert_rule.delete_alert_rules()
 			case 5:
-				print("Hola 5")
+				self.disable_enable_alert_rule_menu()
+			case 6:
+				alert_rule.display_alert_rules()
 
 
 	def switch_create_alert_rule_menu(self, option: int) -> None:
@@ -111,6 +122,21 @@ class TelkAlertTool:
 		match option:
 			case 1:
 				self.create_alert_rule()
+
+
+	def switch_disable_enable_alert_rule_menu(self, option: int) -> None:
+		"""
+		Method that executes an action based on the option chosen in the "Create alert rule" menu.
+
+		Parameters:
+    		option (int): Chosen option.
+		"""
+		alert_rule = AlertRules()
+		match option:
+			case 1:
+				alert_rule.disable_alert_rule()
+			case 2:
+				alert_rule.enable_alert_rule()
 
 
 	def define_configuration(self) -> None:
@@ -135,11 +161,12 @@ class TelkAlertTool:
 		alert_rule.define_name()
 		alert_rule.define_level()
 		alert_rule.define_index_pattern()
+		alert_rule.define_timestamp_field()
 		alert_rule.define_total_events()
 		alert_rule.define_search_time()
 		alert_rule.define_range_time()
 		alert_rule.define_query_type()
 		alert_rule.define_use_fields()
-		alert_rule.define_telegram_bot_token(self.constants.KEY_FILE)
-		alert_rule.define_telegram_chat_id(self.constants.KEY_FILE)
-		alert_rule.create_file(alert_rule.convert_object_to_dict(), self.constants.LOG_FILE, self.constants.USER, self.constants.GROUP)
+		alert_rule.define_telegram_bot_token()
+		alert_rule.define_telegram_chat_id()
+		alert_rule.create_file(alert_rule.convert_object_to_dict())
