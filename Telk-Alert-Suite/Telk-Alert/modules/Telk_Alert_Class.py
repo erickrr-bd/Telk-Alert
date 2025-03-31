@@ -78,11 +78,11 @@ class TelkAlert:
 			lte_date = self.utils.get_lte_date(unit_time)
 			query_string = alert_rule_data["query"]["query_type"][0]["query_string"]["query"]
 			while True:
-				if not "custom_rule" in alert_rule_data:
+				if not alert_rule_data["is_custom_rule"]:
 					if alert_rule_data["use_fields"]:
-						result = self.elasticsearch.search_query_string(conn_es, alert_rule_data["index_pattern"], query_string, "@timestamp", gte_date, lte_date, alert_rule_data["use_fields"], fields = alert_rule_data["fields"])
+						result = self.elasticsearch.search_query_string(conn_es, alert_rule_data["index_pattern"], query_string, alert_rule_data["timestamp_field"], gte_date, lte_date, alert_rule_data["use_fields"], fields = alert_rule_data["fields"])
 					else:
-						result = self.elasticsearch.search_query_string(conn_es, alert_rule_data["index_pattern"], query_string, "@timestamp", gte_date, lte_date, alert_rule_data["use_fields"])
+						result = self.elasticsearch.search_query_string(conn_es, alert_rule_data["index_pattern"], query_string, alert_rule_data["timestamp_field"], gte_date, lte_date, alert_rule_data["use_fields"])
 					if result:
 						if len(result) >= alert_rule_data["total_events"]:
 							self.logger.create_log(f"Events found: {str(len(result))}", 2, f"_{alert_rule_data["name"]}", use_stream_handler = True, use_file_handler = True, file_name = self.constants.LOG_FILE, user = self.constants.USER, group = self.constants.GROUP)
