@@ -14,6 +14,11 @@ class Constants:
 	TELK_ALERT_CONFIGURATION: str = "/etc/Telk-Alert-Suite/Telk-Alert/configuration/telk_alert.yaml"
 
 	"""
+	Telk-Alert-Agent configuration file.
+	"""
+	TELK_ALERT_AGENT_CONFIGURATION: str = "/etc/Telk-Alert-Suite/Telk-Alert-Agent/configuration/telk_alert_agent.yaml"
+
+	"""
 	Alert rules path.
 	"""
 	ALERT_RULES_FOLDER: str = "/etc/Telk-Alert-Suite/Telk-Alert/alert_rules"

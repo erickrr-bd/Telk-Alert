@@ -4,7 +4,8 @@ from libPyDialog import libPyDialog
 from .Constants_Class import Constants
 from dataclasses import dataclass, field
 from .Alert_Rules_Class import AlertRules
-from .Telk_Alert_Configuration import TelkAlertConfiguration
+from libPyConfiguration import libPyConfiguration
+from libPyAgentConfiguration import libPyAgentConfiguration
 
 @dataclass
 class TelkAlertTool:
@@ -75,6 +76,8 @@ class TelkAlertTool:
 				self.configuration_menu()
 			case 2:
 				self.alert_rules_menu()
+			case 4:
+				self.display_about()
 			case 5:
 				exit(1)
 
@@ -143,14 +146,80 @@ class TelkAlertTool:
 		"""
 		Method that defines the action to be performed on the Telk-Alert configuration.
 		"""
-		configuration = TelkAlertConfiguration()
 		if not path.exists(self.constants.TELK_ALERT_CONFIGURATION):
 			option = self.dialog.create_radiolist("Select a option:", 8, 50, self.constants.CONFIGURATION_OPTIONS_FALSE, "Telk-Alert Configuration")
 			if option == "Create":
-				configuration.create()
+				self.create_configuration()
 		else:
 			option = self.dialog.create_radiolist("Select a option:", 9, 50, self.constants.CONFIGURATION_OPTIONS_TRUE, "Telk-Alert Configuration")
-			configuration.modify() if option == "Modify" else configuration.display()
+			self.modify_configuration() if option == "Modify" else self.display_configuration()
+
+
+	def create_configuration(self) -> None:
+		"""
+		Method that creates the Telk-Alert configuration.
+		"""
+		telk_alert_data = libPyConfiguration(self.constants.BACKTITLE)
+		telk_alert_data.define_es_host()
+		telk_alert_data.define_verificate_certificate()
+		telk_alert_data.define_use_authentication(self.constants.KEY_FILE)
+		telk_alert_data.create_file(telk_alert_data.convert_object_to_dict(), self.constants.TELK_ALERT_CONFIGURATION, self.constants.LOG_FILE, self.constants.USER, self.constants.GROUP)
+
+
+	def modify_configuration(self) -> None:
+		"""
+		Method that updates or modifies the Telk-Alert configuration.
+		"""
+		telk_alert_data = libPyConfiguration(self.constants.BACKTITLE)
+		telk_alert_data.modify_configuration(self.constants.TELK_ALERT_CONFIGURATION, self.constants.KEY_FILE, self.constants.LOG_FILE, self.constants.USER, self.constants.GROUP)
+
+
+	def display_configuration(self) -> None:
+		"""
+		Method that displays the Telk-Alert configuration.
+		"""
+		telk_alert_data = libPyConfiguration(self.constants.BACKTITLE)
+		telk_alert_data.display_configuration(self.constants.TELK_ALERT_CONFIGURATION, self.constants.LOG_FILE, self.constants.USER, self.constants.GROUP)
+
+
+	def define_agent_configuration(self) -> None:
+		"""
+		Method that defines the action to be performed on the Telk-Alert-Agent configuration.
+		"""
+		if not path.exists(self.constants.TELK_ALERT_AGENT_CONFIGURATION):
+			option = self.dialog.create_radiolist("Select a option:", 8, 50, self.constants.CONFIGURATION_OPTIONS_FALSE, "Telk-Alert-Agent Configuration")
+			if option == "Create":
+				self.create_agent_configuration()
+		else:
+			option = self.dialog.create_radiolist("Select a option:", 9, 50, self.constants.CONFIGURATION_OPTIONS_TRUE, "Telk-Alert-Agent Configuration")
+			self.modify_agent_configuration() if option == "Modify" else self.display_agent_configuration()
+
+
+	def create_agent_configuration(self) -> None:
+		"""
+		Method that creates the Telk-Alert-Agent configuration.
+		"""
+		telk_alert_agent_data = libPyAgentConfiguration(self.constants.BACKTITLE)
+		telk_alert_agent_data.define_frequency_time()
+		telk_alert_agent_data.define_telegram_bot_token(self.constants.KEY_FILE)
+		telk_alert_agent_data.define_telegram_chat_id(self.constants.KEY_FILE)
+		telk_alert_agent_data.create_file(telk_alert_agent_data.convert_object_to_dict(), self.constants.TELK_ALERT_AGENT_CONFIGURATION, self.constants.LOG_FILE, self.constants.USER, self.constants.GROUP)
+
+
+	def modify_agent_configuration(self) -> None:
+		"""
+		Method that updates or modifies the Telk-Alert-Agent configuration.
+		"""
+		telk_alert_agent_data = libPyAgentConfiguration(self.constants.BACKTITLE)
+		telk_alert_agent_data.modify_agent_configuration(self.constants.TELK_ALERT_AGENT_CONFIGURATION, self.constants.KEY_FILE, self.constants.LOG_FILE, self.constants.USER, self.constants.GROUP)
+
+
+	def display_agent_configuration(self) -> None:
+		"""
+		Method that displays the Telk-Alert configuration.
+		"""
+		telk_alert_agent_data = libPyAgentConfiguration(self.constants.BACKTITLE)
+		telk_alert_agent_data.display_agent_configuration(self.constants.TELK_ALERT_AGENT_CONFIGURATION, self.constants.LOG_FILE, self.constants.USER, self.constants.GROUP)
 
 
 	def create_alert_rule(self) -> None:
@@ -170,3 +239,16 @@ class TelkAlertTool:
 		alert_rule.define_telegram_bot_token()
 		alert_rule.define_telegram_chat_id()
 		alert_rule.create_file(alert_rule.convert_object_to_dict())
+
+
+	def display_about(self) -> None:
+		"""
+		Method that displays the about of the application.
+		"""
+		try:
+			text = "\nAuthor: Erick Roberto Rodríguez Rodríguez\nEmail: erickrr.tbd93@gmail.com, erodriguez@tekium.mx\nGithub: https://github.com/erickrr-bd/Telk-Alert\nTelk-Alert v4.0 - April 2025" + "\n\nEasy alerting with ElasticSearch and Python."
+			self.dialog.create_scrollbox(text, 12, 60, "About")
+		except KeyboardInterrupt:
+			pass
+		finally:
+			raise KeyboardInterrupt("Error") 
