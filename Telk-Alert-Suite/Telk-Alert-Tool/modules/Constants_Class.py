@@ -91,9 +91,25 @@ class Constants:
 	"""
 	Query type.
 	"""
-	QUERY_TYPE: List = field(default_factory = lambda : [("query_string", "Using Query String", 0), ("wildcard_query", "Using Wildcard Query", 0)])
+	QUERY_TYPE: List = field(default_factory = lambda : [("query_string", "Using Query String", 0)])
 
 	"""
 	Alert rule fields.
 	"""
 	ALERT_RULE_FIELDS: List = field(default_factory = lambda : [("Name", "Alert rule's name", 0), ("Level", "Alert rule's level", 0), ("Index", "ElasticSearch's index pattern", 0), ("Timestamp", "Timestamp's Field", 0), ("Total Events", "Number of events to which the alert is sent", 0), ("Search Time", "Time in which the search is repeated", 0), ("Range Time", "Search range time", 0), ("Query", "Query type", 0), ("Fields Selection", "Enable or disable fields selection", 0), ("Bot Token", "Telegram Bot Token", 0), ("Chat ID", "Telegram channel identifier", 0)])
+
+	"""
+	Options displayed when the field restriction option is enabled.
+	"""
+	OPTIONS_FIELDS_TRUE: List = field(default_factory = lambda : [("Disable", "Disable fields option", 0), ("Fields", "Modify fields", 0)])
+
+	"""
+	Options displayed when the field restriction option is disabled.
+	"""
+	OPTIONS_FIELDS_FALSE: List = field(default_factory = lambda : [("Enable", "Enable fields option", 0)])
+
+	"""
+	Options displayed in the "Fields" menu.
+	"""
+	FIELDS_OPTIONS: List = field(default_factory = lambda : [("1", "Add New Field(s)"), ("2", "Modify Field(s)"), ("3", "Remove Field(s)")])
+	
