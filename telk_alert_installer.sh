@@ -61,10 +61,10 @@ if [ $opc = "I" ] || [ $opc = "i" ]; then
 		echo -e "[*] \e[0;32m\"telk_alert_user\" user created\e[0m\n"
 	fi
 	# Copy the files necessary for Telk-Alert to work.
-	banner "Installation of Telk-Alert"
+	banner "Telk-Alert Installation"
 	echo ''
 	cp -r Telk-Alert-Suite /opt
-	echo -e "[*] \e[0;32mInstallation complete\e[0m\n"
+	echo -e "[*] \e[0;32mInstallation completed\e[0m\n"
 	# Creation of required folders and files
 	banner "Creation of folders and files"
 	echo ''
@@ -101,4 +101,30 @@ EOF
 	echo ''
 	echo "alias Telk-Alert-Tool='/opt/Telk-Alert-Suite/Telk-Alert-Tool/Telk_Alert_Tool.py'" >> ~/.bashrc
 	echo -e "[*] \e[0;32mCreated alias\e[0m\n"
+elif [ $opc = "U" ] || [ $opc = "u" ]; then
+	# Stop daemons to update Telk-Alert
+	banner "Stopping Telk-Alert and Telk-Alert-Agent daemons"
+	echo ''
+	systemctl stop telk-alert.service
+	systemctl stop telk-alert-agent.service
+	echo -e "[*] \e[0;32mDemons stopped\e[0m\n"
+	# Copy new version of Telk-Alert
+	banner "Telk-Alert Update"
+	echo ''
+	cp -r Telk-Alert-Suite /opt
+	echo -e "[*] \e[0;32mUpdate completed\e[0m\n"
+	# Change of permissions and owner
+	banner "Change of permissions and owner"
+	echo ''
+	chown telk_alert_user:telk_alert_group -R /opt/Telk-Alert-Suite
+	chmod +x /opt/Telk-Alert-Suite/Telk-Alert/Telk_Alert.py
+	chmod +x /opt/Telk-Alert-Suite/Telk-Alert-Tool/Telk_Alert_Tool.py
+	chmod +x /opt/Telk-Alert-Suite/Telk-Alert-Agent/Telk_Alert_Agent.py
+	echo -e "[*] \e[0;32mChanges made\e[0m\n"
+	# Start daemons
+	banner "Starting Telk-Alert and Telk-Alert-Agent daemons"
+	echo ''
+	systemctl start telk-alert.service
+	systemctl start telk-alert-agent.service
+	echo -e "[*] \e[0;32mDemons started\e[0m\n"
 fi
