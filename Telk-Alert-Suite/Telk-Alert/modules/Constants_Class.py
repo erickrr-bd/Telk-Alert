@@ -31,3 +31,4 @@ class Constants:
 	Owner group.
 	"""
 	GROUP: str = "telk_alert_group"
+	
