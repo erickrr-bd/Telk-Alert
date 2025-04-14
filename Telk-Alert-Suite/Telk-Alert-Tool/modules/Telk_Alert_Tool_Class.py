@@ -1,5 +1,7 @@
 from os import path
 from sys import exit
+from libPyLog import libPyLog
+from libPyUtils import libPyUtils
 from libPyDialog import libPyDialog
 from .Constants_Class import Constants
 from dataclasses import dataclass, field
@@ -17,6 +19,8 @@ class TelkAlertTool:
 		"""
 		Class constructor.
 		"""
+		self.logger = libPyLog()
+		self.utils = libPyUtils()
 		self.constants = Constants()
 		self.dialog = libPyDialog(self.constants.BACKTITLE)
 
@@ -64,6 +68,30 @@ class TelkAlertTool:
 		self.switch_disable_enable_alert_rule_menu(int(option))
 
 
+	def service_menu(self) -> None:
+		"""
+		Service menu.
+		"""
+		option = self.dialog.create_menu("Select a option:", 9, 50, self.constants.CONFIGURATION_MENU_OPTIONS, "Service Menu")
+		self.switch_service_menu(int(option))
+
+
+	def telk_alert_service_menu(self) -> None:
+		"""
+		Telk-Alert service menu.
+		"""
+		option = self.dialog.create_menu("Select a option:", 11, 50, self.constants.SERVICE_MENU_OPTIONS, "Telk-Alert Service Menu")
+		self.switch_telk_alert_service_menu(int(option))
+
+
+	def telk_alert_agent_service_menu(self) -> None:
+		"""
+		Telk-Alert service menu.
+		"""
+		option = self.dialog.create_menu("Select a option:", 11, 50, self.constants.SERVICE_MENU_OPTIONS, "Telk-Alert-Agent Service Menu")
+		self.switch_telk_alert_agent_service_menu(int(option))
+
+
 	def switch_main_menu(self, option: int) -> None:
 		"""
 		Method that executes an action based on the option chosen in the "Main" menu.
@@ -76,6 +104,8 @@ class TelkAlertTool:
 				self.configuration_menu()
 			case 2:
 				self.alert_rules_menu()
+			case 3:
+				self.service_menu()
 			case 4:
 				self.display_about()
 			case 5:
@@ -140,6 +170,72 @@ class TelkAlertTool:
 				alert_rule.disable_alert_rule()
 			case 2:
 				alert_rule.enable_alert_rule()
+
+
+	def switch_service_menu(self, option: int) -> None:
+		"""
+		Method that executes an action based on the option chosen in the "Service" menu.
+
+		Parameters:
+    		option (int): Chosen option.
+		"""
+		self.telk_alert_service_menu() if option == 1 else self.telk_alert_agent_service_menu()
+
+
+	def switch_telk_alert_service_menu(self, option: int) -> None:
+		"""
+		Method that executes an action based on the option chosen in the "Telk-Alert Service" menu.
+
+		Parameters:
+    		option (int): Chosen option.
+		"""
+		match option:
+			case 1:
+				result = self.utils.manage_daemon("telk-alert.service", 1)
+				if result == 0:
+					self.dialog.create_message("\nTelk-Alert service started.", 7, 50, "Notification Message")
+					self.logger.create_log("Telk-Alert service started", 2, "_manageService", use_file_handler = True, file_name = self.constants.LOG_FILE, user = self.constants.USER, group = self.constants.GROUP)
+			case 2:
+				result = self.utils.manage_daemon("telk-alert.service", 2)
+				if result == 0:
+					self.dialog.create_message("\nTelk-Alert service restarted.", 7, 50, "Notification Message")
+					self.logger.create_log("Telk-Alert service restarted", 2, "_manageService", use_file_handler = True, file_name = self.constants.LOG_FILE, user = self.constants.USER, group = self.constants.GROUP)
+			case 3:
+				result = self.utils.manage_daemon("telk-alert.service", 3)
+				if result == 0:
+					self.dialog.create_message("\nTelk-Alert service stopped.", 7, 50, "Notification Message")
+					self.logger.create_log("Telk-Alert service stopped", 2, "_manageService", use_file_handler = True, file_name = self.constants.LOG_FILE, user = self.constants.USER, group = self.constants.GROUP)
+			case 4:
+				service_status = self.utils.get_detailed_status_by_daemon("telk-alert.service", "/tmp/telk_alert.status")
+				self.dialog.create_scrollbox(service_status, 18, 70, "Telk-Alert Service")
+
+
+	def switch_telk_alert_agent_service_menu(self, option: int) -> None:
+		"""
+		Method that executes an action based on the option chosen in the "Telk-Alert-Agent Service" menu.
+
+		Parameters:
+    		option (int): Chosen option.
+		"""
+		match option:
+			case 1:
+				result = self.utils.manage_daemon("telk-alert-agent.service", 1)
+				if result == 0:
+					self.dialog.create_message("\nTelk-Alert-Agent service started.", 7, 50, "Notification Message")
+					self.logger.create_log("Telk-Alert-Agent service started", 2, "_manageService", use_file_handler = True, file_name = self.constants.LOG_FILE, user = self.constants.USER, group = self.constants.GROUP)
+			case 2:
+				result = self.utils.manage_daemon("telk-alert-agent.service", 2)
+				if result == 0:
+					self.dialog.create_message("\nTelk-Alert-Agent service restarted.", 7, 50, "Notification Message")
+					self.logger.create_log("Telk-Alert-Agent service restarted", 2, "_manageService", use_file_handler = True, file_name = self.constants.LOG_FILE, user = self.constants.USER, group = self.constants.GROUP)
+			case 3:
+				result = self.utils.manage_daemon("telk-alert-agent.service", 3)
+				if result == 0:
+					self.dialog.create_message("\nTelk-Alert-Agent service stopped.", 7, 50, "Notification Message")
+					self.logger.create_log("Telk-Alert-Agent service stopped", 2, "_manageService", use_file_handler = True, file_name = self.constants.LOG_FILE, user = self.constants.USER, group = self.constants.GROUP)
+			case 4:
+				service_status = self.utils.get_detailed_status_by_daemon("telk-alert-agent.service", "/tmp/telk_alert_agent.status")
+				self.dialog.create_scrollbox(service_status, 18, 70, "Telk-Alert-Agent Service")
 
 
 	def define_configuration(self) -> None:

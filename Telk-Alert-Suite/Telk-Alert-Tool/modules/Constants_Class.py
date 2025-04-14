@@ -112,4 +112,9 @@ class Constants:
 	Options displayed in the "Fields" menu.
 	"""
 	FIELDS_OPTIONS: List = field(default_factory = lambda : [("1", "Add New Field(s)"), ("2", "Modify Field(s)"), ("3", "Remove Field(s)")])
+
+	"""
+	Options displayed in the "Service" menu.
+	"""
+	SERVICE_MENU_OPTIONS: List = field(default_factory = lambda : [("1", "Start Service"), ("2", "Restart Service"), ("3", "Stop Service"), ("4", "Service Status")])
 	
