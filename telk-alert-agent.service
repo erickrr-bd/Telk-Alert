@@ -6,7 +6,6 @@ StartLimitIntervalSec=0
 [Service]
 Type=simple
 ExecStart=/opt/Telk-Alert-Suite/Telk-Alert-Agent/Telk_Alert_Agent.py
-User=telk_alert_user
 Restart=on-failure
 RestartSec=1
 
