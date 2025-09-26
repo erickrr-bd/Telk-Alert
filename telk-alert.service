@@ -1,12 +1,12 @@
 [Unit]
-Description=Telk-Alert v4.0
+Description=Telk-Alert v4.1
 After=networking.target
 StartLimitIntervalSec=0
 
 [Service]
 Type=simple
 ExecStart=/opt/Telk-Alert-Suite/Telk-Alert/Telk_Alert.py
-User=telk_alert_user
+User=telk_alert
 Restart=on-failure
 RestartSec=1
 
