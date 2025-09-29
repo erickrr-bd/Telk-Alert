@@ -142,6 +142,9 @@ elif [ $opc = "U" ] || [ $opc = "u" ]; then
 	# Assignment of permits and owner.
 	banner "Change of permissions and owner"
 	echo ''
+	chown telk_alert:telk_alert -R $BASE_DIR
+	find $BASE_DIR -type f -exec chmod 640 {} \;
+	find $BASE_DIR -type d -exec chmod 750 {} \;
 	chown telk_alert:telk_alert -R /opt/Telk-Alert-Suite
 	find /opt/Telk-Alert-Suite -type f -exec chmod 640 {} \;
 	find /opt/Telk-Alert-Suite -type d -exec chmod 750 {} \;
