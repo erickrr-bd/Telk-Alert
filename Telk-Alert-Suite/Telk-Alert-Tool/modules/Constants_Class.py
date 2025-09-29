@@ -1,3 +1,6 @@
+"""
+Class that manages the application's constants.
+"""
 from typing import List
 from dataclasses import dataclass, field
 
@@ -6,42 +9,42 @@ class Constants:
 	"""
 	Message displayed in the background.
 	"""
-	BACKTITLE: str = "TELK-ALERT-TOOL v4.0 by Erick Rodriguez"
+	BACKTITLE: str = "TELK-ALERT-TOOL v4.1 by Erick Rodriguez"
 
 	"""
-	Telk-Alert configuration file.
+	Telk-Alert's configuration file.
 	"""
 	TELK_ALERT_CONFIGURATION: str = "/etc/Telk-Alert-Suite/Telk-Alert/configuration/telk_alert.yaml"
 
 	"""
-	Telk-Alert-Agent configuration file.
+	Telk-Alert-Agent's configuration file.
 	"""
 	TELK_ALERT_AGENT_CONFIGURATION: str = "/etc/Telk-Alert-Suite/Telk-Alert-Agent/configuration/telk_alert_agent.yaml"
 
 	"""
-	Alert rules path.
+	Alert rules' path.
 	"""
 	ALERT_RULES_FOLDER: str = "/etc/Telk-Alert-Suite/Telk-Alert/alert_rules"
 
 	"""
-	Encryption key path.
+	Encryption key's path.
 	"""
 	KEY_FILE: str = "/etc/Telk-Alert-Suite/Telk-Alert/configuration/key"
 
 	"""
-	Telk-Alert-Tool log file.
+	Telk-Alert-Tool's log file.
 	"""
 	LOG_FILE: str = "/var/log/Telk-Alert/telk-alert-tool-log"
 
 	"""
 	Owner user.
 	"""
-	USER: str = "telk_alert_user"
+	USER: str = "telk_alert"
 
 	"""
 	Owner group.
 	"""
-	GROUP: str = "telk_alert_group"
+	GROUP: str = "telk_alert"
 
 	"""
 	Options displayed in the "Main" menu.
@@ -79,7 +82,7 @@ class Constants:
 	DISABLE_ENABLE_MENU_OPTIONS: List = field(default_factory = lambda : [("1", "Disable Alert Rule(s)"), ("2", "Enable Alert Rule(s)")])
 
 	"""
-	Alert rule level.
+	Alert rule's level.
 	"""
 	ALERT_RULE_LEVEL: List = field(default_factory = lambda : [["Low", "Low level alert", 1], ["Medium", "Medium level alert", 0], ["High", "High level alert", 0]])
 
@@ -94,17 +97,22 @@ class Constants:
 	QUERY_TYPE: List = field(default_factory = lambda : [("query_string", "Using Query String", 0)])
 
 	"""
-	Alert rule fields.
+	Alert rule's fields.
 	"""
 	ALERT_RULE_FIELDS: List = field(default_factory = lambda : [("Name", "Alert rule's name", 0), ("Level", "Alert rule's level", 0), ("Index", "ElasticSearch's index pattern", 0), ("Timestamp", "Timestamp's Field", 0), ("Total Events", "Number of events to which the alert is sent", 0), ("Search Time", "Time in which the search is repeated", 0), ("Range Time", "Search range time", 0), ("Query", "Query type", 0), ("Fields Selection", "Enable or disable fields selection", 0), ("Bot Token", "Telegram Bot Token", 0), ("Chat ID", "Telegram channel identifier", 0)])
 
 	"""
-	Options displayed when the field restriction option is enabled.
+	Custom alert rule's fields.
+	"""
+	CUSTOM_ALERT_RULE_FIELDS: List = field(default_factory = lambda : [("Name", "Alert rule's name", 0), ("Level", "Alert rule's level", 0), ("Index", "ElasticSearch's index pattern", 0), ("Timestamp", "Timestamp's Field", 0), ("Search Time", "Time in which the search is repeated", 0), ("Range Time", "Search range time", 0), ("Type", "Custom Alert Rule's Type", 0), ("Query", "Query type", 0), ("Fields Selection", "Enable or disable fields selection", 0), ("Bot Token", "Telegram Bot Token", 0), ("Chat ID", "Telegram channel identifier", 0)])
+
+	"""
+	Options displayed when the field restriction's option is enabled.
 	"""
 	OPTIONS_FIELDS_TRUE: List = field(default_factory = lambda : [("Disable", "Disable fields option", 0), ("Fields", "Modify fields", 0)])
 
 	"""
-	Options displayed when the field restriction option is disabled.
+	Options displayed when the field restriction's option is disabled.
 	"""
 	OPTIONS_FIELDS_FALSE: List = field(default_factory = lambda : [("Enable", "Enable fields option", 0)])
 
@@ -117,4 +125,9 @@ class Constants:
 	Options displayed in the "Service" menu.
 	"""
 	SERVICE_MENU_OPTIONS: List = field(default_factory = lambda : [("1", "Start Service"), ("2", "Restart Service"), ("3", "Stop Service"), ("4", "Service Status")])
+	
+	"""
+	Custom alert rule's type.
+	"""
+	CUSTOM_TYPE: List = field(default_factory = lambda : [["Brute Force", "Brute Force/Dictionary Attack", 1]])
 	

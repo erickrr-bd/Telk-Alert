@@ -1,21 +1,22 @@
+"""
+Class that manages everything related to Telk-Alert-Tool.
+"""
 from os import path
 from sys import exit
 from libPyLog import libPyLog
+from dataclasses import dataclass
 from libPyUtils import libPyUtils
 from libPyDialog import libPyDialog
 from .Constants_Class import Constants
-from dataclasses import dataclass, field
 from .Alert_Rules_Class import AlertRules
+from .Alert_Rules_Class import CustomAlertRule
 from libPyConfiguration import libPyConfiguration
 from libPyAgentConfiguration import libPyAgentConfiguration
 
 @dataclass
 class TelkAlertTool:
-	"""
-	Class that manages the Telk-Alert-Tool functionality.
-	"""
 
-	def __init__(self):
+	def __init__(self) -> None:
 		"""
 		Class constructor.
 		"""
@@ -38,7 +39,7 @@ class TelkAlertTool:
 
 	def configuration_menu(self) -> None:
 		"""
-		Configuration menu.
+		Configuration's menu.
 		"""
 		option = self.dialog.create_menu("Select a option:", 9, 50, self.constants.CONFIGURATION_MENU_OPTIONS, "Configuration Menu")
 		self.switch_configuration_menu(int(option))
@@ -46,7 +47,7 @@ class TelkAlertTool:
 
 	def alert_rules_menu(self) -> None:
 		"""
-		Alert rules menu.
+		Alert rules' menu.
 		"""
 		option = self.dialog.create_menu("Select a option:", 13, 50, self.constants.ALERT_RULES_MENU_OPTIONS, "Alert Rules Menu")
 		self.switch_alert_rules_menu(int(option))
@@ -70,7 +71,7 @@ class TelkAlertTool:
 
 	def service_menu(self) -> None:
 		"""
-		Service menu.
+		Service's menu.
 		"""
 		option = self.dialog.create_menu("Select a option:", 9, 50, self.constants.CONFIGURATION_MENU_OPTIONS, "Service Menu")
 		self.switch_service_menu(int(option))
@@ -78,7 +79,7 @@ class TelkAlertTool:
 
 	def telk_alert_service_menu(self) -> None:
 		"""
-		Telk-Alert service menu.
+		Telk-Alert's service menu.
 		"""
 		option = self.dialog.create_menu("Select a option:", 11, 50, self.constants.SERVICE_MENU_OPTIONS, "Telk-Alert Service Menu")
 		self.switch_telk_alert_service_menu(int(option))
@@ -86,7 +87,7 @@ class TelkAlertTool:
 
 	def telk_alert_agent_service_menu(self) -> None:
 		"""
-		Telk-Alert service menu.
+		Telk-Alert-Agent's service menu.
 		"""
 		option = self.dialog.create_menu("Select a option:", 11, 50, self.constants.SERVICE_MENU_OPTIONS, "Telk-Alert-Agent Service Menu")
 		self.switch_telk_alert_agent_service_menu(int(option))
@@ -147,7 +148,7 @@ class TelkAlertTool:
 
 	def switch_create_alert_rule_menu(self, option: int) -> None:
 		"""
-		Method that executes an action based on the option chosen in the "Create alert rule" menu.
+		Method that executes an action based on the option chosen in the "Create Alert Rule" menu.
 
 		Parameters:
     		option (int): Chosen option.
@@ -155,11 +156,13 @@ class TelkAlertTool:
 		match option:
 			case 1:
 				self.create_alert_rule()
+			case 2:
+				self.create_custom_alert_rule()
 
 
 	def switch_disable_enable_alert_rule_menu(self, option: int) -> None:
 		"""
-		Method that executes an action based on the option chosen in the "Create alert rule" menu.
+		Method that executes an action based on the option chosen in the "Disable/Enable Alert Rule" menu.
 
 		Parameters:
     		option (int): Chosen option.
@@ -204,7 +207,7 @@ class TelkAlertTool:
 				result = self.utils.manage_daemon("telk-alert.service", 3)
 				if result == 0:
 					self.dialog.create_message("\nTelk-Alert service stopped.", 7, 50, "Notification Message")
-					self.logger.create_log("Telk-Alert service stopped", 2, "_manageService", use_file_handler = True, file_name = self.constants.LOG_FILE, user = self.constants.USER, group = self.constants.GROUP)
+					self.logger.create_log("Telk-Alert service stopped", 3, "_manageService", use_file_handler = True, file_name = self.constants.LOG_FILE, user = self.constants.USER, group = self.constants.GROUP)
 			case 4:
 				service_status = self.utils.get_detailed_status_by_daemon("telk-alert.service", "/tmp/telk_alert.status")
 				self.dialog.create_scrollbox(service_status, 18, 70, "Telk-Alert Service")
@@ -232,7 +235,7 @@ class TelkAlertTool:
 				result = self.utils.manage_daemon("telk-alert-agent.service", 3)
 				if result == 0:
 					self.dialog.create_message("\nTelk-Alert-Agent service stopped.", 7, 50, "Notification Message")
-					self.logger.create_log("Telk-Alert-Agent service stopped", 2, "_manageService", use_file_handler = True, file_name = self.constants.LOG_FILE, user = self.constants.USER, group = self.constants.GROUP)
+					self.logger.create_log("Telk-Alert-Agent service stopped", 3, "_manageService", use_file_handler = True, file_name = self.constants.LOG_FILE, user = self.constants.USER, group = self.constants.GROUP)
 			case 4:
 				service_status = self.utils.get_detailed_status_by_daemon("telk-alert-agent.service", "/tmp/telk_alert_agent.status")
 				self.dialog.create_scrollbox(service_status, 18, 70, "Telk-Alert-Agent Service")
@@ -240,7 +243,7 @@ class TelkAlertTool:
 
 	def define_configuration(self) -> None:
 		"""
-		Method that defines the action to be performed on the Telk-Alert configuration.
+		Method that defines the action to be performed on the Telk-Alert's configuration.
 		"""
 		if not path.exists(self.constants.TELK_ALERT_CONFIGURATION):
 			option = self.dialog.create_radiolist("Select a option:", 8, 50, self.constants.CONFIGURATION_OPTIONS_FALSE, "Telk-Alert Configuration")
@@ -253,7 +256,7 @@ class TelkAlertTool:
 
 	def create_configuration(self) -> None:
 		"""
-		Method that creates the Telk-Alert configuration.
+		Method that creates the Telk-Alert's configuration.
 		"""
 		telk_alert_data = libPyConfiguration(self.constants.BACKTITLE)
 		telk_alert_data.define_es_host()
@@ -264,7 +267,7 @@ class TelkAlertTool:
 
 	def modify_configuration(self) -> None:
 		"""
-		Method that updates or modifies the Telk-Alert configuration.
+		Method that updates or modifies the Telk-Alert's configuration.
 		"""
 		telk_alert_data = libPyConfiguration(self.constants.BACKTITLE)
 		telk_alert_data.modify_configuration(self.constants.TELK_ALERT_CONFIGURATION, self.constants.KEY_FILE, self.constants.LOG_FILE, self.constants.USER, self.constants.GROUP)
@@ -272,7 +275,7 @@ class TelkAlertTool:
 
 	def display_configuration(self) -> None:
 		"""
-		Method that displays the Telk-Alert configuration.
+		Method that displays the Telk-Alert's configuration.
 		"""
 		telk_alert_data = libPyConfiguration(self.constants.BACKTITLE)
 		telk_alert_data.display_configuration(self.constants.TELK_ALERT_CONFIGURATION, self.constants.LOG_FILE, self.constants.USER, self.constants.GROUP)
@@ -280,7 +283,7 @@ class TelkAlertTool:
 
 	def define_agent_configuration(self) -> None:
 		"""
-		Method that defines the action to be performed on the Telk-Alert-Agent configuration.
+		Method that defines the action to be performed on the Telk-Alert-Agent's configuration.
 		"""
 		if not path.exists(self.constants.TELK_ALERT_AGENT_CONFIGURATION):
 			option = self.dialog.create_radiolist("Select a option:", 8, 50, self.constants.CONFIGURATION_OPTIONS_FALSE, "Telk-Alert-Agent Configuration")
@@ -293,7 +296,7 @@ class TelkAlertTool:
 
 	def create_agent_configuration(self) -> None:
 		"""
-		Method that creates the Telk-Alert-Agent configuration.
+		Method that creates the Telk-Alert-Agent's configuration.
 		"""
 		telk_alert_agent_data = libPyAgentConfiguration(self.constants.BACKTITLE)
 		telk_alert_agent_data.define_frequency_time()
@@ -304,7 +307,7 @@ class TelkAlertTool:
 
 	def modify_agent_configuration(self) -> None:
 		"""
-		Method that updates or modifies the Telk-Alert-Agent configuration.
+		Method that updates or modifies the Telk-Alert-Agent's configuration.
 		"""
 		telk_alert_agent_data = libPyAgentConfiguration(self.constants.BACKTITLE)
 		telk_alert_agent_data.modify_agent_configuration(self.constants.TELK_ALERT_AGENT_CONFIGURATION, self.constants.KEY_FILE, self.constants.LOG_FILE, self.constants.USER, self.constants.GROUP)
@@ -312,7 +315,7 @@ class TelkAlertTool:
 
 	def display_agent_configuration(self) -> None:
 		"""
-		Method that displays the Telk-Alert configuration.
+		Method that displays the Telk-Alert's configuration.
 		"""
 		telk_alert_agent_data = libPyAgentConfiguration(self.constants.BACKTITLE)
 		telk_alert_agent_data.display_agent_configuration(self.constants.TELK_ALERT_AGENT_CONFIGURATION, self.constants.LOG_FILE, self.constants.USER, self.constants.GROUP)
@@ -337,12 +340,36 @@ class TelkAlertTool:
 		alert_rule.create_file(alert_rule.convert_object_to_dict())
 
 
+	def create_custom_alert_rule(self) -> None:
+		"""
+		Method that creates a new custom alert rule.
+		"""
+		custom_alert_rule = CustomAlertRule()
+		custom_alert_rule.is_custom_rule = True
+		custom_alert_rule.define_name()
+		custom_alert_rule.define_level()
+		custom_alert_rule.define_index_pattern()
+		custom_alert_rule.define_timestamp_field()
+		custom_alert_rule.define_search_time()
+		custom_alert_rule.define_range_time()
+		custom_alert_rule.define_custom_type()
+		if custom_alert_rule.custom_rule_type == "Brute Force":
+			custom_alert_rule.define_total_events()
+			custom_alert_rule.define_hostname_field()
+			custom_alert_rule.define_username_field()
+		custom_alert_rule.define_query_type()
+		custom_alert_rule.define_use_fields()
+		custom_alert_rule.define_telegram_bot_token()
+		custom_alert_rule.define_telegram_chat_id()
+		custom_alert_rule.create_file(custom_alert_rule.convert_object_to_dict())
+
+
 	def display_about(self) -> None:
 		"""
 		Method that displays the about of the application.
 		"""
 		try:
-			text = "\nAuthor: Erick Roberto Rodríguez Rodríguez\nEmail: erickrr.tbd93@gmail.com, erodriguez@tekium.mx\nGithub: https://github.com/erickrr-bd/Telk-Alert\nTelk-Alert v4.0 - April 2025" + "\n\nEasy alerting with ElasticSearch and Python."
+			text = "\nAuthor: Erick Roberto Rodríguez Rodríguez\nEmail: erickrr.tbd93@gmail.com, erodriguez@tekium.mx\nGithub: https://github.com/erickrr-bd/Telk-Alert\nTelk-Alert v4.1 - September 2025" + "\n\nEasy alerting with ElasticSearch and Python."
 			self.dialog.create_scrollbox(text, 12, 60, "About")
 		except KeyboardInterrupt:
 			pass
