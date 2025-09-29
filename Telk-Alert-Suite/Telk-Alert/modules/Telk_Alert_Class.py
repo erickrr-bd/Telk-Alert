@@ -7,40 +7,20 @@ from libPyLog import libPyLog
 from libPyElk import libPyElk
 from time import sleep, strftime
 from libPyUtils import libPyUtils
-from dataclasses import dataclass
 from .Constants_Class import Constants
 from libPyTelegram import libPyTelegram
+from dataclasses import dataclass, field
 from libPyConfiguration import libPyConfiguration
-from apscheduler.schedulers.background import BackgroundScheduler
+
 
 @dataclass
 class TelkAlert:
-	
-	def __init__(self) -> None:
-		"""
-		Class constructor.
-		"""
-		self.logger = libPyLog()
-		self.utils = libPyUtils()
-		self.constants = Constants()
-		self.elasticsearch = libPyElk()
-		self.telegram = libPyTelegram()
-		self.scheduler = BackgroundScheduler()
-		self.configuration = libPyConfiguration()
-		self.scheduler.start()
 
-
-	def run_as_daemon(self) -> None:
-		"""
-		Method that runs the application as a daemon.
-		"""
-		try:
-			self.start_telk_alert()
-			while True:
-				sleep(60)
-		except (KeyboardInterrupt, SystemExit)  as exception:
-			self.scheduler.shutdown()
-			self.logger.create_log("Telk-Alert daemon stopped", 2, "_daemon", use_stream_handler = True, use_file_handler = True, file_name = self.constants.LOG_FILE, user = self.constants.USER, group = self.constants.GROUP)
+	logger: libPyLog = field(default_factory = libPyLog)
+	utils: libPyUtils = field(default_factory = libPyUtils)
+	constants: Constants = field(default_factory = Constants)
+	elasticsearch: libPyElk = field(default_factory = libPyElk)
+	telegram: libPyTelegram = field(default_factory = libPyTelegram)
 
 
 	def start_telk_alert(self) -> None:
@@ -84,7 +64,7 @@ class TelkAlert:
 					for alert_rule in alert_rules:
 						alert_rule_data = self.utils.read_yaml_file(f"{self.constants.ALERT_RULES_FOLDER}/{alert_rule}")
 						self.logger.create_log(f"Alert rule: {alert_rule_data["name"]}", 2, "_loadAlertRule", use_stream_handler = True)
-						self.start_alert_rule(conn_es, alert_rule_data)
+						Thread(name = alert_rule[:-5], target = self.start_alert_rule, args = (conn_es, alert_rule_data)).start()
 				else:
 					self.logger.create_log(f"No alert rules in: {self.constants.ALERT_RULES_FOLDER}", 3, "_readAlertRules", use_stream_handler = True)
 			else:
@@ -96,20 +76,6 @@ class TelkAlert:
 
 	def start_alert_rule(self, conn_es, alert_rule_data: dict) -> None:
 		"""
-		Method that executes a task in a defined time interval.
-
-		Parameters:
-			conn_es (ElasticSearch): A straightforward mapping from Python to ES REST endpoints.
-			alert_rule_data (dict): Object that contains the alert rule's configuration data.
-		"""
-		unit_time = list(alert_rule_data["search_time"].keys())[0]
-		search_time = alert_rule_data["search_time"][unit_time]
-		interval_args = {unit_time : search_time}
-		self.scheduler.add_job(self.alert_rule_search, "interval", **interval_args, args = [conn_es, alert_rule_data], id = alert_rule_data["name"], replace_existing = True)
-
-
-	def alert_rule_search(self, conn_es, alert_rule_data: dict) -> None:
-		"""
 		Method that executes an alert rule.
 
 		Parameters:
@@ -117,45 +83,49 @@ class TelkAlert:
 			alert_rule_data (dict): Object that contains the alert rule's configuration data.
 		"""
 		try:
+			unit_time = list(alert_rule_data["search_time"].keys())[0]
+			search_time = self.utils.convert_time_to_seconds(unit_time, alert_rule_data["search_time"][unit_time])
 			unit_time = list(alert_rule_data["range_time"].keys())[0]
 			gte_date = self.utils.get_gte_date(unit_time, alert_rule_data["range_time"][unit_time])
 			lte_date = self.utils.get_lte_date(unit_time)
 			query_type = list(alert_rule_data["query"]["query_type"][0].keys())[0]
-			if not alert_rule_data["is_custom_rule"]:
-				match query_type:
-					case "query_string":
-						query_string = alert_rule_data["query"]["query_type"][0]["query_string"]["query"]
-						if alert_rule_data["use_fields"]:
-							result = self.elasticsearch.search_query_string(conn_es, alert_rule_data["index_pattern"], query_string, alert_rule_data["timestamp_field"], gte_date, lte_date, alert_rule_data["use_fields"], fields = alert_rule_data["fields"])
-						else:
-							result = self.elasticsearch.search_query_string(conn_es, alert_rule_data["index_pattern"], query_string, alert_rule_data["timestamp_field"], gte_date, lte_date, alert_rule_data["use_fields"])
-						if result:
-							if len(result) >= alert_rule_data["total_events"]:
-								self.logger.create_log(f"Events found: {str(len(result))}", 2, f"_{alert_rule_data["name"]}", use_stream_handler = True, use_file_handler = True, file_name = self.constants.LOG_FILE, user = self.constants.USER, group = self.constants.GROUP)
-								self.send_telegram_alert(result, alert_rule_data)
-						else:
-							self.logger.create_log("No events", 2, f"_{alert_rule_data["name"]}", use_stream_handler = True)
-			else:
-				match alert_rule_data["custom_rule_type"]:
-					case "Brute Force":
-						query_string = alert_rule_data["query"]["query_type"][0]["query_string"]["query"]
-						result = self.elasticsearch.search_query_string_aggregation(conn_es, alert_rule_data["index_pattern"], query_string, alert_rule_data["timestamp_field"], gte_date, lte_date, alert_rule_data["hostname_field"], False)
-						if result:
-							for tag in result.aggregations.events.buckets:
-								if tag.doc_count >= alert_rule_data["total_events"]:
-									query_string += f" AND {alert_rule_data["hostname_field"]} : {tag.key}"
-									result = self.elasticsearch.search_query_string_aggregation(conn_es, alert_rule_data["index_pattern"], query_string, alert_rule_data["timestamp_field"], gte_date, lte_date, alert_rule_data["username_field"], False)
-									for tag in result.aggregations.events.buckets:
-										if tag.doc_count >= alert_rule_data["total_events"]:
-											query_string += f" AND {alert_rule_data["username_field"]} : {tag.key}"
-											if alert_rule_data["use_fields"]:
-												result = self.elasticsearch.search_query_string(conn_es, alert_rule_data["index_pattern"], query_string, alert_rule_data["timestamp_field"], gte_date, lte_date, alert_rule_data["use_fields"], fields = alert_rule_data["fields"])
-											else:
-												result = self.elasticsearch.search_query_string(conn_es, alert_rule_data["index_pattern"], query_string, alert_rule_data["timestamp_field"], gte_date, lte_date, alert_rule_data["use_fields"])
-											self.logger.create_log(f"Events found: {str(len(result))}", 2, f"_{alert_rule_data["name"]}", use_stream_handler = True, use_file_handler = True, file_name = self.constants.LOG_FILE, user = self.constants.USER, group = self.constants.GROUP)
-											self.send_telegram_alert(result, alert_rule_data)
-						else:
-							self.logger.create_log("No events", 2, f"_{alert_rule_data["name"]}", use_stream_handler = True)
+			while True:
+				if not alert_rule_data["is_custom_rule"]:
+					match query_type:
+						case "query_string":
+							query_string = alert_rule_data["query"]["query_type"][0]["query_string"]["query"]
+							if alert_rule_data["use_fields"]:
+								result = self.elasticsearch.search_query_string(conn_es, alert_rule_data["index_pattern"], query_string, alert_rule_data["timestamp_field"], gte_date, lte_date, alert_rule_data["use_fields"], fields = alert_rule_data["fields"])
+							else:
+								result = self.elasticsearch.search_query_string(conn_es, alert_rule_data["index_pattern"], query_string, alert_rule_data["timestamp_field"], gte_date, lte_date, alert_rule_data["use_fields"])
+							if result:
+								if len(result) >= alert_rule_data["total_events"]:
+									self.logger.create_log(f"Events found: {str(len(result))}", 2, f"_{alert_rule_data["name"]}", use_stream_handler = True, use_file_handler = True, file_name = self.constants.LOG_FILE, user = self.constants.USER, group = self.constants.GROUP)
+									self.send_telegram_alert(result, alert_rule_data)
+							else:
+								self.logger.create_log("No events", 2, f"_{alert_rule_data["name"]}", use_stream_handler = True)
+				else:
+					match alert_rule_data["custom_rule_type"]:
+						case "Brute Force":
+							query_string = alert_rule_data["query"]["query_type"][0]["query_string"]["query"]
+							result = self.elasticsearch.search_query_string_aggregation(conn_es, alert_rule_data["index_pattern"], query_string, alert_rule_data["timestamp_field"], gte_date, lte_date, alert_rule_data["hostname_field"], False)
+							if result:
+								for tag in result.aggregations.events.buckets:
+									if tag.doc_count >= alert_rule_data["total_events"]:
+										query_string += f" AND {alert_rule_data["hostname_field"]} : {tag.key}"
+										result = self.elasticsearch.search_query_string_aggregation(conn_es, alert_rule_data["index_pattern"], query_string, alert_rule_data["timestamp_field"], gte_date, lte_date, alert_rule_data["username_field"], False)
+										for tag in result.aggregations.events.buckets:
+											if tag.doc_count >= alert_rule_data["total_events"]:
+												query_string += f" AND {alert_rule_data["username_field"]} : {tag.key}"
+												if alert_rule_data["use_fields"]:
+													result = self.elasticsearch.search_query_string(conn_es, alert_rule_data["index_pattern"], query_string, alert_rule_data["timestamp_field"], gte_date, lte_date, alert_rule_data["use_fields"], fields = alert_rule_data["fields"])
+												else:
+													result = self.elasticsearch.search_query_string(conn_es, alert_rule_data["index_pattern"], query_string, alert_rule_data["timestamp_field"], gte_date, lte_date, alert_rule_data["use_fields"])
+												self.logger.create_log(f"Events found: {str(len(result))}", 2, f"_{alert_rule_data["name"]}", use_stream_handler = True, use_file_handler = True, file_name = self.constants.LOG_FILE, user = self.constants.USER, group = self.constants.GROUP)
+												self.send_telegram_alert(result, alert_rule_data)
+							else:
+								self.logger.create_log("No events", 2, f"_{alert_rule_data["name"]}", use_stream_handler = True)
+				sleep(search_time)
 		except Exception as exception:
 			self.logger.create_log(f"Error running the alert rule: {alert_rule_data["name"]}. For more information, see the logs.", 4, "_start", use_stream_handler = True)
 			self.logger.create_log(exception, 4, f"_{alert_rule_data["name"]}", use_file_handler = True, file_name = self.constants.LOG_FILE, user = self.constants.USER, group = self.constants.GROUP)
