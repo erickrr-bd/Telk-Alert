@@ -1,134 +1,284 @@
 """
 Class that manages everything related to Alert Rules.
 """
+import re
 from os import path
-from json import dumps
+from copy import deepcopy
 from libPyLog import libPyLog
 from libPyUtils import libPyUtils
-from libPyDialog import libPyDialog
+from libPyDialog import libPyDialog, DialogCancelled
 from .Constants_Class import Constants
-from dataclasses import dataclass, field
 
-@dataclass
+# Only the classes are exported by the libraries' packages, so the validations are defined here.
+# Valid name of an ElasticSearch field.
+FIELD_REGEX = re.compile(r"^[A-Za-z0-9_@.\-]+$")
+
+# Valid alert rule's name (same rule as libPyDialog.create_filename_inputbox).
+FILENAME_REGEX = re.compile(r'^[^\\/?%*:|"<>]+$')
+
+# Telegram Bot Token (<id>:<hash>) and Chat ID (integer, negative for groups, or @channel).
+TOKEN_REGEX = re.compile(r"^\d{5,}:[A-Za-z0-9_-]{30,}$")
+CHAT_ID_REGEX = re.compile(r"^(-?\d+|@[A-Za-z0-9_]{5,})$")
+
+# Maximum total accepted for each unit of time.
+MAX_TOTAL_BY_UNIT = {"minutes": 1440, "hours": 720, "days": 365}
+
+LEVELS = tuple(level for level, _ in Constants.ALERT_RULE_LEVEL)
+
+
 class AlertRules:
 
-	is_custom_rule: bool = False
-	name: str = None
-	level: str = None
-	index_pattern: str = None
-	timestamp_field: str = None
-	total_events: int = 0
-	search_time: dict = field(default_factory = dict)
-	range_time: dict = field(default_factory = dict)
-	query: dict = field(default_factory = dict)
-	use_fields: bool = False
-	fields: list = field(default_factory = list)
-	telegram_bot_token: tuple = field(default_factory = tuple)
-	telegram_chat_id: tuple = field(default_factory = tuple)
-
-
-	def __init__(self) -> None:
+	def __init__(self, dialog: libPyDialog, logger: libPyLog, utils: libPyUtils) -> None:
 		"""
 		Class constructor.
+
+		Parameters:
+			dialog (libPyDialog): Shared dialog instance.
+			logger (libPyLog): Shared logger instance.
+			utils (libPyUtils): Shared utilities instance.
 		"""
-		self.logger = libPyLog()
-		self.utils = libPyUtils()
-		self.constants = Constants()
-		self.dialog = libPyDialog(self.constants.BACKTITLE)
+		self.dialog = dialog
+		self.logger = logger
+		self.utils = utils
+		self.name = None
+		self.level = None
+		self.index_pattern = None
+		self.timestamp_field = None
+		self.total_events = 0
+		self.search_time = {}
+		self.range_time = {}
+		self.query = {}
+		self.use_fields = False
+		self.fields = []
+		self.telegram_bot_token = ()
+		self.telegram_chat_id = ()
 
 
+	# --- Internal helpers ----------------------------------------------------------------------
+	def _log(self, message, detail: str = "", level: int = 3, tag: str = "_modifyAlertRule") -> None:
+		"""
+		Method that writes an entry in the log file (fixed tag: one logger, one file handler).
+		"""
+		text = f"{message}: {detail}" if detail else message
+		self.logger.create_log(text, level, tag, use_file_handler = True, file_name = Constants.LOG_FILE, user = Constants.USER, group = Constants.GROUP)
+
+
+	def _error(self, text: str, tag: str, exception: Exception) -> None:
+		"""
+		Method that displays an error message and writes the exception in the log file.
+		"""
+		self.dialog.create_message(text, 8, 50, "Error Message")
+		self._log(exception, level = 4, tag = tag)
+
+
+	@staticmethod
+	def _choices(options: tuple, selected: str) -> list:
+		"""
+		Method that builds radiolist choices marking the selected option (the constants are never modified).
+		"""
+		return [(tag, description, 1 if tag == selected else 0) for tag, description in options]
+
+
+	@staticmethod
+	def _rule_file(name: str) -> str:
+		return path.join(Constants.ALERT_RULES_FOLDER, f"{name}.yaml")
+
+
+	def _rule_exists(self, name: str) -> bool:
+		"""
+		Method that checks whether an alert rule (enabled or disabled) already exists.
+		"""
+		rule_file = self._rule_file(name)
+		return path.exists(rule_file) or path.exists(rule_file + ".disabled")
+
+
+	@staticmethod
+	def _valid_name(name) -> bool:
+		return (isinstance(name, str) and FILENAME_REGEX.fullmatch(name) is not None
+			and name not in (".", "..") and len(name) <= 200 and not any(ord(char) < 32 for char in name))
+
+
+	def _list_rules(self, disabled: bool = False) -> list:
+		"""
+		Method that returns the sorted alert rules (or shows a message if there are none).
+		"""
+		folder = Constants.ALERT_RULES_FOLDER
+		rules = sorted(self.utils.get_disabled_files_in_folder(folder) if disabled else self.utils.get_yaml_files_in_folder(folder))
+		if not rules:
+			self.dialog.create_message(f"\nNo {'disabled ' if disabled else ''}alert rules in: {folder}", 8, 50, "Notification Message")
+		return rules
+
+
+	def _select_rule(self, title: str) -> str | None:
+		"""
+		Method that asks for one alert rule (file name).
+		"""
+		rules = self._list_rules()
+		if not rules:
+			return None
+		return self.dialog.create_radiolist("Select a option:", 18, 70, self.utils.convert_list_to_tuple_rc(rules, "Alert Rule's Name"), title)
+
+
+	def _confirm_selection(self, items: list, item_text: str, title: str, question: str) -> list:
+		"""
+		Method that asks for one or more items, shows them and asks for confirmation.
+
+		Returns:
+			selected (list): Confirmed items (empty if the user said "No").
+		"""
+		selected = self.dialog.create_checklist("Select one or more options:", 18, 70, self.utils.convert_list_to_tuple_rc(items, item_text), title)
+		self.dialog.create_scrollbox(self.utils.get_str_from_list(selected, "Selected:"), 14, 60, title)
+		return list(selected) if self.dialog.create_yes_or_no(question, 10, 50, title) else []
+
+
+	def _ask_time(self, prompt: str, selected_unit: str = "minutes", current_total: int = 1) -> dict:
+		"""
+		Method that asks for a unit of time and its total (with limits).
+		"""
+		unit = self.dialog.create_radiolist("Select a option:", 10, 50, self._choices(Constants.UNIT_TIME, selected_unit), "Unit Time")
+		maximum = MAX_TOTAL_BY_UNIT[unit]
+		total = self.dialog.create_integer_inputbox(f"{prompt} ({unit}, 1-{maximum}):", 10, 50, str(min(max(current_total, 1), maximum)), min_value = 1, max_value = maximum)
+		return {unit: total}
+
+
+	def _seconds(self, time_value: dict) -> int:
+		unit, total = next(iter(time_value.items()))
+		return self.utils.convert_time_to_seconds(unit, total)
+
+
+	def _ensure_range_time(self) -> None:
+		"""
+		Method that makes sure the range time is not shorter than the search time (otherwise events are lost).
+		"""
+		while self._seconds(self.range_time) < self._seconds(self.search_time):
+			self.dialog.create_message("\nThe range time must be greater than or equal to the search time.", 8, 55, "Error Message")
+			unit, total = next(iter(self.range_time.items()))
+			self.range_time = self._ask_time("Enter the total of the search range", unit, total)
+
+
+	def _ask_fields(self, title: str, current: list | None = None) -> list:
+		"""
+		Method that asks for field names (new ones or editing the current ones). Duplicates are removed.
+		"""
+		if current is None:
+			total = self.dialog.create_integer_inputbox(f"Enter the total field(s) (1-{Constants.MAX_FIELDS}):", 8, 50, "1", min_value = 1, max_value = Constants.MAX_FIELDS)
+			tuple_to_form = self.utils.generate_tuple_to_form(total, "Field's Name")
+		else:
+			tuple_to_form = self.utils.convert_list_to_tuple(current, "Field's Name")
+		fields = self.dialog.create_form("Enter the field's names:", tuple_to_form, 15, 50, title, validator = lambda value: FIELD_REGEX.fullmatch(value) is not None, error_message = "Invalid field name.")
+		return list(dict.fromkeys(fields))
+
+
+	def _encrypt_secret(self, prompt: str, title: str, field: str, validator, error_message: str) -> tuple:
+		"""
+		Method that asks for a secret (hidden input, no default value) and returns it encrypted.
+		The passphrase and the plaintext are wiped from memory afterwards.
+		"""
+		value = self.dialog.create_passwordbox(prompt, 9, 60, True, title = title, validator = validator, error_message = error_message)
+		buffer = bytearray(value.encode("utf-8"))
+		passphrase = None
+		try:
+			passphrase = self.utils.get_passphrase(Constants.KEY_FILE, owner = Constants.USER)
+			return self.utils.encrypt_data(buffer, passphrase, context = f"{Constants.CTX_ALERT_RULE}:{field}")
+		finally:
+			self.utils.zeroize(buffer)
+			if passphrase is not None:
+				self.utils.zeroize(passphrase)
+
+
+	@staticmethod
+	def _encrypted(data: dict, field: str):
+		value = data.get(field)
+		if not isinstance(value, (list, tuple)) or len(value) != 4 or not all(isinstance(item, bytes) for item in value):
+			raise ValueError(f"Invalid {field}.")
+		return value
+
+
+	@staticmethod
+	def _time_value(data: dict, key: str) -> dict:
+		value = data.get(key)
+		if not isinstance(value, dict) or len(value) != 1:
+			raise ValueError(f"Invalid {key}.")
+		unit, total = next(iter(value.items()))
+		if unit not in MAX_TOTAL_BY_UNIT or isinstance(total, bool) or not isinstance(total, int) or not 1 <= total <= MAX_TOTAL_BY_UNIT[unit]:
+			raise ValueError(f"Invalid {key}.")
+		return {unit: total}
+
+
+	@staticmethod
+	def _query_value(data: dict) -> dict:
+		try:
+			query_string = data["query"]["query_type"][0]["query_string"]["query"]
+		except (KeyError, IndexError, TypeError) as exception:
+			raise ValueError("Invalid query.") from exception
+		if not isinstance(query_string, str) or not query_string.strip():
+			raise ValueError("Invalid query.")
+		return {"query_type": [{"query_string": {"query": query_string}}]}
+
+
+	# --- Definition ----------------------------------------------------------------------------
 	def define_name(self) -> None:
 		"""
-		Method that defines the alert rule's name.
+		Method that defines the alert rule's name (it can't match an existing rule).
 		"""
-		self.name = self.dialog.create_filename_inputbox("Enter the alert rule's name:", 8, 50, "rule1")
+		while True:
+			name = self.dialog.create_filename_inputbox("Enter the alert rule's name:", 8, 50, "rule1")
+			if not self._rule_exists(name):
+				self.name = name
+				return
+			self.dialog.create_message("\nAn alert rule with that name already exists.", 8, 50, "Error Message")
 
 
 	def define_level(self) -> None:
-		"""
-		Method that defines the alert rule's level.
-		"""
-		self.level = self.dialog.create_radiolist("Select a option:", 10, 50, self.constants.ALERT_RULE_LEVEL, "Alert Rule Level")
+		self.level = self.dialog.create_radiolist("Select a option:", 10, 50, self._choices(Constants.ALERT_RULE_LEVEL, "Low"), "Alert Rule Level")
 
 
 	def define_index_pattern(self) -> None:
-		"""
-		Method that defines the alert rule's index pattern.
-		"""
 		self.index_pattern = self.dialog.create_inputbox("Enter the index pattern:", 8, 50, "winlogbeat-*")
 
 
 	def define_timestamp_field(self) -> None:
-		"""
-		Method that defines the field's name corresponding to the index timestamp.
-		"""
 		self.timestamp_field = self.dialog.create_inputbox("Enter the field's name that corresponds to the index timestamp:", 9, 50, "@timestamp")
 
 
 	def define_total_events(self) -> None:
-		"""
-		Method that defines the total number of events that will trigger the alert rule.
-		"""
-		self.total_events = int(self.dialog.create_integer_inputbox("Enter the total events to which the alert will be sent:", 9, 50, "1"))
+		self.total_events = self.dialog.create_integer_inputbox(f"Enter the total events to which the alert will be sent (1-{Constants.MAX_TOTAL_EVENTS}):", 9, 50, "1", min_value = 1, max_value = Constants.MAX_TOTAL_EVENTS)
 
 
 	def define_search_time(self) -> None:
-		"""
-		Method that defines how often the search will be repeated.
-		"""
-		option = self.dialog.create_radiolist("Select a option:", 10, 50, self.constants.UNIT_TIME, "Unit Time")
-		total_time = self.dialog.create_integer_inputbox(f"Enter the total in {option} that the search will be repeated:", 9, 50, "1")
-		self.search_time = {option : int(total_time)}
+		self.search_time = self._ask_time("Enter the total that the search will be repeated")
 
 
 	def define_range_time(self) -> None:
-		"""
-		Method that defines the time range from the current moment in which the event search will be performed.
-		"""
-		option = self.dialog.create_radiolist("Select a option:", 10, 50, self.constants.UNIT_TIME, "Unit Time")
-		size = 9 if option == "minutes" else 8
-		total_time = self.dialog.create_integer_inputbox(f"Enter the total in {option} of the search range:", size, 50, "1")
-		self.range_time = {option : int(total_time)}
+		self.range_time = self._ask_time("Enter the total of the search range")
+		self._ensure_range_time()
 
 
 	def define_query_type(self) -> None:
-		"""
-		Method that defines the query's type to use for the search.
-		"""
-		option = self.dialog.create_radiolist("Select a option:", 8, 50, self.constants.QUERY_TYPE, "Query Type")
+		option = self.dialog.create_radiolist("Select a option:", 8, 50, self._choices(Constants.QUERY_TYPE, "query_string"), "Query Type")
 		if option == "query_string":
 			query_string = self.dialog.create_inputbox("Enter the query string:", 8, 50, "event.code: 4625")
-			self.query = {"query_type" : [{"query_string" : {"query" : query_string}}]}
+			self.query = {"query_type": [{"query_string": {"query": query_string}}]}
 
 
 	def define_use_fields(self) -> None:
-		"""
-		Method that defines whether the search result will be limited to specific fields.
-		"""
-		use_fields_yn = self.dialog.create_yes_or_no("\nIs the selection of specific fields required for the alert?", 8, 50, "Fields Selection")
-		if use_fields_yn == "ok":
+		if self.dialog.create_yes_or_no("\nIs the selection of specific fields required for the alert?", 8, 50, "Fields Selection"):
+			self.fields = self._ask_fields("Fields")
 			self.use_fields = True
-			total_fields = self.dialog.create_integer_inputbox("Enter the total fields:", 8, 50, "1")
-			tuple_to_form = self.utils.generate_tuple_to_form(int(total_fields), "Field's Name")
-			self.fields = self.dialog.create_form("Enter the field's names:", tuple_to_form, 15, 50, "Fields", False)
+		else:
+			self.use_fields = False
+			self.fields = []
 
 
 	def define_telegram_bot_token(self) -> None:
-		"""
-		Method that defines the Telegram Bot Token.
-		"""
-		passphrase = self.utils.get_passphrase(self.constants.KEY_FILE)
-		self.telegram_bot_token = self.utils.encrypt_data(self.dialog.create_inputbox("Enter the Telegram Bot Token:", 8, 50, "751988420:AAHrzn7RXWxVQQNha0tQUzyouE5lUcPde1g"), passphrase)
+		self.telegram_bot_token = self._encrypt_secret("Enter the Telegram Bot Token:", "Bot Token", "telegram_bot_token", lambda value: TOKEN_REGEX.fullmatch(value) is not None, "Invalid Telegram Bot Token (<id>:<hash>).")
 
 
 	def define_telegram_chat_id(self) -> None:
-		"""
-		Method that defines the Telegram Chat ID.
-		"""
-		passphrase = self.utils.get_passphrase(self.constants.KEY_FILE)
-		self.telegram_chat_id = self.utils.encrypt_data(self.dialog.create_inputbox("Enter the Telegram Chat ID:", 8, 50, "-1002365478941"), passphrase)
+		self.telegram_chat_id = self._encrypt_secret("Enter the Telegram Chat ID:", "Chat ID", "telegram_chat_id", lambda value: CHAT_ID_REGEX.fullmatch(value) is not None, "Invalid Telegram Chat ID (integer, negative for groups, or @channel).")
 
 
+	# --- Conversion ----------------------------------------------------------------------------
 	def convert_object_to_dict(self) -> dict:
 		"""
 		Method that converts an AlertRules's object into a dictionary.
@@ -137,74 +287,89 @@ class AlertRules:
 			alert_rule_data_json (dict): Dictionary with the object's data.
 		"""
 		alert_rule_data_json = {
-			"is_custom_rule" : self.is_custom_rule,
-			"name" :  self.name,
-			"level" :  self.level,
-			"index_pattern" : self.index_pattern,
-			"timestamp_field" : self.timestamp_field,
-			"total_events" : self.total_events,
-			"search_time" : self.search_time,
-			"range_time" : self.range_time,
-			"query" : self.query,
-			"use_fields" : self.use_fields,
-			"telegram_bot_token" : self.telegram_bot_token,
-			"telegram_chat_id" : self.telegram_chat_id
+			"name": self.name,
+			"level": self.level,
+			"index_pattern": self.index_pattern,
+			"timestamp_field": self.timestamp_field,
+			"total_events": self.total_events,
+			"search_time": self.search_time,
+			"range_time": self.range_time,
+			"query": self.query,
+			"use_fields": self.use_fields,
+			"telegram_bot_token": self.telegram_bot_token,
+			"telegram_chat_id": self.telegram_chat_id
 		}
-
 		if self.use_fields:
-			alert_rule_data_json.update({"fields" : self.fields})
+			alert_rule_data_json["fields"] = self.fields
 		return alert_rule_data_json
 
 
 	def convert_dict_to_object(self, alert_rule_data: dict) -> None:
 		"""
-		Method that converts a dictionary into an AlertRules' object.
+		Method that converts a dictionary into an AlertRules' object (the data is validated).
 
 		Parameters:
 			alert_rule_data (dict): Object that contains the alert rule's configuration data.
 		"""
-		self.is_custom_rule = alert_rule_data["is_custom_rule"]
+		if not isinstance(alert_rule_data, dict):
+			raise ValueError("Invalid alert rule file.")
+		if not self._valid_name(alert_rule_data.get("name")):
+			raise ValueError("Invalid alert rule name.")
+		if alert_rule_data.get("level") not in LEVELS:
+			raise ValueError("Invalid level.")
+		for key in ("index_pattern", "timestamp_field"):
+			if not isinstance(alert_rule_data.get(key), str) or not alert_rule_data[key].strip():
+				raise ValueError(f"Invalid {key}.")
+		total_events = alert_rule_data.get("total_events")
+		if isinstance(total_events, bool) or not isinstance(total_events, int) or not 0 <= total_events <= Constants.MAX_TOTAL_EVENTS:
+			raise ValueError("Invalid total_events.")
+		use_fields = alert_rule_data.get("use_fields")
+		if not isinstance(use_fields, bool):
+			raise ValueError("Invalid use_fields.")
+		fields = alert_rule_data.get("fields") if use_fields else []
+		if use_fields and (not isinstance(fields, list) or not fields or not all(isinstance(item, str) and item.strip() for item in fields)):
+			raise ValueError("Invalid fields.")
+		search_time = self._time_value(alert_rule_data, "search_time")
+		range_time = self._time_value(alert_rule_data, "range_time")
+		query = self._query_value(alert_rule_data)
+		telegram_bot_token = self._encrypted(alert_rule_data, "telegram_bot_token")
+		telegram_chat_id = self._encrypted(alert_rule_data, "telegram_chat_id")
 		self.name = alert_rule_data["name"]
 		self.level = alert_rule_data["level"]
 		self.index_pattern = alert_rule_data["index_pattern"]
 		self.timestamp_field = alert_rule_data["timestamp_field"]
-		self.total_events = alert_rule_data["total_events"]
-		unit_time = list(alert_rule_data["search_time"].keys())[0]
-		self.search_time = {unit_time : alert_rule_data["search_time"][unit_time]}
-		unit_time = list(alert_rule_data["range_time"].keys())[0]
-		self.range_time = {unit_time : alert_rule_data["range_time"][unit_time]}
-		query_type = list(alert_rule_data["query"]["query_type"][0].keys())[0]
-		if query_type == "query_string":
-			query_string = alert_rule_data["query"]["query_type"][0]["query_string"]["query"]
-			self.query = {"query_type" : [{"query_string" : {"query" : query_string}}]}
-		self.use_fields = alert_rule_data["use_fields"]
-		if alert_rule_data["use_fields"]:
-			self.fields = alert_rule_data["fields"]
-		self.telegram_bot_token  = alert_rule_data["telegram_bot_token"]
-		self.telegram_chat_id = alert_rule_data["telegram_chat_id"]
+		self.total_events = total_events
+		self.search_time = search_time
+		self.range_time = range_time
+		self.query = query
+		self.use_fields = use_fields
+		self.fields = fields
+		self.telegram_bot_token = telegram_bot_token
+		self.telegram_chat_id = telegram_chat_id
 
 
+	# --- File management -----------------------------------------------------------------------
 	def create_file(self, alert_rule_data: dict) -> None:
 		"""
-		Method that creates the YAML file corresponding to the alert rule.
+		Method that creates the YAML file corresponding to the alert rule (an existing rule is never overwritten).
 
 		Parameters:
 			alert_rule_data (dict): Object that contains the alert rule's configuration data.
 		"""
 		try:
-			alert_rule_path = f"{self.constants.ALERT_RULES_FOLDER}/{alert_rule_data["name"]}.yaml"
-			self.utils.create_yaml_file(alert_rule_data, alert_rule_path)
-			self.utils.change_owner(alert_rule_path, self.constants.USER, self.constants.GROUP, "640")
-			if path.exists(alert_rule_path):
-				self.dialog.create_message(f"\nAlert rule created: {alert_rule_data["name"]}", 7, 50, "Notification Message")
-				self.logger.create_log(f"Alert rule created: {alert_rule_data["name"]}", 2, "__createAlertRule", use_file_handler = True, file_name = self.constants.LOG_FILE, user = self.constants.USER, group = self.constants.GROUP)
-		except Exception as exception:
-			self.dialog.create_message("\nError creating alert rule. For more information, see the logs.", 8, 50, "Error Message")
-			self.logger.create_log(exception, 4, "_createAlertRule", use_file_handler = True, file_name = self.constants.LOG_FILE, user = self.constants.USER, group = self.constants.GROUP)
-		except KeyboardInterrupt:
+			name = alert_rule_data["name"]
+			if self._rule_exists(name):
+				self.dialog.create_message("\nAn alert rule with that name already exists.", 8, 50, "Error Message")
+				return
+			rule_file = self._rule_file(name)
+			self.utils.create_yaml_file(alert_rule_data, rule_file)
+			self.utils.change_owner(rule_file, Constants.USER, Constants.GROUP, "640")
+			self._log("Alert rule created", name, level = 2, tag = "_createAlertRule")
+			self.dialog.create_message(f"\nAlert rule created: {name}", 7, 50, "Notification Message")
+		except DialogCancelled:
 			pass
-		finally:
-			raise KeyboardInterrupt("Exit")
+		except Exception as exception:
+			self._error("\nError creating alert rule. For more information, see the logs.", "_createAlertRule", exception)
 
 
 	def modify_alert_rule(self) -> None:
@@ -212,38 +377,58 @@ class AlertRules:
 		Method that modifies the alert rule's configuration.
 		"""
 		try:
-			alert_rules = self.utils.get_yaml_files_in_folder(self.constants.ALERT_RULES_FOLDER)
-			if alert_rules:
-				alert_rules.sort()
-				tuple_to_rc = self.utils.convert_list_to_tuple_rc(alert_rules, "Alert Rule's Name")
-				option = self.dialog.create_radiolist("Select a option:", 18, 70, tuple_to_rc, "Alert Rule(s)")
-				alert_rule_data = self.utils.read_yaml_file(f"{self.constants.ALERT_RULES_FOLDER}/{option}")
-				original_hash = self.utils.get_hash_from_file(f"{self.constants.ALERT_RULES_FOLDER}/{option}")
-				if not alert_rule_data["is_custom_rule"]:
-					options = self.dialog.create_checklist("Select one or more options:", 18, 70, self.constants.ALERT_RULE_FIELDS, "Alert Rule's Fields")
-					self.convert_dict_to_object(alert_rule_data)
-					self.modify_rule_configuration(options)
-					alert_rule_data = self.convert_object_to_dict()
-					self.utils.create_yaml_file(alert_rule_data, f"{self.constants.ALERT_RULES_FOLDER}/{self.name}.yaml")
-					new_hash = self.utils.get_hash_from_file(f"{self.constants.ALERT_RULES_FOLDER}/{self.name}.yaml")
-				else:
-					custom_alert_rule = CustomAlertRule()
-					options = self.dialog.create_checklist("Select one or more options:", 18, 70, self.constants.CUSTOM_ALERT_RULE_FIELDS, "Custom Alert Rule's Fields")
-					custom_alert_rule.convert_dict_to_object(alert_rule_data)
-					custom_alert_rule.modify_rule_configuration(options)
-					alert_rule_data = custom_alert_rule.convert_object_to_dict()
-					self.utils.create_yaml_file(alert_rule_data, f"{self.constants.ALERT_RULES_FOLDER}/{custom_alert_rule.name}.yaml")
-					new_hash = self.utils.get_hash_from_file(f"{self.constants.ALERT_RULES_FOLDER}/{custom_alert_rule.name}.yaml")
-				self.dialog.create_message("\nAlert rule not modified.", 7, 50, "Notification Message") if new_hash == original_hash else self.dialog.create_message("\nAlert rule modified.", 7, 50, "Notification Message")
-			else:
-				self.dialog.create_message(f"\nNo alert rules in: {self.constants.ALERT_RULES_FOLDER}", 8, 50, "Notification Message")
-		except Exception as exception:
-			self.dialog.create_message("\nError modifying alert rule's configuration. For more information, see the logs.", 8, 50, "Error Message")
-			self.logger.create_log(exception, 4, "_modifyAlertRule", use_file_handler = True, file_name = self.constants.LOG_FILE, user = self.constants.USER, group = self.constants.GROUP)
-		except KeyboardInterrupt:
+			option = self._select_rule("Alert Rule(s)")
+			if option is None:
+				return
+			rule_file = path.join(Constants.ALERT_RULES_FOLDER, option)
+			original_data = self.utils.read_yaml_file(rule_file)
+			self._modify(rule_file, option, original_data)
+		except DialogCancelled:
 			pass
-		finally:
-			raise KeyboardInterrupt("Exit")
+		except Exception as exception:
+			self._error("\nError modifying alert rule's configuration. For more information, see the logs.", "_modifyAlertRule", exception)
+
+
+	def _modify(self, rule_file: str, option: str, original_data: dict) -> None:
+		"""
+		Method that applies the chosen modifications and saves the rule only if something changed.
+		The path is always built from the selected file, never from the YAML content.
+		"""
+		self.convert_dict_to_object(deepcopy(original_data))
+		self.name = option.removesuffix(".yaml")
+		options = self.dialog.create_checklist("Select one or more options:", 18, 70, Constants.ALERT_RULE_FIELDS, "Alert Rule's Fields")
+		self.modify_rule_configuration(options)
+		new_data = self.convert_object_to_dict()
+		if new_data == original_data:
+			self.dialog.create_message("\nAlert rule not modified.", 7, 50, "Notification Message")
+			return
+		new_file = self._rule_file(self.name)
+		self.utils.create_yaml_file(new_data, new_file)
+		self.utils.change_owner(new_file, Constants.USER, Constants.GROUP, "640")
+		if new_file != rule_file:
+			self.utils.delete_file(rule_file)
+		self._log("Alert rule modified", self.name)
+		self.dialog.create_message("\nAlert rule modified.", 7, 50, "Notification Message")
+
+
+	# --- Modification --------------------------------------------------------------------------
+	def _modify_actions(self) -> dict:
+		"""
+		Method that maps each checklist option to its modification method.
+		"""
+		return {
+			"Name": self.modify_name,
+			"Level": self.modify_level,
+			"Index": self.modify_index_pattern,
+			"Timestamp": self.modify_timestamp_field,
+			"Total Events": self.modify_total_events,
+			"Search Time": self.modify_search_time,
+			"Range Time": self.modify_range_time,
+			"Query": self.modify_query,
+			"Fields Selection": self.modify_fields,
+			"Bot Token": self.modify_telegram_bot_token,
+			"Chat ID": self.modify_telegram_chat_id
+		}
 
 
 	def modify_rule_configuration(self, options: list) -> None:
@@ -253,212 +438,142 @@ class AlertRules:
 		Parameters:
 			options (list): Chosen options.
 		"""
-		if "Name" in options:
-			self.modify_name()
-		if "Level" in options:
-			self.modify_level()
-		if "Index" in options:
-			self.modify_index_pattern()
-		if "Timestamp" in options:
-			self.modify_timestamp_field()
-		if "Total Events" in options:
-			self.modify_total_events()
-		if "Search Time" in options:
-			self.modify_search_time()
-		if "Range Time" in options:
-			self.modify_range_time()
-		if "Query" in options:
-			self.modify_query()
-		if "Fields Selection" in options:
-			self.modify_fields()
-		if "Bot Token" in options:
-			self.modify_telegram_bot_token()
-		if "Chat ID" in options:
-			self.modify_telegram_chat_id()
+		for tag, action in self._modify_actions().items():
+			if tag in options:
+				action()
+		if "Search Time" in options or "Range Time" in options:
+			self._ensure_range_time()
 
 
 	def modify_name(self) -> None:
 		"""
-		Method that modifies the alert rule's name.
+		Method that modifies the alert rule's name (the file is renamed when the rule is saved).
 		"""
-		old_name = self.name
-		new_name = self.dialog.create_filename_inputbox("Enter the alert rule's name:", 8, 50, old_name)
-		if new_name == old_name:
+		new_name = self.dialog.create_filename_inputbox("Enter the alert rule's name:", 8, 50, self.name)
+		if new_name == self.name:
 			self.dialog.create_message("\nThe name cannot be the same as the previous one.", 8, 50, "Notification Message")
-		else:
-			self.utils.rename_file_or_folder(f"{self.constants.ALERT_RULES_FOLDER}/{old_name}.yaml", f"{self.constants.ALERT_RULES_FOLDER}/{new_name}.yaml")
-			self.name = new_name
-			self.logger.create_log(f"Alert rule's name modified: {new_name}", 3, f"_{old_name}", use_file_handler = True, file_name = self.constants.LOG_FILE, user = self.constants.USER, group = self.constants.GROUP)
+			return
+		if self._rule_exists(new_name):
+			self.dialog.create_message("\nAn alert rule with that name already exists.", 8, 50, "Error Message")
+			return
+		self._log("Alert rule's name modified", f"{self.name} -> {new_name}")
+		self.name = new_name
 
 
 	def modify_level(self) -> None:
-		"""
-		Method that modifies the alert rule's level.
-		"""
-		for level in self.constants.ALERT_RULE_LEVEL:
-			if level[0] == self.level:
-				level[2] = 1
-			else:
-				level[2] = 0
-		self.level = self.dialog.create_radiolist("Select a option:", 10, 50, self.constants.ALERT_RULE_LEVEL, "Alert Rule's Level")
-		self.logger.create_log(f"Alert rule's level modified: {self.level}", 3, f"_{self.name}", use_file_handler = True, file_name = self.constants.LOG_FILE, user = self.constants.USER, group = self.constants.GROUP)
+		self.level = self.dialog.create_radiolist("Select a option:", 10, 50, self._choices(Constants.ALERT_RULE_LEVEL, self.level), "Alert Rule's Level")
+		self._log("Alert rule's level modified", f"{self.name}: {self.level}")
 
 
 	def modify_index_pattern(self) -> None:
-		"""
-		Method that modifies the index pattern.
-		"""
 		self.index_pattern = self.dialog.create_inputbox("Enter the index pattern:", 8, 50, self.index_pattern)
-		self.logger.create_log(f"Index pattern modified: {self.index_pattern}", 3, f"_{self.name}", use_file_handler = True, file_name = self.constants.LOG_FILE, user = self.constants.USER, group = self.constants.GROUP)
+		self._log("Index pattern modified", f"{self.name}: {self.index_pattern}")
 
 
 	def modify_timestamp_field(self) -> None:
-		"""
-		Method that modifies the field's name corresponding to the index timestamp.
-		"""
 		self.timestamp_field = self.dialog.create_inputbox("Enter the field's name that corresponds to the index timestamp:", 9, 50, self.timestamp_field)
-		self.logger.create_log(f"Timestamp's field modified: {self.timestamp_field}", 3, f"_{self.name}", use_file_handler = True, file_name = self.constants.LOG_FILE, user = self.constants.USER, group = self.constants.GROUP)
+		self._log("Timestamp's field modified", f"{self.name}: {self.timestamp_field}")
 
 
 	def modify_total_events(self) -> None:
-		"""
-		Method that modifies the total number of events to which the alert is sent.
-		"""
-		self.total_events = int(self.dialog.create_integer_inputbox("Enter the total events to which the alert will be sent:", 9, 50, str(self.total_events)))
-		self.logger.create_log(f"Total events modified: {self.total_events}", 3, f"_{self.name}", use_file_handler = True, file_name = self.constants.LOG_FILE, user = self.constants.USER, group = self.constants.GROUP)
+		self.total_events = self.dialog.create_integer_inputbox(f"Enter the total events to which the alert will be sent (1-{Constants.MAX_TOTAL_EVENTS}):", 9, 50, str(max(self.total_events, 1)), min_value = 1, max_value = Constants.MAX_TOTAL_EVENTS)
+		self._log("Total events modified", f"{self.name}: {self.total_events}")
 
 
 	def modify_search_time(self) -> None:
-		"""
-		Method that modifies the frequency with which the search is repeated.
-		"""
-		old_unit_time = list(self.search_time.keys())[0]
-
-		for unit in self.constants.UNIT_TIME:
-			if unit[0] == old_unit_time:
-				unit[2] = 1
-			else:
-				unit[2] = 0
-
-		option = self.dialog.create_radiolist("Select a option:", 10, 50, self.constants.UNIT_TIME, "Unit Time")
-		total_time = self.dialog.create_integer_inputbox(f"Enter the total in {option} that the search will be repeated:", 9, 50, str(self.search_time[old_unit_time]))
-		self.search_time = {option : int(total_time)}
-		self.logger.create_log(f"Search time modified: {self.search_time}", 3, f"_{self.name}", use_file_handler = True, file_name = self.constants.LOG_FILE, user = self.constants.USER, group = self.constants.GROUP)
+		unit, total = next(iter(self.search_time.items()))
+		self.search_time = self._ask_time("Enter the total that the search will be repeated", unit, total)
+		self._log("Search time modified", f"{self.name}: {self.search_time}")
 
 
 	def modify_range_time(self) -> None:
-		"""
-		Method that modifies the search time range.
-		"""
-		old_unit_time = list(self.range_time.keys())[0]
-
-		for unit in self.constants.UNIT_TIME:
-			if unit[0] == old_unit_time:
-				unit[2] = 1
-			else:
-				unit[2] = 0
-
-		option = self.dialog.create_radiolist("Select a option:", 10, 50, self.constants.UNIT_TIME, "Unit Time")
-		size = 9 if option == "minutes" else 8
-		total_time = self.dialog.create_integer_inputbox(f"Enter the total in {option} of the search range:", size, 50, str(self.range_time[old_unit_time]))
-		self.range_time = {option : int(total_time)}
-		self.logger.create_log(f"Range time modified: {self.range_time}", 3, f"_{self.name}", use_file_handler = True, file_name = self.constants.LOG_FILE, user = self.constants.USER, group = self.constants.GROUP)
+		unit, total = next(iter(self.range_time.items()))
+		self.range_time = self._ask_time("Enter the total of the search range", unit, total)
+		self._log("Range time modified", f"{self.name}: {self.range_time}")
 
 
 	def modify_query(self) -> None:
-		"""
-		Method that modifies the query used for the search.
-		"""
-		query_type = list(self.query["query_type"][0].keys())[0]
+		query_type = next(iter(self.query["query_type"][0]))
 		match query_type:
 			case "query_string":
 				query_string = self.dialog.create_inputbox("Enter the query string:", 8, 50, self.query["query_type"][0]["query_string"]["query"])
-				self.query = {"query_type" : [{"query_string" : {"query" : query_string}}]}
-				self.logger.create_log(f"Query string changed: {query_string}", 3, f"_{self.name}", use_file_handler = True, file_name = self.constants.LOG_FILE, user = self.constants.USER, group = self.constants.GROUP)
+				self.query = {"query_type": [{"query_string": {"query": query_string}}]}
+				self._log("Query string changed", f"{self.name}: {query_string}")
 
 
 	def modify_fields(self) -> None:
 		"""
 		Method that modifies the option of using fields for the search response.
 		"""
-		if self.use_fields:
-			option = self.dialog.create_radiolist("Select a option:", 9, 55, self.constants.OPTIONS_FIELDS_TRUE, "Field(s) Option")
-			if option == "Disable":
-				self.use_fields = False
-				self.fields = None
-				self.logger.create_log("Field(s) option has been disabled", 3, f"_{self.name}", use_file_handler = True, file_name = self.constants.LOG_FILE, user = self.constants.USER, group = self.constants.GROUP)
-			elif option == "Fields":
-				option = self.dialog.create_menu("Select a option:", 10, 50, self.constants.FIELDS_OPTIONS, "Field(s) Menu")
-				match option:
-					case "1":
-						total_fields = self.dialog.create_integer_inputbox("Enter the total field(s):", 8, 50, "1")
-						tuple_to_form = self.utils.generate_tuple_to_form(int(total_fields), "Field's Name")
-						fields = self.dialog.create_form("Enter the field's names:", tuple_to_form, 15, 50, "Add Field(s)", False)
-						self.fields.extend(fields)
-						self.logger.create_log(f"Added field(s): {','.join(fields)}", 3, f"_{self.name}", use_file_handler = True, file_name = self.constants.LOG_FILE, user = self.constants.USER, group = self.constants.GROUP)
-					case "2":
-						tuple_to_form = self.utils.convert_list_to_tuple(self.fields, "Field's Name")
-						self.fields = self.dialog.create_form("Enter the field's names:", tuple_to_form, 15, 50, "Modify Field(s)", False)
-						self.logger.create_log(f"Modified field(s): {','.join(self.fields)}", 3, f"_{self.name}", use_file_handler = True, file_name = self.constants.LOG_FILE, user = self.constants.USER, group = self.constants.GROUP)
-					case "3":
-						tuple_to_rc = self.utils.convert_list_to_tuple_rc(self.fields, "Field's Name")
-						options = self.dialog.create_checklist("Select one or more options:", 15, 50, tuple_to_rc, "Remove Field(s)")
-						text = self.utils.get_str_from_list(options, "Selected Field(s):")
-						self.dialog.create_scrollbox(text, 15, 60, "Remove Field(s)")
-						fields_yn = self.dialog.create_yes_or_no("\nAre you sure to remove the selected field(s)?\n\n** This action cannot be undone.", 9, 50, "Remove Field(s)")
-						if fields_yn == "ok":
-							[self.fields.remove(option) for option in options]
-							self.logger.create_log(f"Removed field(s): {','.join(options)}", 3, f"_{self.name}", use_file_handler = True, file_name = self.constants.LOG_FILE, user = self.constants.USER, group = self.constants.GROUP)
-		else:
-			option = self.dialog.create_radiolist("Select a option:", 8, 55, self.constants.OPTIONS_FIELDS_FALSE, "Field(s) Option")
-			if option == "Enable":
-				self.use_fields = True
-				total_fields = self.dialog.create_integer_inputbox("Enter the total field(s):", 8, 50, "1")
-				tuple_to_form = self.utils.generate_tuple_to_form(int(total_fields), "Field's Name")
-				self.fields = self.dialog.create_form("Enter the field's names:", tuple_to_form, 15, 50, "Field(s)", False)
-				self.logger.create_log("Field(s) option has been enabled", 3, f"_{self.name}", use_file_handler = True, file_name = self.constants.LOG_FILE, user = self.constants.USER, group = self.constants.GROUP)
+		if not self.use_fields:
+			self.dialog.create_radiolist("Select a option:", 8, 55, Constants.OPTIONS_FIELDS_FALSE, "Field(s) Option")
+			self.fields = self._ask_fields("Field(s)")
+			self.use_fields = True
+			self._log("Field(s) option has been enabled", self.name)
+			return
+
+		option = self.dialog.create_radiolist("Select a option:", 9, 55, Constants.OPTIONS_FIELDS_TRUE, "Field(s) Option")
+		if option == "Disable":
+			self.use_fields = False
+			self.fields = []
+			self._log("Field(s) option has been disabled", self.name)
+			return
+
+		option = self.dialog.create_menu("Select a option:", 10, 50, Constants.FIELDS_OPTIONS, "Field(s) Menu")
+		match option:
+			case "1":
+				new_fields = [item for item in self._ask_fields("Add Field(s)") if item not in self.fields]
+				if not new_fields:
+					self.dialog.create_message("\nThe fields entered already exist.", 7, 50, "Notification Message")
+					return
+				self.fields.extend(new_fields)
+				self._log("Added field(s)", f"{self.name}: {','.join(new_fields)}")
+			case "2":
+				self.fields = self._ask_fields("Modify Field(s)", self.fields)
+				self._log("Modified field(s)", f"{self.name}: {','.join(self.fields)}")
+			case "3":
+				selected = self._confirm_selection(self.fields, "Field's Name", "Remove Field(s)", "\nAre you sure to remove the selected field(s)?\n\n** This action cannot be undone.")
+				if not selected:
+					return
+				remaining = [item for item in self.fields if item not in selected]
+				if not remaining:
+					self.dialog.create_message("\nAt least one field is required. Disable the option instead.", 8, 50, "Error Message")
+					return
+				self.fields = remaining
+				self._log("Removed field(s)", f"{self.name}: {','.join(selected)}")
 
 
 	def modify_telegram_bot_token(self) -> None:
 		"""
-		Method that modifies the Telegram Bot Token.
+		Method that modifies the Telegram Bot Token (the current value is never decrypted or displayed).
 		"""
-		passphrase = self.utils.get_passphrase(self.constants.KEY_FILE)
-		self.telegram_bot_token = self.utils.encrypt_data(self.dialog.create_inputbox("Enter the Telegram Bot Token:", 8, 50, self.utils.decrypt_data(self.telegram_bot_token, passphrase).decode("utf-8")), passphrase)
-		self.logger.create_log("Telegram Bot Token modified.", 3, f"_{self.name}", use_file_handler = True, file_name = self.constants.LOG_FILE, user = self.constants.USER, group = self.constants.GROUP)
+		self.define_telegram_bot_token()
+		self._log("Telegram Bot Token modified", self.name)
 
 
 	def modify_telegram_chat_id(self) -> None:
 		"""
-		Method that modifies the Telegram Chat ID.
+		Method that modifies the Telegram Chat ID (the current value is never decrypted or displayed).
 		"""
-		passphrase = self.utils.get_passphrase(self.constants.KEY_FILE)
-		self.telegram_chat_id = self.utils.encrypt_data(self.dialog.create_inputbox("Enter the Telegram Chat ID:", 8, 50, self.utils.decrypt_data(self.telegram_chat_id, passphrase).decode("utf-8")), passphrase)
-		self.logger.create_log("Telegram Chat ID modified.", 3, f"_{self.name}", use_file_handler = True, file_name = self.constants.LOG_FILE, user = self.constants.USER, group = self.constants.GROUP)
+		self.define_telegram_chat_id()
+		self._log("Telegram Chat ID modified", self.name)
 
 
+	# --- Display / delete / enable / disable ---------------------------------------------------
 	def display_configuration(self) -> None:
 		"""
-		Method that displays the alert rule's configuration.
+		Method that displays the alert rule's configuration (sensitive data masked).
 		"""
 		try:
-			alert_rules = self.utils.get_yaml_files_in_folder(self.constants.ALERT_RULES_FOLDER)
-			if alert_rules:
-				alert_rules.sort()
-				tuple_to_rc = self.utils.convert_list_to_tuple_rc(alert_rules, "Alert rule's name")
-				option = self.dialog.create_radiolist("Select a option:", 18, 70, tuple_to_rc, "Alert Rules")
-				alert_rule_str = self.utils.convert_yaml_to_str(f"{self.constants.ALERT_RULES_FOLDER}/{option}")
-				text = f"\n{option[:-5]}\n\n{alert_rule_str}"
-				self.dialog.create_scrollbox(text, 18, 70, "Alert Rule's Configuration") 
-			else:
-				self.dialog.create_message(f"\nNo alert rules in: {self.constants.ALERT_RULES_FOLDER}", 8, 50, "Notification Message")
-		except Exception as exception:
-			self.dialog.create_message("\nError displaying alert rule's configuration. For more information, see the logs.", 8, 50, "Error Message")
-			self.logger.create_log(exception, 4, "_displayAlertRuleConf", use_file_handler = True, file_name = self.constants.LOG_FILE, user = self.constants.USER, group = self.constants.GROUP)
-		except KeyboardInterrupt:
+			option = self._select_rule("Alert Rules")
+			if option is None:
+				return
+			alert_rule_str = self.utils.convert_yaml_to_str(path.join(Constants.ALERT_RULES_FOLDER, option))
+			self.dialog.create_scrollbox(f"\n{option.removesuffix('.yaml')}\n\n{alert_rule_str}", 18, 70, "Alert Rule's Configuration")
+		except DialogCancelled:
 			pass
-		finally:
-			raise KeyboardInterrupt("Exit")
+		except Exception as exception:
+			self._error("\nError displaying alert rule's configuration. For more information, see the logs.", "_displayAlertRuleConf", exception)
 
 
 	def delete_alert_rules(self) -> None:
@@ -466,83 +581,85 @@ class AlertRules:
 		Method that deletes one or more alert rules.
 		"""
 		try:
-			alert_rules = self.utils.get_yaml_files_in_folder(self.constants.ALERT_RULES_FOLDER)
-			if alert_rules:
-				alert_rules.sort()
-				tuple_to_rc = self.utils.convert_list_to_tuple_rc(alert_rules, "Alert rule's name")
-				options = self.dialog.create_checklist("Select one or more options:", 18, 70, tuple_to_rc, "Delete Alert Rule(s)")
-				text = self.utils.get_str_from_list(options, "Alert rule(s) selected to remove:")
-				self.dialog.create_scrollbox(text, 14, 50, "Delete Alert Rule(s)")
-				delete_alert_rules_yn = self.dialog.create_yes_or_no("\nAre you sure to delete the selected alert rule(s)?\n\n**Note: This action cannot be undone.", 10, 50, "Delete Alert Rule(s)")
-				if delete_alert_rules_yn == "ok":
-					[self.utils.delete_file(f"{self.constants.ALERT_RULES_FOLDER}/{alert_rule}") for alert_rule in options]
-					self.dialog.create_message("\nAlert rule(s) deleted.", 7, 50, "Notification Message")
-					self.logger.create_log(f"Alert rule(s) deleted: {','.join(options)}", 3, "_deleteAlertRules", use_file_handler = True, file_name = self.constants.LOG_FILE, user = self.constants.USER, group = self.constants.GROUP)
-			else:
-				self.dialog.create_message(f"\nNo alert rules in: {self.constants.ALERT_RULES_FOLDER}", 8, 50, "Notification Message")
-		except Exception as exception:
-			self.dialog.create_message("\nError deleting alert rule(s). For more information, see the logs.", 8, 50, "Error Message")
-			self.logger.create_log(exception, 4, "_deleteAlertRules", use_file_handler = True, file_name = self.constants.LOG_FILE, user = self.constants.USER, group = self.constants.GROUP)
-		except KeyboardInterrupt:
+			rules = self._list_rules()
+			if not rules:
+				return
+			selected = self._confirm_selection(rules, "Alert rule's name", "Delete Alert Rule(s)", "\nAre you sure to delete the selected alert rule(s)?\n\n**Note: This action cannot be undone.")
+			if not selected:
+				return
+			for alert_rule in selected:
+				self.utils.delete_file(path.join(Constants.ALERT_RULES_FOLDER, alert_rule))
+			self._log("Alert rule(s) deleted", ",".join(selected), tag = "_deleteAlertRules")
+			self.dialog.create_message("\nAlert rule(s) deleted.", 7, 50, "Notification Message")
+		except DialogCancelled:
 			pass
-		finally:
-			raise KeyboardInterrupt("Exit")
+		except Exception as exception:
+			self._error("\nError deleting alert rule(s). For more information, see the logs.", "_deleteAlertRules", exception)
 
 
-	def disable_alert_rule(self)-> None:
+	def disable_alert_rule(self) -> None:
 		"""
 		Method that disables one or more alert rules.
 		"""
 		try:
-			alert_rules = self.utils.get_yaml_files_in_folder(self.constants.ALERT_RULES_FOLDER)
-			if alert_rules:
-				alert_rules.sort()
-				tuple_to_rc = self.utils.convert_list_to_tuple_rc(alert_rules, "Alert rule's name")
-				options = self.dialog.create_checklist("Select one or more options:", 18, 70, tuple_to_rc, "Disable Alert Rule(s)")
-				text = self.utils.get_str_from_list(options, "Alert rule(s) selected to disable:")
-				self.dialog.create_scrollbox(text, 14, 50, "Disable Alert Rule(s)")
-				disable_alert_rules_yn = self.dialog.create_yes_or_no("\nAre you sure to disable the selected alert rule(s)?", 8, 50, "Disable Alert Rule(s)")
-				if disable_alert_rules_yn == "ok":
-					[self.utils.rename_file_or_folder(f"{self.constants.ALERT_RULES_FOLDER}/{alert_rule}", f"{self.constants.ALERT_RULES_FOLDER}/{alert_rule}.disabled") for alert_rule in options]
-					self.dialog.create_message("\nAlert rule(s) disabled.", 7, 50, "Notification Message")
-					self.logger.create_log(f"Alert rule(s) disabled: {','.join(options)}", 3, "_disableAlertRules", use_file_handler = True, file_name = self.constants.LOG_FILE, user = self.constants.USER, group = self.constants.GROUP)
-			else:
-				self.dialog.create_message(f"\nNo alert rules in: {self.constants.ALERT_RULES_FOLDER}", 8, 50, "Notification Message")
-		except Exception as exception:
-			self.dialog.create_message("\nError disabling alert rule(s). For more information, see the logs.", 8, 50, "Error Message")
-			self.logger.create_log(exception, 4, "_disableAlertRules", use_file_handler = True, file_name = self.constants.LOG_FILE, user = self.constants.USER, group = self.constants.GROUP)
-		except KeyboardInterrupt:
+			rules = self._list_rules()
+			if not rules:
+				return
+			selected = self._confirm_selection(rules, "Alert rule's name", "Disable Alert Rule(s)", "\nAre you sure to disable the selected alert rule(s)?")
+			if not selected:
+				return
+			skipped = []
+			for alert_rule in selected:
+				source = path.join(Constants.ALERT_RULES_FOLDER, alert_rule)
+				if path.exists(source + ".disabled"):
+					skipped.append(alert_rule)
+					continue
+				self.utils.rename_file_or_folder(source, source + ".disabled")
+			self._report(selected, skipped, "disabled", "_disableAlertRules")
+		except DialogCancelled:
 			pass
-		finally:
-			raise KeyboardInterrupt("Exit")
+		except Exception as exception:
+			self._error("\nError disabling alert rule(s). For more information, see the logs.", "_disableAlertRules", exception)
 
 
-	def enable_alert_rule(self)-> None:
+	def enable_alert_rule(self) -> None:
 		"""
-		Method that enables one or more alert rules.
+		Method that enables one or more alert rules (an enabled rule with the same name is never overwritten).
 		"""
 		try:
-			alert_rules = self.utils.get_disabled_files_in_folder(self.constants.ALERT_RULES_FOLDER)
-			if alert_rules:
-				alert_rules.sort()
-				tuple_to_rc = self.utils.convert_list_to_tuple_rc(alert_rules, "Alert rule's name")
-				options = self.dialog.create_checklist("Select one or more options:", 18, 70, tuple_to_rc, "Enable Alert Rule(s)")
-				text = self.utils.get_str_from_list(options, "Alert rule(s) selected to enable:")
-				self.dialog.create_scrollbox(text, 14, 50, "Enable Alert Rule(s)")
-				enable_alert_rules_yn = self.dialog.create_yes_or_no("\nAre you sure to enable the selected alert rule(s)?", 8, 50, "Enable Alert Rule(s)")
-				if enable_alert_rules_yn == "ok":
-					[self.utils.rename_file_or_folder(f"{self.constants.ALERT_RULES_FOLDER}/{alert_rule}", f"{self.constants.ALERT_RULES_FOLDER}/{alert_rule[:-9]}") for alert_rule in options]
-					self.dialog.create_message("\nAlert rule(s) enabled.", 7, 50, "Notification Message")
-					self.logger.create_log(f"Alert rule(s) enabled: {','.join(options)}", 3, "_enableAlertRules", use_file_handler = True, file_name = self.constants.LOG_FILE, user = self.constants.USER, group = self.constants.GROUP)
-			else:
-				self.dialog.create_message(f"\nNo disabled alert rules in: {self.constants.ALERT_RULES_FOLDER}", 8, 50, "Notification Message")
-		except Exception as exception:
-			self.dialog.create_message("\nError enabling alert rule(s). For more information, see the logs.", 8, 50, "Error Message")
-			self.logger.create_log(exception, 4, "_enableAlertRules", use_file_handler = True, file_name = self.constants.LOG_FILE, user = self.constants.USER, group = self.constants.GROUP)
-		except KeyboardInterrupt:
+			rules = self._list_rules(disabled = True)
+			if not rules:
+				return
+			selected = self._confirm_selection(rules, "Alert rule's name", "Enable Alert Rule(s)", "\nAre you sure to enable the selected alert rule(s)?")
+			if not selected:
+				return
+			skipped = []
+			for alert_rule in selected:
+				target = path.join(Constants.ALERT_RULES_FOLDER, alert_rule.removesuffix(".disabled"))
+				if path.exists(target):
+					skipped.append(alert_rule)
+					continue
+				self.utils.rename_file_or_folder(path.join(Constants.ALERT_RULES_FOLDER, alert_rule), target)
+			self._report(selected, skipped, "enabled", "_enableAlertRules")
+		except DialogCancelled:
 			pass
-		finally:
-			raise KeyboardInterrupt("Exit")
+		except Exception as exception:
+			self._error("\nError enabling alert rule(s). For more information, see the logs.", "_enableAlertRules", exception)
+
+
+	def _report(self, selected: list, skipped: list, action: str, tag: str) -> None:
+		"""
+		Method that logs and shows the result of enabling/disabling rules.
+		"""
+		done = [item for item in selected if item not in skipped]
+		if done:
+			self._log(f"Alert rule(s) {action}", ",".join(done), tag = tag)
+		text = f"\nAlert rule(s) {action}: {len(done)}."
+		if skipped:
+			text += "\n\nSkipped (a rule with the same name already exists):\n" + "\n".join(skipped)
+			self.dialog.create_scrollbox(text, 14, 60, "Notification Message")
+		else:
+			self.dialog.create_message(text, 7, 50, "Notification Message")
 
 
 	def display_alert_rules(self) -> None:
@@ -550,143 +667,10 @@ class AlertRules:
 		Method that displays all alert rules.
 		"""
 		try:
-			alert_rules = self.utils.get_yaml_files_in_folder(self.constants.ALERT_RULES_FOLDER)
-			if alert_rules:
-				alert_rules.sort()
-				text = "\nAlert Rule(s)\n"
-				for alert_rule in alert_rules:
-					text += "\n-" + alert_rule[:-5]
-				self.dialog.create_scrollbox(text, 18, 70, "Alert Rule(s)")
-			else:
-				self.dialog.create_message(f"\nNo alert rules in: {self.constants.ALERT_RULES_FOLDER}", 8, 50, "Notification Message")
-		except Exception as exception:
-			self.dialog.create_message("\nError displaying alert rule(s). For more information, see the logs.", 8, 50, "Error Message")
-			self.logger.create_log(exception, 4, "_displayAlertRules", use_file_handler = True, file_name = self.constants.LOG_FILE, user = self.constants.USER, group = self.constants.GROUP)
-		except KeyboardInterrupt:
+			rules = self._list_rules()
+			if rules:
+				self.dialog.create_scrollbox(self.utils.get_str_from_list([rule.removesuffix(".yaml") for rule in rules], "Alert Rule(s)"), 18, 70, "Alert Rule(s)")
+		except DialogCancelled:
 			pass
-		finally:
-			raise KeyboardInterrupt("Exit")
-
-
-"""
-Class that manages everything related to custom alert rules.
-"""
-class CustomAlertRule(AlertRules):
-
-	hostname_field: str = None
-	username_field: str = None
-	custom_rule_type: str = None
-
-
-	def define_custom_type(self) -> None:
-		"""
-		Method that defines the custom alert rule's type.
-		"""
-		self.custom_rule_type = self.dialog.create_radiolist("Select a option:", 8, 55, self.constants.CUSTOM_TYPE, "Custom Rule Type")
-
-
-	def define_hostname_field(self) -> None:
-		"""
-		Method that defines the field's name corresponding to the hostname.
-		"""
-		self.hostname_field = self.dialog.create_inputbox("Enter the field's name that corresponds to the hostname:", 9, 50, "host.name")
-
-
-	def define_username_field(self) -> None:
-		"""
-		Method that defines the field's name corresponding to the username.
-		"""
-		self.username_field = self.dialog.create_inputbox("Enter the field's name that corresponds to the username:", 9, 50, "user.name")
-
-
-	def convert_object_to_dict(self) -> dict:
-		"""
-		Method that converts an CustomAlertRule's object into a dictionary.
-
-		Returns:
-			alert_rule_data_json (dict): Dictionary with the object's data.
-		"""
-		alert_rule_data_json = {
-			"is_custom_rule" : self.is_custom_rule,
-			"name" :  self.name,
-			"level" :  self.level,
-			"index_pattern" : self.index_pattern,
-			"timestamp_field" : self.timestamp_field,
-			"search_time" : self.search_time,
-			"range_time" : self.range_time,
-			"custom_rule_type" : self.custom_rule_type,
-			"query" : self.query,
-			"use_fields" : self.use_fields,
-			"telegram_bot_token" : self.telegram_bot_token,
-			"telegram_chat_id" : self.telegram_chat_id
-		}
-
-		if self.custom_rule_type == "Brute Force":
-			alert_rule_data_json.update({"total_events" : self.total_events, "hostname_field" : self.hostname_field, "username_field" : self.username_field})
-		if self.use_fields:
-			alert_rule_data_json.update({"fields" : self.fields})
-
-		return alert_rule_data_json
-
-
-	def convert_dict_to_object(self, alert_rule_data: dict) -> None:
-		"""
-		Method that converts a dictionary into an CustomAlertRule's object.
-
-		Parameters:
-			alert_rule_data (dict): Object that contains the alert rule's configuration data.
-		"""
-		self.is_custom_rule = alert_rule_data["is_custom_rule"]
-		self.name = alert_rule_data["name"]
-		self.level = alert_rule_data["level"]
-		self.index_pattern = alert_rule_data["index_pattern"]
-		self.timestamp_field = alert_rule_data["timestamp_field"]
-		unit_time = list(alert_rule_data["search_time"].keys())[0]
-		self.search_time = {unit_time : alert_rule_data["search_time"][unit_time]}
-		unit_time = list(alert_rule_data["range_time"].keys())[0]
-		self.range_time = {unit_time : alert_rule_data["range_time"][unit_time]}
-		self.custom_rule_type = alert_rule_data["custom_rule_type"]
-		if self.custom_rule_type == "Brute Force":
-	 		self.total_events = alert_rule_data["total_events"]
-	 		self.hostname_field = alert_rule_data["hostname_field"]
-	 		self.username_field = alert_rule_data["username_field"]
-		query_type = list(alert_rule_data["query"]["query_type"][0].keys())[0]
-		if query_type == "query_string":
-			query_string = alert_rule_data["query"]["query_type"][0]["query_string"]["query"]
-			self.query = {"query_type" : [{"query_string" : {"query" : query_string}}]}
-		self.use_fields = alert_rule_data["use_fields"]
-		if alert_rule_data["use_fields"]:
-			self.fields = alert_rule_data["fields"]
-		self.telegram_bot_token  = alert_rule_data["telegram_bot_token"]
-		self.telegram_chat_id = alert_rule_data["telegram_chat_id"]
-
-
-	def modify_rule_configuration(self, options: list) -> None:
-		"""
-		Method that modifies the custom alert rule's configuration.
-
-		Parameters:
-			options (list): Chosen options.
-		"""
-		if "Name" in options:
-			self.modify_name()
-		if "Level" in options:
-			self.modify_level()
-		if "Index" in options:
-			self.modify_index_pattern()
-		if "Timestamp" in options:
-			self.modify_timestamp_field()
-		if "Search Time" in options:
-			self.modify_search_time()
-		if "Range Time" in options:
-			self.modify_range_time()
-		if "Type" in options:
-			print("Type")
-		if "Query" in options:
-			self.modify_query()
-		if "Fields Selection" in options:
-			self.modify_fields()
-		if "Bot Token" in options:
-			self.modify_telegram_bot_token()
-		if "Chat ID" in options:
-			self.modify_telegram_chat_id()
+		except Exception as exception:
+			self._error("\nError displaying alert rule(s). For more information, see the logs.", "_displayAlertRules", exception)

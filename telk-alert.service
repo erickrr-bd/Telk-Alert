@@ -1,14 +1,50 @@
 [Unit]
-Description=Telk-Alert v4.1
-After=networking.target
-StartLimitIntervalSec=0
+Description=Telk-Alert - Alerting with ElasticSearch and Telegram
+Documentation=https://github.com/erickrr-bd/Telk-Alert
+Wants=network-online.target
+After=network-online.target
 
 [Service]
 Type=simple
-ExecStart=/opt/Telk-Alert-Suite/Telk-Alert/Telk_Alert.py
 User=telk_alert
+Group=telk_alert
+WorkingDirectory=/opt/Telk-Alert-Suite/Telk-Alert
+ExecStart=/opt/Telk-Alert-Suite/.venv/bin/python /opt/Telk-Alert-Suite/Telk-Alert/Telk_Alert.py
+Environment=PYTHONUNBUFFERED=1
+
+# systemd restarts the service after a failure (Telk-Alert-Agent only notifies). A manual "systemctl stop" is respected.
 Restart=on-failure
-RestartSec=1
+RestartSec=30
+# Time to finish the current searches/messages after SIGTERM.
+TimeoutStopSec=45
+
+# /run/telk-alert (heartbeat read by Telk-Alert-Agent) and /var/log/Telk-Alert, owned by telk_alert.
+RuntimeDirectory=telk-alert
+RuntimeDirectoryMode=0750
+LogsDirectory=Telk-Alert
+LogsDirectoryMode=0750
+UMask=0027
+
+# Hardening: read-only system, no privileges, no access to homes, devices or kernel settings.
+NoNewPrivileges=true
+CapabilityBoundingSet=
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectKernelLogs=true
+ProtectControlGroups=true
+ProtectClock=true
+ProtectHostname=true
+RestrictSUIDSGID=true
+RestrictRealtime=true
+RestrictNamespaces=true
+LockPersonality=true
+SystemCallArchitectures=native
+# AF_UNIX: journald. AF_INET/AF_INET6: ElasticSearch and Telegram.
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
 
 [Install]
 WantedBy=multi-user.target

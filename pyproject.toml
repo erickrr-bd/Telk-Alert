@@ -1,0 +1,32 @@
+[project]
+name = "telk-alert"
+version = "4.2"
+description = ""
+authors = [
+    {name = "Erick Rodriguez",email = "erickrr.tbd93@gmail.com"}
+]
+readme = "README.md"
+requires-python = ">=3.14"
+dependencies = [
+    "requests (>=2.34.2,<3.0.0)",
+    "pycryptodomex (>=3.24.1,<4.0.0)",
+    "pyyaml (>=6.0.3,<7.0.0)",
+    "psutil (>=7.2.2,<8.0.0)",
+    "pycurl (>=7.48.0,<8.0.0)",
+    "pythondialog (>=3.5.3,<4.0.0)",
+    "elasticsearch (>=8.18.0,<9.0.0)",
+    "libpyagentconfiguration @ git+https://github.com/erickrr-bd/libPyAgentConfiguration.git",
+    "libpyconfiguration @ git+https://github.com/erickrr-bd/libPyConfiguration.git",
+    "libpydialog @ git+https://github.com/erickrr-bd/libPyDialog.git",
+    "libpyelk @ git+https://github.com/erickrr-bd/libPyElk.git",
+    "libpylog @ git+https://github.com/erickrr-bd/libPyLog.git",
+    "libpytelegram @ git+https://github.com/erickrr-bd/libPyTelegram.git",
+    "libpyutils @ git+https://github.com/erickrr-bd/libPyUtils.git",
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.dependencies]

@@ -1,13 +1,47 @@
 [Unit]
-Description=Telk-Alert-Agent v4.1
-After=networking.target
-StartLimitIntervalSec=0
+Description=Telk-Alert-Agent - Monitoring of the Telk-Alert service
+Documentation=https://github.com/erickrr-bd/Telk-Alert
+Wants=network-online.target
+After=network-online.target
 
 [Service]
 Type=simple
-ExecStart=/opt/Telk-Alert-Suite/Telk-Alert-Agent/Telk_Alert_Agent.py
+User=telk_alert
+Group=telk_alert
+WorkingDirectory=/opt/Telk-Alert-Suite/Telk-Alert-Agent
+ExecStart=/opt/Telk-Alert-Suite/.venv/bin/python /opt/Telk-Alert-Suite/Telk-Alert-Agent/Telk_Alert_Agent.py
+Environment=PYTHONUNBUFFERED=1
+
 Restart=on-failure
-RestartSec=1
+RestartSec=30
+TimeoutStopSec=15
+
+# /var/log/Telk-Alert, owned by telk_alert (shared with Telk-Alert).
+LogsDirectory=Telk-Alert
+LogsDirectoryMode=0750
+UMask=0027
+
+# Hardening. The only privileged action (restart telk-alert.service) is granted by polkit
+# (/etc/polkit-1/rules.d/50-telk-alert-agent.rules), so no capabilities are needed.
+NoNewPrivileges=true
+CapabilityBoundingSet=
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectKernelLogs=true
+ProtectControlGroups=true
+ProtectClock=true
+ProtectHostname=true
+RestrictSUIDSGID=true
+RestrictRealtime=true
+RestrictNamespaces=true
+LockPersonality=true
+SystemCallArchitectures=native
+# AF_UNIX: journald and D-Bus (systemctl). AF_INET/AF_INET6: Telegram.
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
 
 [Install]
 WantedBy=multi-user.target
